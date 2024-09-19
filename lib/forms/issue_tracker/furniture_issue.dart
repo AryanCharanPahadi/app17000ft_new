@@ -11,7 +11,7 @@ class FurnitureIssue {
   String? issueExist;
   String? issueName;
   String? issueDescription;
-  String? furnitureImg;
+  String? furn_issue_img;
   String? issueReportOn;
   String? issueReportBy;
   String? issueStatus;
@@ -24,7 +24,7 @@ class FurnitureIssue {
     this.issueExist,
     this.issueName,
     this.issueDescription,
-    this.furnitureImg,
+    this.furn_issue_img,
     this.issueReportOn,
     this.issueReportBy,
     this.issueStatus,
@@ -38,7 +38,7 @@ class FurnitureIssue {
     issueExist: json['furniture_issue'],
     issueName: json['furniture_issue_value'],
     issueDescription: json['furniture_desc'],
-    furnitureImg: json['furniture_img'],
+    furn_issue_img: json['furn_issue_img'],
     issueReportOn: json['reported_on'],
     issueReportBy: json['reported_by'],
     issueStatus: json['issue_status'],
@@ -52,7 +52,7 @@ class FurnitureIssue {
     'furniture_issue': issueExist,
     'furniture_issue_value': issueName,
     'furniture_desc': issueDescription,
-    'furniture_img': furnitureImg,
+    'furn_issue_img': furn_issue_img,
     'reported_on': issueReportOn,
     'reported_by': issueReportBy,
     'issue_status': issueStatus,

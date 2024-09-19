@@ -11,7 +11,7 @@ class LibIssue {
   String? issueExist;
   String? issueName;
   String? issueDescription;
-  String? libImg;
+  String? lib_issue_img;
   String? issueReportOn;
   String? issueReportBy;
   String? issueStatus;
@@ -24,7 +24,7 @@ class LibIssue {
     this.issueExist,
     this.issueName,
     this.issueDescription,
-    this.libImg,
+    this.lib_issue_img,
     this.issueReportOn,
     this.issueReportBy,
     this.issueStatus,
@@ -38,7 +38,7 @@ class LibIssue {
     issueExist: json["lib_issue"],
     issueName: json["lib_issue_value"],
     issueDescription: json["lib_desc"],
-    libImg: json["lib_issue_img"],
+    lib_issue_img: json["lib_issue_img"],
     issueReportOn: json["reported_on"],
     issueReportBy: json["reported_by"],
     issueStatus: json["issue_status"],
@@ -52,7 +52,7 @@ class LibIssue {
     'lib_issue': issueExist,
     'lib_issue_value': issueName,
     'lib_desc': issueDescription,
-    'lib_issue_img': libImg,
+    'lib_issue_img': lib_issue_img,
     'reported_on': issueReportOn,
     'reported_by': issueReportBy,
     'issue_status': issueStatus,

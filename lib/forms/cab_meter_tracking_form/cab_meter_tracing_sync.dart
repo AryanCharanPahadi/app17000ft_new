@@ -75,7 +75,7 @@ class _CabTracingSyncState extends State<CabTracingSync> {
                       final item = cabMeterTracingController.cabMeterTracingList[index];
                       return ListTile(
                         title: Text(
-                          "${index + 1}. Tour ID: ${item.tour_id!}\n    Vehicle No. ${item.vehicle_num!}\n    Driver Name: ${item.driver_name!}",
+                          "${index + 1}. Tour ID: ${item.tour_id}\n    Vehicle No. ${item.meter_reading}\n    Driver Name: ${item.image}",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         trailing: Row(

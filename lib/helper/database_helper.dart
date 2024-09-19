@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' as io;
 import 'package:app17000ft_new/forms/alfa_observation_form/alfa_obervation_modal.dart';
 import 'package:app17000ft_new/forms/fln_observation_form/fln_observation_modal.dart';
@@ -50,7 +51,7 @@ class SqfliteDatabaseHelper {
   static const inPerson_qualitative = 'inPerson_qualitative';
   static const schoolRecce = 'schoolRecce';
   static const _dbName = "app17000ft_new.db";
-  static const _dbVersion = 51; // Increment this when you make schema changes
+  static const _dbVersion = 54; // Increment this when you make schema changes
 
   static Database? _db;
 
@@ -66,6 +67,7 @@ class SqfliteDatabaseHelper {
   // Perform tasks
   Future<Database> init() async {
     var dbPath = await getDatabasesPath();
+    print('Database path: $dbPath');  // Add this log to check path on the device
     String dbPathHomeWorkout = path.join(dbPath, _dbName);
 
     bool dbExists = await io.File(dbPathHomeWorkout).exists();
@@ -92,7 +94,7 @@ class SqfliteDatabaseHelper {
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {
     print('onUpgrade is called from $oldVersion to $newVersion');
     if (oldVersion < newVersion) {
-      if (oldVersion == 50 && newVersion == 51) {
+      if (oldVersion == 53 && newVersion == 54) {
         print("upgrade");
         await _createTables(db);
       }
@@ -262,6 +264,8 @@ otherQual TEXT
     udiseCode TEXT,
     correctUdise TEXT,
     created_at TEXT,
+    created_by TEXT,
+    office TEXT,
     uniqueId TEXT
    
     );
@@ -305,7 +309,7 @@ otherQual TEXT
       digi_issue TEXT,
       digi_issueValue TEXT,
       digi_desc TEXT,
-      digi_img TEXT,
+      dig_issue_img TEXT,
       reported_on TEXT,
       reported_by TEXT,
       issue_status TEXT,
@@ -323,7 +327,7 @@ otherQual TEXT
       furniture_issue TEXT,
       furniture_issue_value TEXT,
       furniture_desc TEXT,
-      furniture_img TEXT,
+      furn_issue_img TEXT,
       reported_on TEXT,
       reported_by TEXT,
       issue_status TEXT,
@@ -340,7 +344,7 @@ otherQual TEXT
       alexa_issue TEXT,
       alexa_issueValue TEXT,
       alexa_desc TEXT,
-      alexa_img TEXT,
+      alexa_issue_img TEXT,
       reported_date TEXT,
       reported_by TEXT,
       issue_status TEXT,
@@ -632,11 +636,11 @@ class LocalDbController {
     SchoolFacilitiesRecords? schoolFacilitiesRecords,
     SchoolStaffVecRecords? schoolStaffVecRecords,
     IssueTrackerRecords? issueTrackerRecords,
-    LibIssue? libIssueRecords,
-    PlaygroundIssue? playgroundIssueRecords,
-    FurnitureIssue? furnitureIssueRecords,
-    DigiLabIssue? digiLabIssueRecords,
-    AlexaIssue? alexaIssueRecords,
+    List<LibIssue>? libIssues, // Accept a list of LibIssue objects
+    List<PlaygroundIssue>? playgroundIssues, // Accept a list of LibIssue objects
+    List<FurnitureIssue>? furnitureIssues, // Accept a list of LibIssue objects
+    List<DigiLabIssue>? digiLabIssues, // Accept a list of LibIssue objects
+    List<AlexaIssue>? alexaIssues, // Accept a list of LibIssue objects
     AlfaObservationModel? alfaObservationModel,
     FlnObservationModel? flnObservationModel,
     InPersonQualitativeRecords? inPersonQualitativeRecords,
@@ -700,65 +704,83 @@ class LocalDbController {
         );
       }
 
-      // basic issue
+      // Basic issue
       if (issueTrackerRecords != null) {
-        print('issueTrackerRecords called to insert');
+        // Convert issueTrackerRecords to JSON string for better readability
+        var issueJson = issueTrackerRecords.toJson();
+        var issueJsonString = jsonEncode(issueJson);
+
+        print('Inserting issueTrackerRecords: $issueJsonString');
+
         int issueResult = await dbClient.insert(
           SqfliteDatabaseHelper.issueTracker,
-          issueTrackerRecords.toJson(),
+          issueJson,
         );
+
         if (issueResult <= 0) result = 0; // Indicate failure
       }
 
-      // library issue
-      if (libIssueRecords != null) {
-        print('libIssueRecords called to insert');
-        int libResult = await dbClient.insert(
-          SqfliteDatabaseHelper.libIssueTable,
-          libIssueRecords.toJson(),
-        );
-        if (libResult <= 0) result = 0;
+
+// Library issue
+      if (libIssues != null && libIssues.isNotEmpty) {
+        print('Inserting libIssues: ${libIssues.map((issue) => issue.toJson()).toList()}');
+        for (var issue in libIssues) {
+          print('Inserting library issue: ${issue.toJson()}');
+          await dbClient.insert(
+            SqfliteDatabaseHelper.libIssueTable, // Adjust this table name accordingly
+            issue.toJson(),
+          );
+        }
       }
 
-      // playground issue
-      if (playgroundIssueRecords != null) {
-        print('playgroundIssueRecords called to insert');
-        int playgroundResult = await dbClient.insert(
-          SqfliteDatabaseHelper.play_issue,
-          playgroundIssueRecords.toJson(),
-        );
-        if (playgroundResult <= 0) result = 0;
+// Playground issue
+      if (playgroundIssues != null && playgroundIssues.isNotEmpty) {
+        print('Inserting playgroundIssues: ${playgroundIssues.map((issue) => issue.toJson()).toList()}');
+        for (var issue in playgroundIssues) {
+          print('Inserting playground issue: ${issue.toJson()}');
+          await dbClient.insert(
+            SqfliteDatabaseHelper.play_issue, // Adjust this table name accordingly
+            issue.toJson(),
+          );
+        }
       }
 
-      // alexa issue
-      if (alexaIssueRecords != null) {
-        print('alexaIssueRecords called to insert');
-        int alexaResult = await dbClient.insert(
-          SqfliteDatabaseHelper.alexa_issue,
-          alexaIssueRecords.toJson(),
-        );
-        if (alexaResult <= 0) result = 0;
+// Alexa issue
+      if (alexaIssues != null && alexaIssues.isNotEmpty) {
+        print('Inserting alexaIssues: ${alexaIssues.map((issue) => issue.toJson()).toList()}');
+        for (var issue in alexaIssues) {
+          print('Inserting alexa issue: ${issue.toJson()}');
+          await dbClient.insert(
+            SqfliteDatabaseHelper.alexa_issue, // Adjust this table name accordingly
+            issue.toJson(),
+          );
+        }
       }
 
-      // digilab issue
-      if (digiLabIssueRecords != null) {
-        print('digiLabIssueRecords called to insert');
-        int digiLabResult = await dbClient.insert(
-          SqfliteDatabaseHelper.digiLab_issue,
-          digiLabIssueRecords.toJson(),
-        );
-        if (digiLabResult <= 0) result = 0;
+// DigiLab issue
+      if (digiLabIssues != null && digiLabIssues.isNotEmpty) {
+        print('Inserting digiLabIssues: ${digiLabIssues.map((issue) => issue.toJson()).toList()}');
+        for (var issue in digiLabIssues) {
+          print('Inserting digiLab issue: ${issue.toJson()}');
+          await dbClient.insert(
+            SqfliteDatabaseHelper.digiLab_issue, // Adjust this table name accordingly
+            issue.toJson(),
+          );
+        }
       }
 
-      // furniture issue
-      if (furnitureIssueRecords != null) {
-        print('furnitureIssueRecords called to insert');
-        int furnitureResult = await dbClient.insert(
-          SqfliteDatabaseHelper.furniture_issue,
-          furnitureIssueRecords.toJson(),
-        );
-        if (furnitureResult <= 0) result = 0;
+// Furniture issue
+      if (furnitureIssues != null && furnitureIssues.isNotEmpty) {
+        print('Inserting furnitureIssues: ${furnitureIssues.map((issue) => issue.toJson()).toList()}');
+        for (var issue in furnitureIssues) {
+          print('Inserting furniture issue: ${issue.toJson()}');
+          await dbClient.insert(
+            SqfliteDatabaseHelper.furniture_issue, // Adjust this table name accordingly
+            issue.toJson(),
+          );
+        }
       }
+
 
       if (alfaObservationModel != null) {
         print('alfaObservationModel called to insert');
@@ -836,22 +858,22 @@ class LocalDbController {
     return tourList;
   }
 
-  Future<List<CabMeterTracingRecords>> fetchLocalCabMeterTracingRecord() async {
-    var dbClient = await conn.db;
-    List<CabMeterTracingRecords> tourList = [];
-    try {
-      List<Map<String, dynamic>> maps = await dbClient
-          .rawQuery('SELECT * FROM ${SqfliteDatabaseHelper.cabMeter_tracing}');
-      for (var element in maps) {
-        tourList.add(CabMeterTracingRecords.fromJson(element));
+    Future<List<CabMeterTracingRecords>> fetchLocalCabMeterTracingRecord() async {
+      var dbClient = await conn.db;
+      List<CabMeterTracingRecords> tourList = [];
+      try {
+        List<Map<String, dynamic>> maps = await dbClient
+            .rawQuery('SELECT image FROM ${SqfliteDatabaseHelper.cabMeter_tracing}');
+        for (var element in maps) {
+          tourList.add(CabMeterTracingRecords.fromJson(element));
+        }
+        print('localcab meter reoord length us ${tourList.length}');
+      } catch (e) {
+        print(
+            "Exception occurred while fetching CabMeterTracingRecords form records: $e");
       }
-      print('localcab meter reoord length us ${tourList.length}');
-    } catch (e) {
-      print(
-          "Exception occurred while fetching CabMeterTracingRecords form records: $e");
+      return tourList;
     }
-    return tourList;
-  }
 
   Future<List<InPersonQuantitativeRecords>>
       fetchLocalInPersonQuantitativeRecords() async {

@@ -1,6 +1,4 @@
-// To parse this JSON data, do
-//
-//     final tourDetails = tourDetailsFromJson(jsonString);
+
 
 import 'dart:convert';
 

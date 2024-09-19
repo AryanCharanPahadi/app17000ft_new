@@ -11,7 +11,7 @@ class DigiLabIssue {
   String? issueExist;
   String? issueName;
   String? issueDescription;
-  String? digImg;
+  String? dig_issue_img;
   String? issueReportOn;
   String? issueReportBy;
   String? issueStatus;
@@ -25,7 +25,7 @@ class DigiLabIssue {
     this.issueExist,
     this.issueName,
     this.issueDescription,
-    this.digImg,
+    this.dig_issue_img,
     this.issueReportOn,
     this.issueReportBy,
     this.issueStatus,
@@ -40,7 +40,7 @@ class DigiLabIssue {
     issueExist: json['digi_issue'],
     issueName: json['digi_issueValue'],
     issueDescription: json['digi_desc'],
-    digImg: json['digi_img'],
+    dig_issue_img: json['dig_issue_img'],
     issueReportOn: json['reported_on'],
     issueReportBy: json['reported_by'],
     issueStatus: json['issue_status'],
@@ -55,7 +55,7 @@ class DigiLabIssue {
     'digi_issue': issueExist,
     'digi_issueValue': issueName,
     'digi_desc': issueDescription,
-    'digi_img': digImg,
+    'dig_issue_img': dig_issue_img,
     'reported_on': issueReportOn,
     'reported_by': issueReportBy,
     'issue_status': issueStatus,

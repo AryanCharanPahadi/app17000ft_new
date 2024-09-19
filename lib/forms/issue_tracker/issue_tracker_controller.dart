@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
 
-
-
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
@@ -45,6 +42,14 @@ class IssueTrackerController extends GetxController with BaseController {
   final TextEditingController digiLabDescriptionController = TextEditingController();
   final TextEditingController classroomDescriptionController = TextEditingController();
   final TextEditingController alexaDescriptionController = TextEditingController();
+  final TextEditingController otherSolarDescriptionController = TextEditingController();
+  final TextEditingController tabletNumberController = TextEditingController();
+  final TextEditingController dotDeviceMissingController = TextEditingController();
+  final TextEditingController dotDeviceNotConfiguredController = TextEditingController();
+  final TextEditingController dotDeviceNotConnectingController = TextEditingController();
+  final TextEditingController dotDeviceNotChargingController = TextEditingController();
+  final TextEditingController dotOtherIssueController = TextEditingController();
+  final TextEditingController tabletNumber3Controller = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController dateController2 = TextEditingController();
   final TextEditingController dateController3 = TextEditingController();

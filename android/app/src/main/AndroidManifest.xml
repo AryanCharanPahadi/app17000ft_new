@@ -13,6 +13,9 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+
+
+
     <application
         android:label="app17000ft_new"
         android:name="${applicationName}"

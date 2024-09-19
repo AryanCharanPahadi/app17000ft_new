@@ -103,7 +103,6 @@ class CabMeterTracingController extends GetxController with BaseController{
     update();
     return _imagePaths.toString();
   }
-
   setSchool(value)
   {
     _schoolValue = value;

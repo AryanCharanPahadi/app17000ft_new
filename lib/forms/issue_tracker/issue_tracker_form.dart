@@ -35,52 +35,39 @@ import 'lib_issue_modal.dart';
 class IssueTrackerForm extends StatefulWidget {
   String? userid;
   String? office;
-  final SchoolStaffVecRecords? existingRecord;
   IssueTrackerForm({
     super.key,
-    this.userid,
-    String? office,
-    this.existingRecord,
+    required this.userid,
+    required this.office,
   });
   @override
   State<IssueTrackerForm> createState() => _IssueTrackerFormState();
 }
 
 class _IssueTrackerFormState extends State<IssueTrackerForm> {
-
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  var uniqueId = UniqueIdGenerator.generate(6); // Generate a 6-digit ID
 
   List<String> splitSchoolLists = [];
   List<Map<String, dynamic>> issues = [];
 
-  late final String uniqueId;
-
-
-
-
-
   String? _selectedResolvedBy;
   List<String> _filteredStaffNames2 = []; // for alexa
-
 
   String? _selectedResolvedBy2;
   List<String> _filteredStaffNames = []; // for classroom
 
-
   String? _selectedResolvedBy3;
   List<String> _filteredStaffNames3 = []; // for li brary
 
-
   String? _selectedResolvedBy4;
   List<String> _filteredStaffNames4 = []; // for playground
-
 
   String? _selectedResolvedBy5;
   List<String> _filteredStaffNames5 = []; // for digiLab
 
   bool _isLoading = true;
-
 
   final HomeController controller = Get.find<HomeController>();
 
@@ -92,7 +79,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
     _fetchFilteredStaffNames3();
     _fetchFilteredStaffNames4();
     _fetchFilteredStaffNames5();
-    uniqueId = UniqueIdGenerator.generate(8); // Generate a 6-digit ID
+
     print('Generated Unique ID: $uniqueId');
   }
 
@@ -343,6 +330,11 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
   String? _selectedValue19 = ''; // For the part of alexa issue
   String? _selectedValue20 = ''; // For the issue reported by alexa
   String? _selectedValue21 = ''; // For the alexa issue status
+  String? _selectedValue22 = ''; // For the alexa issue status
+  String? _selectedValue23 = ''; // For the alexa issue status
+  String? _selectedValue24 = ''; // For the alexa issue status
+  String? _selectedValue25 = ''; // For the alexa issue status
+  String? _selectedValue26 = ''; // For the alexa issue status
 
   // End of selecting Field error
 
@@ -368,6 +360,10 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
   bool _radioFieldError19 = false; // For the part of alexa issue
   bool _radioFieldError20 = false; // For the issue reported by alexa
   bool _radioFieldError21 = false; // For the alexa issue status
+  bool _radioFieldError22 = false; // For the alexa issue status
+  bool _radioFieldError23 = false; // For the alexa issue status
+  bool _radioFieldError24 = false; // For the alexa issue status
+  bool _radioFieldError26 = false; // For the alexa issue status
 
   bool _dateFieldError = false; // For the date
   bool _dateFieldError2 = false; // For the date
@@ -557,138 +553,105 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
 
   List<Map<String, String?>> lib_issuesList = [];
 
-  void _addIssue() {
+  Future<void> _addIssue() async {
     // Validate form fields
     bool isValid = true;
 
-    // If "Did you find any issues in the Library?" is 'No', set all fields to null
-    if (_selectedValue2 == 'No') {
+    // Validate "Did you find any issues in the Library?" field
+    if (_selectedValue2 == null || _selectedValue2!.isEmpty) {
       setState(() {
-        _selectedValue3 = null;
-        _selectedValue4 = null;
-        _selectedValue5 = null;
-        _selectedResolvedBy3 = null;
-        issueTrackerController.libraryDescriptionController.clear();
-        issueTrackerController.multipleImage.clear();
-        issueTrackerController.dateController.clear();
-        issueTrackerController.dateController2.clear();
+        _radioFieldError2 = true;
       });
+      isValid = false;
+    } else {
+      setState(() {
+        _radioFieldError2 = false;
+      });
+    }
 
+    // Validate Library part selection if the user answered "Yes"
+    if (_selectedValue2 == 'Yes') {
+      if (_selectedValue3 == null || _selectedValue3!.isEmpty) {
+        setState(() {
+          _radioFieldError3 = true;
+        });
+        isValid = false;
+      } else {
+        setState(() {
+          _radioFieldError3 = false;
+        });
+      }
+    }
+
+    // Validate Issue Reported By selection
+    if (_selectedValue4 == null || _selectedValue4!.isEmpty) {
+      setState(() {
+        _radioFieldError4 = true;
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        _radioFieldError4 = false;
+      });
+    }
+
+    // Validate "Resolved On" date field if the issue status is 'Closed'
+    if (_selectedValue5 == 'Closed' &&
+        issueTrackerController.dateController2.text.isEmpty) {
+      setState(() {
+        _dateFieldError2 = true;
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        _dateFieldError2 = false;
+      });
+    }
+
+    // Validate image upload
+    if (issueTrackerController.multipleImage.isEmpty) {
+      setState(() {
+        validateRegister = true;
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        validateRegister = false;
+      });
+    }
+
+    // Validate "Library Issue Reported On" date field
+    if (issueTrackerController.dateController.text.isEmpty) {
+      setState(() {
+        _dateFieldError = true;
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        _dateFieldError = false;
+      });
+    }
+
+    // If all validations pass, add the issue
+    if (isValid && (_formKey.currentState!.validate())) {
+      List<String> base64Images =
+          await issueTrackerController.convertImagesToBase64();
+      // Add issue to the list
       lib_issuesList.add({
-        'lib_issue': 'No',
-        'lib_issue_value': null,
-        'lib_desc': null,
-        'reported_on': null,
-        'resolved_on': null,
-        'reported_by': null,
-        'resolved_by': null,
-        'issue_status': null,
-        'lib_issue_img': null,
+        'lib_issue': _selectedValue2!, // Default to 'No' if null
+        'lib_issue_value': _selectedValue3!, // Default to empty if null
+        'lib_desc': issueTrackerController.libraryDescriptionController.text,
+        'reported_on': issueTrackerController.dateController.text,
+        'resolved_on': issueTrackerController.dateController2.text,
+        'reported_by': _selectedValue4!, // Default to empty if null
+        'resolved_by': _selectedResolvedBy3 ?? '', // Default to empty if null
+        'issue_status': _selectedValue5!, // Default to empty if null
+        'lib_issue_img': base64Images.join(', '),
         'unique_id': uniqueId, // Add unique ID here
       });
 
       // Reset form for next input
       _resetForm();
-    } else {
-      // Validate "Did you find any issues in the Library?" field
-      if (_selectedValue2 == null || _selectedValue2!.isEmpty) {
-        setState(() {
-          _radioFieldError2 = true;
-        });
-        isValid = false;
-      } else {
-        setState(() {
-          _radioFieldError2 = false;
-        });
-      }
-
-      // Validate Library part selection if the user answered "Yes"
-      if (_selectedValue2 == 'Yes') {
-        if (_selectedValue3 == null || _selectedValue3!.isEmpty) {
-          setState(() {
-            _radioFieldError3 = true;
-          });
-          isValid = false;
-        } else {
-          setState(() {
-            _radioFieldError3 = false;
-          });
-        }
-      }
-
-      // Validate Issue Reported By selection
-      if (_selectedValue4 == null || _selectedValue4!.isEmpty) {
-        setState(() {
-          _radioFieldError4 = true;
-        });
-        isValid = false;
-      } else {
-        setState(() {
-          _radioFieldError4 = false;
-        });
-      }
-
-      // Validate "Resolved On" date field if the issue status is 'Closed'
-      if (_selectedValue5 == 'Closed' && issueTrackerController.dateController2.text.isEmpty) {
-        setState(() {
-          _dateFieldError2 = true;
-        });
-        isValid = false;
-      } else {
-        setState(() {
-          _dateFieldError2 = false;
-        });
-      }
-
-      // Validate image upload
-      if (issueTrackerController.multipleImage.isEmpty) {
-        setState(() {
-          validateRegister = true;
-        });
-        isValid = false;
-      } else {
-        setState(() {
-          validateRegister = false;
-        });
-      }
-
-      // Validate "Library Issue Reported On" date field
-      if (issueTrackerController.dateController.text.isEmpty) {
-        setState(() {
-          _dateFieldError = true;
-        });
-        isValid = false;
-      } else {
-        setState(() {
-          _dateFieldError = false;
-        });
-      }
-
-      // If all validations pass, add the issue
-      if (isValid && (_formKey.currentState!.validate())) {
-        setState(() {
-          List<String> imagePaths = issueTrackerController.multipleImage
-              .map((imageFile) => imageFile.path)
-              .toList();
-
-          // Add issue to the list
-          lib_issuesList.add({
-            'lib_issue': _selectedValue2 ?? 'No', // Default to 'No' if null
-            'lib_issue_value': _selectedValue3 ?? '', // Default to empty if null
-            'lib_desc': issueTrackerController.libraryDescriptionController.text,
-            'reported_on': issueTrackerController.dateController.text,
-            'resolved_on': issueTrackerController.dateController2.text,
-            'reported_by': _selectedValue4 ?? '', // Default to empty if null
-            'resolved_by': _selectedResolvedBy3 ?? '', // Default to empty if null
-            'issue_status': _selectedValue5 ?? '', // Default to empty if null
-            'lib_issue_img': imagePaths.join(', '),
-            'unique_id': uniqueId, // Add unique ID here
-          });
-
-          // Reset form for next input
-          _resetForm();
-        });
-      }
     }
   }
 
@@ -704,9 +667,8 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
     issueTrackerController.dateController2.clear();
   }
 
-
   List<Map<String, String>> issuesList2 = [];
-  void _addIssue2() {
+  Future<void> _addIssue2() async {
     // Validate form fields
     bool isValid = true;
 
@@ -783,27 +745,23 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
 
     // If all validations pass, add the issue
     if (isValid && (_formKey.currentState!.validate())) {
-      setState(() {
-        List<String> imagePaths2 = issueTrackerController.multipleImage2
-            .map((imageFile) => imageFile.path)
-            .toList();
-        String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-        issuesList2.add({
-          'play_issue': _selectedValue6!,
-          'play_issue_value': _selectedValue7!,
-          'play_desc':
-              issueTrackerController.playgroundDescriptionController.text,
-          'reported_on': issueTrackerController.dateController3.text,
-          'resolved_on': issueTrackerController.dateController4.text,
-          'reported_by': _selectedValue8!,
-          'resolved_by': _selectedResolvedBy4 ?? '',
-          'issue_status': _selectedValue9!,
-          'play_issue_img': imagePaths2.join(', '),
-          'unique_id': uniqueId, // Add unique ID here
-        });
-
-        _resetForm2();
+      List<String> base64Images2 =
+          await issueTrackerController.convertImagesToBase64_2();
+      issuesList2.add({
+        'play_issue': _selectedValue6!,
+        'play_issue_value': _selectedValue7!,
+        'play_desc':
+            issueTrackerController.playgroundDescriptionController.text,
+        'reported_on': issueTrackerController.dateController3.text,
+        'resolved_on': issueTrackerController.dateController4.text,
+        'reported_by': _selectedValue8!,
+        'resolved_by': _selectedResolvedBy4 ?? '',
+        'issue_status': _selectedValue9!,
+        'play_issue_img': base64Images2.join(', '),
+        'unique_id': uniqueId, // Add unique ID here
       });
+
+      _resetForm2();
     }
   }
 
@@ -820,7 +778,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
   }
 
   List<Map<String, String>> issuesList3 = [];
-  void _addIssue3() {
+  Future<void> _addIssue3() async {
     // Validate form fields
     bool isValid = true;
 
@@ -897,26 +855,23 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
 
     // If all validations pass, add the issue
     if (isValid && (_formKey.currentState!.validate())) {
-      setState(() {
-        List<String> imagePaths3 = issueTrackerController.multipleImage3
-            .map((imageFile) => imageFile.path)
-            .toList();
-
-        issuesList3.add({
-          'issue': _selectedValue12!,
-          'part': _selectedValue13!,
-          'description':
-              issueTrackerController.digiLabDescriptionController.text,
-          'reportedOn': issueTrackerController.dateController5.text,
-          'resolvedOn': issueTrackerController.dateController6.text,
-          'resolvedBy': _selectedResolvedBy5 ?? '',
-          'reportedBy': _selectedValue11!,
-          'status': _selectedValue12!,
-          'images': imagePaths3.join(', '),
-        });
-
-        _resetForm3();
+      List<String> base64Images3 =
+          await issueTrackerController.convertImagesToBase64_3();
+      issuesList3.add({
+        'issue': _selectedValue12!,
+        'part': _selectedValue26!,
+        'description': issueTrackerController.digiLabDescriptionController.text,
+        'reportedOn': issueTrackerController.dateController5.text,
+        'resolvedOn': issueTrackerController.dateController6.text,
+        'resolvedBy': _selectedResolvedBy5 ?? '',
+        'reportedBy': _selectedValue11!,
+        'status': _selectedValue12!,
+        'tabletNumber': issueTrackerController.tabletNumberController.text,
+        'images': base64Images3.join(', '),
+        'unique_id': uniqueId,
       });
+
+      _resetForm3();
     }
   }
 
@@ -933,7 +888,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
   }
 
   List<Map<String, String>> issuesList4 = [];
-  void _addIssue4() {
+  Future<void> _addIssue4() async {
     // Validate form fields
     bool isValid = true;
 
@@ -1007,29 +962,26 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
         _dateFieldError7 = false;
       });
     }
-    print(issueTrackerController.imagePaths4);
+
     // If all validations pass, add the issue
     if (isValid && (_formKey.currentState!.validate())) {
-      setState(() {
-        List<String> imagePaths4 = issueTrackerController.multipleImage4
-            .map((imageFile) => imageFile.path)
-            .toList();
-
-        issuesList4.add({
-          'issue': _selectedValue14!,
-          'part': _selectedValue15!,
-          'description':
-              issueTrackerController.classroomDescriptionController.text,
-          'reportedOn': issueTrackerController.dateController7.text,
-          'resolvedOn': issueTrackerController.dateController8.text,
-          'reportedBy': _selectedValue16!,
-          'status': _selectedValue17!,
-          'images': imagePaths4.join(', '),
-          'resolvedBy': _selectedResolvedBy ?? '',
-        });
-
-        _resetForm4();
+      List<String> base64Images4 =
+          await issueTrackerController.convertImagesToBase64_4();
+      issuesList4.add({
+        'issue': _selectedValue14!,
+        'part': _selectedValue15!,
+        'description':
+            issueTrackerController.classroomDescriptionController.text,
+        'reportedOn': issueTrackerController.dateController7.text,
+        'resolvedOn': issueTrackerController.dateController8.text,
+        'reportedBy': _selectedValue16!,
+        'status': _selectedValue17!,
+        'images': base64Images4.join(', '),
+        'resolvedBy': _selectedResolvedBy ?? '',
+        'unique_id': uniqueId,
       });
+
+      _resetForm4();
     }
   }
 
@@ -1048,7 +1000,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
 
   List<Map<String, String>> issuesList5 = [];
 
-  void _addIssue5() {
+  Future<void> _addIssue5() async {
     // Validate form fields
     bool isValid = true;
 
@@ -1129,25 +1081,27 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
 
     // If all validations pass, add the issue
     if (isValid && (_formKey.currentState!.validate())) {
-      setState(() {
-        List<String> imagePaths5 = issueTrackerController.multipleImage5
-            .map((imageFile) => imageFile.path)
-            .toList();
-
-        issuesList5.add({
-          'issue': _selectedValue18!,
-          'part': _selectedValue19!,
-          'description': issueTrackerController.alexaDescriptionController.text,
-          'reportedOn': issueTrackerController.dateController9.text,
-          'resolvedOn': issueTrackerController.dateController10.text,
-          'reportedBy': _selectedValue20!,
-          'status': _selectedValue21!,
-          'images': imagePaths5.join(', '),
-          'resolvedBy': _selectedResolvedBy2 ?? '',
-        });
-
-        _resetForm5();
+      List<String> base64Images5 =
+          await issueTrackerController.convertImagesToBase64_5();
+      issuesList5.add({
+        'issue': _selectedValue18!,
+        'part': _selectedValue19!,
+        'description': issueTrackerController.alexaDescriptionController.text,
+        'reportedOn': issueTrackerController.dateController9.text,
+        'resolvedOn': issueTrackerController.dateController10.text,
+        'reportedBy': _selectedValue20!,
+        'status': _selectedValue21!,
+        'other': issueTrackerController.otherSolarDescriptionController.text,
+        'missingDot': issueTrackerController.dotDeviceMissingController.text,
+        'notConfiguredDot': issueTrackerController.dotDeviceNotConfiguredController.text,
+        'notConnectingDot': issueTrackerController.dotDeviceNotConnectingController.text,
+        'notChargingDot': issueTrackerController.dotDeviceNotChargingController.text,
+        'images': base64Images5.join(', '),
+        'resolvedBy': _selectedResolvedBy2 ?? '',
+        'unique_id': uniqueId,
       });
+
+      _resetForm5();
     }
   }
 
@@ -1487,7 +1441,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                           label:
                                               '1) Which part of the Library is the issue related to?',
                                         ),
-
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -1587,7 +1540,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             ),
                                           ],
                                         ),
-
                                         if (_radioFieldError3)
                                           const Padding(
                                             padding:
@@ -1772,17 +1724,14 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                           labelText: 'Write Description',
                                           showCharacterCount: true,
                                         ),
-
                                         CustomSizedBox(
                                           value: 20,
                                           side: 'height',
                                         ),
-
                                         LabelText(
                                           label: '4) Issue Reported On',
                                           astrick: true,
                                         ),
-
                                         CustomSizedBox(
                                           value: 20,
                                           side: 'height',
@@ -1808,12 +1757,10 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             _selectDate(context);
                                           },
                                         ),
-
                                         CustomSizedBox(
                                           value: 20,
                                           side: 'height',
                                         ),
-
                                         LabelText(
                                           label: '5) Issue Reported By',
                                           astrick: true,
@@ -1886,7 +1833,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             ),
                                           ],
                                         ),
-
                                         if (_radioFieldError4)
                                           const Padding(
                                             padding:
@@ -1908,7 +1854,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                           label: '6) Issue Status',
                                           astrick: true,
                                         ),
-
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -1945,7 +1890,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             ),
                                           ],
                                         ),
-
                                         if (_radioFieldError5)
                                           const Padding(
                                             padding:
@@ -1959,7 +1903,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                               ),
                                             ),
                                           ),
-
                                         if (_selectedValue5 == 'Closed') ...[
                                           LabelText(
                                             label: '7) Issue resolved On',
@@ -2029,48 +1972,47 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             value: 20,
                                             side: 'height',
                                           ),
-                                        ], // for select value 5
-],
+                                          // for select value 5
+                                        ],
                                         SizedBox(height: 20),
                                         ElevatedButton(
                                           onPressed: _addIssue,
                                           child: Text('Add Issue'),
                                         ),
+                                      ],
 
+                                      Row(
+                                        children: [
+                                          CustomButton(
+                                              title: 'Back',
+                                              onPressedButton: () {
+                                                setState(() {
+                                                  showBasicDetails = true;
+                                                  showLibrary = false;
+                                                });
+                                              }),
+                                          const Spacer(),
+                                          CustomButton(
+                                              title: 'Next',
+                                              onPressedButton: () {
+                                                setState(() {
+                                                  _radioFieldError2 =
+                                                      _selectedValue2 == null ||
+                                                          _selectedValue2!
+                                                              .isEmpty;
+                                                });
 
-                                        Row(
-                                          children: [
-                                            CustomButton(
-                                                title: 'Back',
-                                                onPressedButton: () {
+                                                if (_formKey.currentState!
+                                                        .validate() &&
+                                                    !_radioFieldError2) {
                                                   setState(() {
-                                                    showBasicDetails = true;
                                                     showLibrary = false;
+                                                    showPlayground = true;
                                                   });
-                                                }),
-                                            const Spacer(),
-                                            CustomButton(
-                                                title: 'Next',
-                                                onPressedButton: () {
-                                                  setState(() {
-                                                    _radioFieldError2 =
-                                                        _selectedValue2 ==
-                                                                null ||
-                                                            _selectedValue2!
-                                                                .isEmpty;
-                                                  });
-
-                                                  if (_formKey.currentState!
-                                                          .validate() &&
-                                                      !_radioFieldError2) {
-                                                    setState(() {
-                                                      showLibrary = false;
-                                                      showPlayground = true;
-                                                    });
-                                                  }
-                                                })
-                                          ],
-                                        ),
+                                                }
+                                              })
+                                        ],
+                                      ),
 
                                       CustomSizedBox(
                                         value: 20,
@@ -2974,6 +2916,1196 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                           value: 20,
                                           side: 'height',
                                         ),
+
+                                        if (_selectedValue13 == 'Solar') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Solar Panel',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Solar Panel'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Pole and Frame',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Pole and Frame'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Lightning Rod',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Lightning Rod'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'External Wiring',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('External Wiring'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Internal Wiring',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Internal Wiring'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 ==
+                                            'Battery Box') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Battery Box-Charge Controller',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Battery Box-Charge Controller'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Battery Box-Battery',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Battery Box-Battery'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Battery Box-Terminal',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Battery Box-Terminal'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Battery Box-Transformer/Top up box',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Battery Box-Transformer/Top up box'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Load Switches',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Load Switches'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+                                        if (_selectedValue13 ==
+                                            'Charging Dock') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Charging Dock',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('Charging Dock'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 ==
+                                            'Raspberry Pi') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Raspberry Pi-Pi box',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Raspberry Pi-Pi box'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Raspberry Pi-Motherboard',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Raspberry Pi-Motherboard'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Raspberry Pi-SD Card',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Raspberry Pi-SD Card'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Raspberry Pi-Ports not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Raspberry Pi-Ports not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Raspberry Pi-Content not coming up on the TV',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Raspberry Pi-Content not coming up on the TV'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 == 'TV') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'TV-Screen damaged/ not working/ not turning on',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'TV-Screen damaged/ not working/ not turning on'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'TV-HDMI not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'TV-HDMI not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'TV-Ports not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'TV-Ports not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'TV-Remote not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'TV-Remote not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 ==
+                                            'Converter Box') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Converter Box-ports not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Converter Box-ports not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Converter Box-Faulty/Damaged/Not turning on',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Converter Box-Faulty/Damaged/Not turning on'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Converter Box-Wire Damaged',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Converter Box-Wire Damaged'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 == 'Tablets') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Tablets-Display not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Tablets-Display not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Tablets-Damaged/Faulty',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Tablets-Damaged/Faulty'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Tablets-SD card not working',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Tablets-SD card not working'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Tablets-Cover not there',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                      'Tablets-Cover not there'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'other',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text('other'),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue26 ==
+                                            'Tablets-Display not working') ...[
+                                          LabelText(
+                                            label: 'Enter the tablet Number',
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                          CustomTextFormField(
+                                            textController:
+                                                issueTrackerController
+                                                    .tabletNumberController,
+                                            showCharacterCount: true,
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue26 ==
+                                            'Tablets-SD card not working') ...[
+                                          LabelText(
+                                            label: 'Enter the tablet Number',
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                          CustomTextFormField(
+                                            textController:
+                                                issueTrackerController
+                                                    .tabletNumberController,
+                                            showCharacterCount: true,
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue26 ==
+                                            'Tablets-Cover not there') ...[
+                                          LabelText(
+                                            label: 'Enter the tablet Number',
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                          CustomTextFormField(
+                                            textController:
+                                                issueTrackerController
+                                                    .tabletNumberController,
+                                            showCharacterCount: true,
+                                          ),
+                                          CustomSizedBox(
+                                            value: 20,
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 == 'CG State') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // Wrap each Row with Expanded to manage space better on smaller screens
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-App not working/keeps crashing',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-App not working/keeps crashing'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-license issue',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-license issue'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-Master pin/Admin pin/Password registration problem',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-Master pin/Admin pin/Password registration problem'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-Modules not loading',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-Modules not loading'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-issue with the IDs',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-issue with the IDs'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-Send report not happening',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-Send report not happening'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-Unknown issue/some new notification popping up',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-Unknown issue/some new notification popping up'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'CG State-App not there in the tablet/s',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'CG State-App not there in the tablet/s'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.02, // Dynamic sizing based on screen height
+                                            side: 'height',
+                                          ),
+                                        ],
+
+                                        if (_selectedValue13 ==
+                                            'DigiLab Room/Generic Issues') ...[
+                                          LabelText(
+                                            label:
+                                                '1.1) Select the related issue',
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // Wrap each Row with Expanded to manage space better on smaller screens
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Problem in the furniture',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'Problem in the furniture'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'Carpet Issue',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text('Carpet Issue'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value: 'TV stand Issue',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child:
+                                                        Text('TV stand Issue'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Time table not there',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'Time table not there'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'DOs and DONOTs chart not there',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'DOs and DONOTs chart not there'),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Radio(
+                                                    value:
+                                                        'Unkept DigiLab Room',
+                                                    groupValue:
+                                                        _selectedValue26,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _selectedValue26 =
+                                                            value as String?;
+                                                      });
+                                                    },
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                        'Unkept DigiLab Room'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          if (_radioFieldError26)
+                                            const Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 16.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Please select an option',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ),
+                                          CustomSizedBox(
+                                            value: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.02, // Dynamic sizing based on screen height
+                                            side: 'height',
+                                          ),
+                                        ],
 
                                         LabelText(
                                           label:
@@ -4329,7 +5461,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                         if (_selectedValue18 == 'Yes') ...[
                                           LabelText(
                                             label:
-                                                '1) Which part of the classroom Furniture is the issue related to?',
+                                                '1) Which part of the Alexa Project is the issue related to?',
                                           ),
                                           Column(
                                             crossAxisAlignment:
@@ -4420,10 +5552,519 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             side: 'height',
                                           ),
 
-                                          CustomSizedBox(
-                                            value: 20,
-                                            side: 'height',
-                                          ),
+                                          if (_selectedValue19 ==
+                                              'Solar Panel') ...[
+                                            LabelText(
+                                              label:
+                                                  '1.1) Select the related issue',
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Panel damaged/missing',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Panel damaged/missing'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Panel not connecting',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Panel not connecting'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 'other',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text('other'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            if (_radioFieldError22)
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 16.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    'Please select an option',
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                ),
+                                              ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            if (_selectedValue22 ==
+                                                'other') ...[
+                                              LabelText(
+                                                label:
+                                                    'Please specify the other issue',
+                                              ),
+                                              CustomSizedBox(
+                                                value: 20,
+                                                side: 'height',
+                                              ),
+                                              CustomTextFormField(
+                                                textController:
+                                                    issueTrackerController
+                                                        .otherSolarDescriptionController,
+                                                showCharacterCount: true,
+                                              ),
+                                              CustomSizedBox(
+                                                value: 20,
+                                                side: 'height',
+                                              ),
+                                            ],
+                                          ],
+
+                                          if (_selectedValue19 ==
+                                              'Charging Station') ...[
+                                            LabelText(
+                                              label:
+                                                  '1.1) Select the related issue',
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Charging Station damaged/missing',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Charging Station damaged/missing'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Battery not Charging',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Battery not Charging'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 'other',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text('other'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            if (_radioFieldError23)
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 16.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    'Please select an option',
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                ),
+                                              ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue19 == 'Router') ...[
+                                            LabelText(
+                                              label:
+                                                  '1.1) Select the related issue',
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Router damaged/missing',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Router damaged/missing'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Sim card damaged/missing',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Sim card damaged/missing'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Router not Configured',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Router not Configured'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 'other',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text('other'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            if (_radioFieldError24)
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 16.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    'Please select an option',
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                ),
+                                              ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue19 ==
+                                              'Dot Device') ...[
+                                            LabelText(
+                                              label:
+                                                  '1.1) Select the related issue',
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Dot damaged/missing',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Dot damaged/missing'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Dot not configured',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Dot not configured'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value:
+                                                          'Dot not connecting',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Dot not connecting'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 'Dot not charging',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Dot not charging'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 'other',
+                                                      groupValue:
+                                                          _selectedValue22,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _selectedValue22 =
+                                                              value as String?;
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Text('other'),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            if (_radioFieldError24)
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 16.0),
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    'Please select an option',
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                ),
+                                              ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue22 ==
+                                              'Dot damaged/missing') ...[
+                                            LabelText(
+                                              label:
+                                                  'Enter number of missing/damaged Dot devices',
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            CustomTextFormField(
+                                              textController:
+                                                  issueTrackerController
+                                                      .dotDeviceMissingController,
+                                              showCharacterCount: true,
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue22 ==
+                                              'Dot not configured') ...[
+                                            LabelText(
+                                              label:
+                                                  'Enter number of not Configured Dot devices',
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            CustomTextFormField(
+                                              textController: issueTrackerController
+                                                  .dotDeviceNotConfiguredController,
+                                              showCharacterCount: true,
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue22 ==
+                                              'Dot not connecting') ...[
+                                            LabelText(
+                                              label:
+                                                  'Enter number of not Connecting Dot devices',
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            CustomTextFormField(
+                                              textController: issueTrackerController
+                                                  .dotDeviceNotConnectingController,
+                                              showCharacterCount: true,
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue22 ==
+                                              'Dot not charging') ...[
+                                            LabelText(
+                                              label:
+                                                  'Enter number of not Charging Dot devices',
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            CustomTextFormField(
+                                              textController: issueTrackerController
+                                                  .dotDeviceNotChargingController,
+                                              showCharacterCount: true,
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
+
+                                          if (_selectedValue22 == 'other') ...[
+                                            LabelText(
+                                              label:
+                                                  'Please Specify the other issues',
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                            CustomTextFormField(
+                                              textController: issueTrackerController
+                                                  .otherSolarDescriptionController,
+                                              showCharacterCount: true,
+                                            ),
+                                            CustomSizedBox(
+                                              value: 20,
+                                              side: 'height',
+                                            ),
+                                          ],
 
                                           LabelText(
                                             label:
@@ -4886,137 +6527,249 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                             CustomButton(
                                               title: 'Submit',
                                               onPressedButton: () async {
-                                                if (_formKey.currentState!.validate()) {
+                                                if (_formKey.currentState!
+                                                    .validate()) {
                                                   DateTime now = DateTime.now();
-                                                  String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                                                  String formattedDate =
+                                                      DateFormat('yyyy-MM-dd')
+                                                          .format(now);
                                                   // Call the _addIssue method to validate and get issue data
                                                   _addIssue();
 
-
-
                                                   // Check if all necessary fields are populated before creating the objects
-                                                  if (_selectedValue2 != null && _selectedValue3 != null) {
-
-                                                    List<String> base64Images = await issueTrackerController.convertImagesToBase64();
-                                                    List<String> base64Images2 = await issueTrackerController.convertImagesToBase64_2();
-                                                    List<String> base64Images3 = await issueTrackerController.convertImagesToBase64_3();
-                                                    List<String> base64Images4 = await issueTrackerController.convertImagesToBase64_4();
-                                                    List<String> base64Images5 = await issueTrackerController.convertImagesToBase64_5();
+                                                  if (_selectedValue2 != null &&
+                                                      _selectedValue3 != null) {
                                                     // Create IssueTrackerRecords object
-                                                    IssueTrackerRecords basicIssueObj = IssueTrackerRecords(
-
-                                                      tourId: issueTrackerController.tourValue ?? '',
-                                                      school: issueTrackerController.schoolValue ?? '',
-                                                      udiseCode: _selectedValue!,
-                                                      correctUdise: issueTrackerController.correctUdiseCodeController.text,
-                                                      createdAt: formattedDate.toString(),
-                                                      uniqueId: uniqueId, // Add unique ID here
+                                                    IssueTrackerRecords
+                                                        basicIssueObj =
+                                                        IssueTrackerRecords(
+                                                      tourId:
+                                                          issueTrackerController
+                                                                  .tourValue ??
+                                                              '',
+                                                      school:
+                                                          issueTrackerController
+                                                                  .schoolValue ??
+                                                              '',
+                                                      udiseCode:
+                                                          _selectedValue!,
+                                                      correctUdise:
+                                                          issueTrackerController
+                                                              .correctUdiseCodeController
+                                                              .text,
+                                                      createdAt: formattedDate
+                                                          .toString(),
+                                                      created_by: widget.userid
+                                                          .toString(),
+                                                      office: widget.office
+                                                          .toString(), // Add null check and default value
+                                                      uniqueId:
+                                                          uniqueId, // Add unique ID here
                                                     );
 
 // For the Library
-                                                    LibIssue libIssueObj = LibIssue(
-                                                      issueExist:  _selectedValue2!,  // Whether the issue exists or not
-                                                      issueName: _selectedValue3!,  // Name of the issue
-                                                      issueDescription: issueTrackerController
-                                                          .libraryDescriptionController.text,  // Description of the issue
-                                                      libImg:  base64Images.join(','),  // Path to the image or base64 encoded string
-                                                      issueReportOn: issueTrackerController
-                                                          .dateController.text,  // Date when the issue was reported
-                                                      issueReportBy:_selectedValue4!,  // Name of the person who reported the issue
-                                                      issueStatus: _selectedValue5!,  // Status of the issue
-                                                      issueResolvedOn: issueTrackerController
-                                                          .dateController2.text,  // Date when the issue was resolved (null if unresolved)
-                                                      issueResolvedBy: _selectedResolvedBy3,  // Person who resolved the issue (null if unresolved)
-                                                      uniqueId: uniqueId,  // Unique identifier for the issue
-
-                                                    );
+                                                    // Create LibIssue object(s) from lib_issuesList
+                                                    List<LibIssue> libIssues =
+                                                        lib_issuesList
+                                                            .map((issueData) {
+                                                      return LibIssue(
+                                                        issueExist: issueData[
+                                                            'lib_issue'],
+                                                        issueName: issueData[
+                                                            'lib_issue_value'],
+                                                        issueDescription:
+                                                            issueData[
+                                                                'lib_desc'],
+                                                        issueReportOn:
+                                                            issueData[
+                                                                'reported_on'],
+                                                        issueResolvedOn:
+                                                            issueData[
+                                                                'resolved_on'],
+                                                        issueReportBy:
+                                                            issueData[
+                                                                'reported_by'],
+                                                        issueResolvedBy:
+                                                            issueData[
+                                                                'resolved_by'],
+                                                        issueStatus: issueData[
+                                                            'issue_status'],
+                                                        lib_issue_img: issueData[
+                                                            'lib_issue_img'],
+                                                        uniqueId: issueData[
+                                                            'unique_id'],
+                                                      );
+                                                    }).toList();
 
                                                     //for the Playground issue
-                                                    PlaygroundIssue playgroundIssueObj = PlaygroundIssue(
-                                                      issueExist:  _selectedValue6!,  // Whether the issue exists or not
-                                                      issueName: _selectedValue7!,  // Name of the issue
-                                                      issueDescription: issueTrackerController
-                                                          .playgroundDescriptionController.text,  // Description of the issue
-                                                      playImg: base64Images2.join(','), // Path to the image or base64 encoded string
-                                                      issueReportOn: issueTrackerController
-                                                          .dateController3.text,  // Date when the issue was reported
-                                                      issueReportBy:_selectedValue8!,  // Name of the person who reported the issue
-                                                      issueStatus: _selectedValue9!,  // Status of the issue
-                                                      issueResolvedOn: issueTrackerController
-                                                          .dateController4.text,  // Date when the issue was resolved (null if unresolved)
-                                                      issueResolvedBy: _selectedResolvedBy4,  // Person who resolved the issue (null if unresolved)
-                                                      uniqueId: uniqueId,  // Unique identifier for the issue
-
-                                                    );
+                                                    List<PlaygroundIssue>
+                                                        playgroundIssueObj =
+                                                        issuesList2
+                                                            .map((issueData) {
+                                                      return PlaygroundIssue(
+                                                        issueExist: issueData[
+                                                            'play_issue'],
+                                                        issueName: issueData[
+                                                            'play_issue_value'],
+                                                        issueDescription:
+                                                            issueData[
+                                                                'play_desc'],
+                                                        issueReportOn:
+                                                            issueData[
+                                                                'reported_on'],
+                                                        issueResolvedOn:
+                                                            issueData[
+                                                                'resolved_on'],
+                                                        issueReportBy:
+                                                            issueData[
+                                                                'reported_by'],
+                                                        issueResolvedBy:
+                                                            issueData[
+                                                                'resolved_by'],
+                                                        issueStatus: issueData[
+                                                            'issue_status'],
+                                                        play_issue_img: issueData[
+                                                            'play_issue_img'],
+                                                        uniqueId: issueData[
+                                                            'unique_id'],
+                                                      );
+                                                    }).toList();
 
                                                     // for the digiLab
-                                                    DigiLabIssue digiLabIssueObj = DigiLabIssue(
-                                                      issueExist:  _selectedValue10!,  // Whether the issue exists or not
-                                                      issueName: _selectedValue11!,  // Name of the issue
-                                                      issueDescription: issueTrackerController
-                                                          .digiLabDescriptionController.text,  // Description of the issue
-                                                      digImg: base64Images3.join(','),  // Path to the image or base64 encoded string
-                                                      issueReportOn: issueTrackerController
-                                                          .dateController5.text,  // Date when the issue was reported
-                                                      issueReportBy:_selectedValue12!,  // Name of the person who reported the issue
-                                                      issueStatus: _selectedValue13!,  // Status of the issue
-                                                      issueResolvedOn: issueTrackerController
-                                                          .dateController6.text,  // Date when the issue was resolved (null if unresolved)
-                                                      issueResolvedBy: _selectedResolvedBy5,  // Person who resolved the issue (null if unresolved)
-                                                      uniqueId: uniqueId,  // Unique identifier for the issue
+                                                    List<DigiLabIssue>
+                                                        digiLabIssueObj =
+                                                        issuesList3
+                                                            .map((issueData) {
+                                                      return DigiLabIssue(
+                                                        issueExist:
+                                                            issueData['issue'],
+                                                        issueName:
+                                                            issueData['part'],
+                                                        issueDescription:
+                                                            issueData[
+                                                                'description'],
+                                                        issueReportOn:
+                                                            issueData[
+                                                                'reportedOn'],
+                                                        issueResolvedOn:
+                                                            issueData[
+                                                                'resolvedOn'],
+                                                        issueReportBy:
+                                                            issueData[
+                                                                'reportedBy'],
+                                                        issueResolvedBy:
+                                                            issueData[
+                                                                'resolvedBy'],
+                                                        issueStatus:
+                                                            issueData['status'],
+                                                        tabletNumber: issueData[
+                                                            'tabletNumber'],
+                                                        dig_issue_img:
+                                                            issueData['images'],
+                                                        uniqueId: issueData[
+                                                            'unique_id'],
+                                                      );
+                                                    }).toList();
 
-                                                    );
 
 // for the Furniture
-                                                    FurnitureIssue furnitureIssueObj = FurnitureIssue(
-                                                      issueExist:  _selectedValue14!,  // Whether the issue exists or not
-                                                      issueName: _selectedValue15!,  // Name of the issue
-                                                      issueDescription: issueTrackerController
-                                                          .classroomDescriptionController.text,  // Description of the issue
-                                                      furnitureImg:  base64Images4.join(','),  // Path to the image or base64 encoded string
-                                                      issueReportOn: issueTrackerController
-                                                          .dateController7.text,  // Date when the issue was reported
-                                                      issueReportBy:_selectedValue16!,  // Name of the person who reported the issue
-                                                      issueStatus: _selectedValue17!,  // Status of the issue
-                                                      issueResolvedOn: issueTrackerController
-                                                          .dateController8.text,  // Date when the issue was resolved (null if unresolved)
-                                                      issueResolvedBy: _selectedResolvedBy2,  // Person who resolved the issue (null if unresolved)
-                                                      uniqueId: uniqueId,  // Unique identifier for the issue
-
-                                                    );
-
+                                                    List<FurnitureIssue>
+                                                        furnitureIssueObj =
+                                                        issuesList4
+                                                            .map((issueData) {
+                                                      return FurnitureIssue(
+                                                        issueExist:
+                                                            issueData['issue'],
+                                                        issueName:
+                                                            issueData['part'],
+                                                        issueDescription:
+                                                            issueData[
+                                                                'description'],
+                                                        issueReportOn:
+                                                            issueData[
+                                                                'reportedOn'],
+                                                        issueResolvedOn:
+                                                            issueData[
+                                                                'resolvedOn'],
+                                                        issueReportBy:
+                                                            issueData[
+                                                                'reportedBy'],
+                                                        issueResolvedBy:
+                                                            issueData[
+                                                                'resolvedBy'],
+                                                        issueStatus:
+                                                            issueData['status'],
+                                                        furn_issue_img:
+                                                            issueData['images'],
+                                                        uniqueId: issueData[
+                                                            'unique_id'],
+                                                      );
+                                                    }).toList();
 
                                                     // for alexa
-                                                    AlexaIssue alexaIssueObj = AlexaIssue(
-                                                      issueExist:  _selectedValue18!,  // Whether the issue exists or not
-                                                      issueName: _selectedValue19!,  // Name of the issue
-                                                      issueDescription: issueTrackerController
-                                                          .alexaDescriptionController.text,  // Description of the issue
-                                                      alexaImg:  base64Images5.join(','),  // Path to the image or base64 encoded string
-                                                      issueReportOn: issueTrackerController
-                                                          .dateController9.text,  // Date when the issue was reported
-                                                      issueReportBy:_selectedValue20!,  // Name of the person who reported the issue
-                                                      issueStatus: _selectedValue21!,  // Status of the issue
-                                                      issueResolvedOn: issueTrackerController
-                                                          .dateController10.text,  // Date when the issue was resolved (null if unresolved)
-                                                      issueResolvedBy: _selectedResolvedBy,  // Person who resolved the issue (null if unresolved)
-                                                      uniqueId: uniqueId,  // Unique identifier for the issue
-
-                                                    );
+                                                    List<AlexaIssue>
+                                                        alexaIssueObj =
+                                                        issuesList5
+                                                            .map((issueData) {
+                                                      return AlexaIssue(
+                                                        issueExist:
+                                                            issueData['issue'],
+                                                        issueName:
+                                                            issueData['part'],
+                                                        issueDescription:
+                                                            issueData[
+                                                                'description'],
+                                                        issueReportOn:
+                                                            issueData[
+                                                                'reportedOn'],
+                                                        issueResolvedOn:
+                                                            issueData[
+                                                                'resolvedOn'],
+                                                        issueReportBy:
+                                                            issueData[
+                                                                'reportedBy'],
+                                                        issueResolvedBy:
+                                                            issueData[
+                                                                'resolvedBy'],
+                                                        issueStatus:
+                                                            issueData['status'],
+                                                        other:
+                                                        issueData['other'],
+                                                        missingDot:
+                                                        issueData['missingDot'],
+                                                        notConfiguredDot:
+                                                        issueData['notConfiguredDot'],
+                                                        notConnectingDot:
+                                                        issueData['notConnectingDot'],
+                                                        notChargingDot:
+                                                        issueData['notChargingDot'],
+                                                        alexa_issue_img:
+                                                            issueData['images'],
+                                                        uniqueId: issueData[
+                                                            'unique_id'],
+                                                      );
+                                                    }).toList();
 
                                                     // Save data to local database
-                                                    int result = await LocalDbController().addData(
-                                                      issueTrackerRecords: basicIssueObj,
-                                                      libIssueRecords: libIssueObj,
-                                                      playgroundIssueRecords: playgroundIssueObj,
-                                                      digiLabIssueRecords: digiLabIssueObj,
-                                                      furnitureIssueRecords: furnitureIssueObj,
-                                                      alexaIssueRecords: alexaIssueObj,
-
+                                                    int result =
+                                                        await LocalDbController()
+                                                            .addData(
+                                                      issueTrackerRecords:
+                                                          basicIssueObj,
+                                                      libIssues: libIssues,
+                                                      playgroundIssues:
+                                                          playgroundIssueObj,
+                                                      digiLabIssues:
+                                                          digiLabIssueObj,
+                                                      furnitureIssues:
+                                                          furnitureIssueObj,
+                                                      alexaIssues:
+                                                          alexaIssueObj,
                                                     );
 
                                                     if (result > 0) {
-                                                      issueTrackerController.clearFields();
+                                                      issueTrackerController
+                                                          .clearFields();
                                                       setState(() {
                                                         jsonData = {};
                                                       });
@@ -5031,7 +6784,9 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                                       // Navigate to HomeScreen
                                                       Navigator.pushReplacement(
                                                         context,
-                                                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                HomeScreen()),
                                                       );
                                                     } else {
                                                       customSnackbar(
@@ -5054,7 +6809,6 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
                                                 }
                                               },
                                             )
-
                                           ],
                                         ),
                                       ],
@@ -5117,6 +6871,7 @@ class _IssueTrackerFormState extends State<IssueTrackerForm> {
     );
   }
 }
+
 class IssuesFloatingButton extends StatelessWidget {
   final List<Map<String, dynamic>> issuesList;
   final Function(int) onDelete; // Callback to handle delete action
@@ -5158,7 +6913,7 @@ class IssuesFloatingButton extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   elevation: 0, // Optional: remove shadow
                   automaticallyImplyLeading:
-                  false, // Prevent the default back button
+                      false, // Prevent the default back button
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -5167,11 +6922,10 @@ class IssuesFloatingButton extends StatelessWidget {
                       final issue = issuesList[index];
                       return ListTile(
                         title: Text(
-                          '1) Images: ${issue['lib_issue_img']?.split(",")?.join(", ") ?? "No images"}\n'
-                              '2) Description: ${issue['lib_desc'] ?? "No description"}\n'
-                              '3) Reported by: ${issue['reported_by'] ?? "Unknown"}\n'
-                              '4) Resolved By: ${issue['resolved_by'] ?? "Not resolved"}\n'
-                              '5) Reported On: ${issue['reported_on'] ?? "No date"}',
+                          '2) Description: ${issue['lib_desc'] ?? "No description"}\n'
+                          '3) Reported by: ${issue['reported_by'] ?? "Unknown"}\n'
+                          '4) Resolved By: ${issue['resolved_by'] ?? "Not resolved"}\n'
+                          '5) uniqueId: ${issue['unique_id'] ?? "No date"}',
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -5194,7 +6948,6 @@ class IssuesFloatingButton extends StatelessWidget {
     );
   }
 }
-
 
 class IssuesFloatingButton2 extends StatelessWidget {
   final List<Map<String, dynamic>> issuesList2;
@@ -5246,11 +6999,10 @@ class IssuesFloatingButton2 extends StatelessWidget {
                       final issue = issuesList2[index];
                       return ListTile(
                         title: Text(
-                          '1) Images: ${issue['play_issue_img'].split(',')}\n'
                           '2) Description: ${issue['play_desc']}\n'
                           '3) Reported by: ${issue['reported_by']}\n'
                           '4) Resolved by: ${issue['resolved_by']}\n'
-                          '5) Reported On: ${issue['reported_on']}',
+                          '5) uniqueId: ${issue['unique_id']}',
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -5324,11 +7076,11 @@ class IssuesFloatingButton3 extends StatelessWidget {
                       final issue = issuesList3[index];
                       return ListTile(
                         title: Text(
-                          '1) Images: ${issue['images'].split(',')}\n'
-                          '2) Description: ${issue['description']}\n'
+                          '2) Issue: ${issue['part']}\n'
                           '3) Reported by: ${issue['reportedBy']}\n'
                           '3) Resolved by: ${issue['resolvedBy']}\n'
-                          '4) Reported On: ${issue['reportedOn']}',
+                          '3) Tablet Number: ${issue['tabletNumber']}\n'
+                          '4) uniqueId: ${issue['unique_id']}',
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -5402,11 +7154,10 @@ class IssuesFloatingButton4 extends StatelessWidget {
                       final issue = issuesList4[index];
                       return ListTile(
                         title: Text(
-                          '1) Images: ${issue['images'].split(',')}\n'
                           '2) Description: ${issue['description']}\n'
                           '3) Reported by: ${issue['reportedBy']}\n'
                           '4) Resoved By: ${issue['resolvedBy']}\n'
-                          '5) Reported On: ${issue['reportedOn']}',
+                          '5) UniqueId: ${issue['unique_id']}',
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -5480,11 +7231,11 @@ class IssuesFloatingButton5 extends StatelessWidget {
                       final issue = issuesList5[index];
                       return ListTile(
                         title: Text(
-                          '1) Images: ${issue['images'].split(',')}\n'
                           '2) Description: ${issue['description']}\n'
                           '3) Reported by: ${issue['reportedBy']}\n'
-                          '4) Resoved By: ${issue['resolvedBy']}\n'
-                          '5) Reported On: ${issue['reportedOn']}',
+                          '4) Resolved By: ${issue['resolvedBy']}\n'
+                          '4) notConfiguredDot: ${issue['notConfiguredDot']}\n'
+                          '5) Unique: ${issue['unique_id']}',
                         ),
                         trailing: IconButton(
                           icon: Icon(Icons.delete, color: Colors.red),
@@ -5507,9 +7258,6 @@ class IssuesFloatingButton5 extends StatelessWidget {
     );
   }
 }
-
-
-
 
 class UniqueIdGenerator {
   static String generate(int length) {

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -93,12 +95,9 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                 .toList(),
                             selectedOption: cabMeterController.tourValue,
                             onChanged: (value) {
-                              splitSchoolLists = tourController
-                                  .getLocalTourList
+                              splitSchoolLists = tourController.getLocalTourList
                                   .where((e) => e.tourId == value)
-                                  .map((e) => e.allSchool
-                                  .split('|')
-                                  .toList())
+                                  .map((e) => e.allSchool.split('|').toList())
                                   .expand((x) => x)
                                   .toList();
                               setState(() {
@@ -121,7 +120,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           CustomTextFormField(
-                            textController:  cabMeterController.placeVisitedController,
+                            textController:
+                                cabMeterController.placeVisitedController,
                             labelText: 'Place Visited',
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -129,7 +129,6 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               return null;
                             },
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -144,7 +143,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           CustomTextFormField(
-                            textController: cabMeterController.VehicleNumberController,
+                            textController:
+                                cabMeterController.VehicleNumberController,
                             labelText: 'Vehicle Number',
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -152,13 +152,12 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               // Regex pattern for validating Indian vehicle number plate
                               final regExp =
-                              RegExp(r"^[a-zA-Z]{2}[a-zA-Z0-9]*[0-9]{4}$");
+                                  RegExp(r"^[a-zA-Z]{2}[a-zA-Z0-9]*[0-9]{4}$");
                               if (!regExp.hasMatch(value)) {
                                 return 'Please Enter a valid Vehicle Number';
                               }
                               return null;
                             },
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -173,7 +172,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           CustomTextFormField(
-                            textController: cabMeterController.driverNameController,
+                            textController:
+                                cabMeterController.driverNameController,
                             labelText: 'Driver Name',
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -181,7 +181,6 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               return null;
                             },
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -196,7 +195,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           CustomTextFormField(
-                            textController: cabMeterController.meterReadingController,
+                            textController:
+                                cabMeterController.meterReadingController,
                             labelText: 'Meter reading',
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -204,7 +204,6 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               return null;
                             },
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -319,19 +318,15 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(
-                                right: 300),
+                            padding: const EdgeInsets.only(right: 300),
                             child: Row(
                               children: [
                                 Radio(
                                   value: 'Start',
-                                  groupValue:
-                                  cabMeterController
-                                      .getSelectedValue(
-                                      'meter'),
+                                  groupValue: cabMeterController
+                                      .getSelectedValue('meter'),
                                   onChanged: (value) {
-                                    cabMeterController
-                                        .setRadioValue(
+                                    cabMeterController.setRadioValue(
                                         'meter', value);
                                   },
                                 ),
@@ -345,19 +340,15 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                           ),
                           // make it that user can also edit the tourId and school
                           Padding(
-                            padding: const EdgeInsets.only(
-                                right: 300),
+                            padding: const EdgeInsets.only(right: 300),
                             child: Row(
                               children: [
                                 Radio(
                                   value: 'End',
-                                  groupValue:
-                                  cabMeterController
-                                      .getSelectedValue(
-                                      'meter'),
+                                  groupValue: cabMeterController
+                                      .getSelectedValue('meter'),
                                   onChanged: (value) {
-                                    cabMeterController
-                                        .setRadioValue(
+                                    cabMeterController.setRadioValue(
                                         'meter', value);
                                   },
                                 ),
@@ -365,17 +356,14 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               ],
                             ),
                           ),
-                          if (cabMeterController
-                              .getRadioFieldError('meter'))
+                          if (cabMeterController.getRadioFieldError('meter'))
                             const Padding(
-                              padding:
-                              EdgeInsets.only(left: 16.0),
+                              padding: EdgeInsets.only(left: 16.0),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   'Please select an option',
-                                  style: TextStyle(
-                                      color: Colors.red),
+                                  style: TextStyle(color: Colors.red),
                                 ),
                               ),
                             ),
@@ -391,8 +379,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             side: 'height',
                           ),
                           CustomTextFormField(
-                            textController: cabMeterController.remarksController,
-
+                            textController:
+                                cabMeterController.remarksController,
                             labelText: 'Remarks Here',
                             validator: (value) {
                               if (value != null && value.length > 30) {
@@ -400,7 +388,6 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               return null;
                             },
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -409,20 +396,13 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                           CustomButton(
                             title: 'Submit',
                             onPressedButton: () async {
-
-                              final isRadioValid1 =
-                              cabMeterController
-                                  .validateRadioSelection(
-                                  'meter');
+                              final isRadioValid1 = cabMeterController.validateRadioSelection('meter');
                               setState(() {
                                 validateRegister = !_isImageUploaded || _imageFiles.isEmpty;
                               });
 
-                              if (_formKey.currentState!.validate() &&
-                                  !_imageFiles.isEmpty && isRadioValid1
-                                 ) {
-
-
+                              if (_formKey.currentState!.validate() && !_imageFiles.isEmpty && isRadioValid1) {
+                                // Generate a unique ID
                                 String generateUniqueId(int length) {
                                   const _chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                                   Random _rnd = Random();
@@ -434,13 +414,7 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                 DateTime now = DateTime.now();
                                 String formattedDate = DateFormat('yyyy-MM-dd').format(now);
 
-                                // Convert image files to Base64
-                                List<String> base64Images = [];
-                                for (var file in _imageFiles) {
-                                  List<int> imageBytes = await file.readAsBytes();
-                                  String base64Image = base64Encode(imageBytes);
-                                  base64Images.add(base64Image);
-                                }
+
 
                                 // Create CabMeterTracingRecords object
                                 CabMeterTracingRecords enrolmentCollectionObj = CabMeterTracingRecords(
@@ -450,7 +424,7 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                   vehicle_num: cabMeterController.VehicleNumberController.text,
                                   driver_name: cabMeterController.driverNameController.text,
                                   meter_reading: cabMeterController.meterReadingController.text,
-                                  image: base64Images.join(","), // Store images as a comma-separated string of Base64
+                                  image: _imageFiles.map((file) => file.path).toString(),
                                   office: widget.office ?? '',
                                   tour_id: cabMeterController.tourValue ?? '',
                                   created_at: formattedDate,
@@ -458,15 +432,38 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                 );
 
                                 // Save data to local database
-                                int result = await LocalDbController().addData(cabMeterTracingRecords: enrolmentCollectionObj);
+                                int result = await LocalDbController().addData(
+                                  cabMeterTracingRecords: enrolmentCollectionObj,
+                                );
 
                                 if (result > 0) {
                                   cabMeterController.clearFields();
                                   setState(() {
                                     jsonData = {};
-                                    _imageFiles = []; // Clear the image list
+                                    _imageFiles = [];
                                     _isImageUploaded = false;
-                                    _selectedValue = ''; // Clear radio button selection
+                                    _selectedValue = '';
+                                  });
+
+                                  // Save the data to a file as JSON
+                                  await saveDataToFile(enrolmentCollectionObj).then((_) {
+                                    // If successful, show a snackbar indicating the file was downloaded
+                                    customSnackbar(
+                                      'File downloaded successfully',
+                                      'downloaded',
+                                      AppColors.primary,
+                                      AppColors.onPrimary,
+                                      Icons.file_download_done,
+                                    );
+                                  }).catchError((error) {
+                                    // If there's an error during download, show an error snackbar
+                                    customSnackbar(
+                                      'Error',
+                                      'File download failed: $error',
+                                      AppColors.primary,
+                                      AppColors.onPrimary,
+                                      Icons.error,
+                                    );
                                   });
 
                                   customSnackbar(
@@ -488,7 +485,8 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                               }
                               FocusScope.of(context).requestFocus(FocusNode());
                             },
-                          ),
+                          )
+
                         ]);
                       },
                     ),
@@ -502,3 +500,38 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
     );
   }
 }
+
+// Function to save JSON data to a file
+
+Future<void> saveDataToFile(CabMeterTracingRecords data) async {
+  try {
+    // Request storage permissions
+    var status = await Permission.storage.request();
+    if (status.isGranted) {
+      // Get the user's downloads directory
+      final directory = Directory('/storage/emulated/0/Download');
+      if (!await directory.exists()) {
+        print('Download directory not found');
+        return;
+      }
+
+      final path = '${directory.path}/cab_Meter_Tracing${data.uniqueId}.txt';
+
+      // Convert the CabMeterTracingRecords object to a JSON string
+      String jsonString = jsonEncode(data);
+
+      // Write the JSON string to a file
+      File file = File(path);
+      await file.writeAsString(jsonString);
+
+      print('Data saved to $path');
+    } else {
+      print('Storage permission not granted');
+      // Optionally, handle what happens if permission is denied
+    }
+  } catch (e) {
+    print('Error saving data: $e');
+  }
+}
+
+

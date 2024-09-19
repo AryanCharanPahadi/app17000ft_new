@@ -11,7 +11,7 @@ class AlexaIssue {
     this.issueExist,
     this.issueName,
     this.issueDescription,
-    this.alexaImg,
+    this.alexa_issue_img,
     this.issueReportOn,
     this.issueReportBy,
     this.issueStatus,
@@ -29,7 +29,7 @@ class AlexaIssue {
   String? issueExist;
   String? issueName;
   String? issueDescription;
-  String? alexaImg;
+  String? alexa_issue_img;
   String? issueReportOn;
   String? issueReportBy;
   String? issueStatus;
@@ -47,7 +47,7 @@ class AlexaIssue {
     issueExist: json['alexa_issue'],
     issueName: json['alexa_issueValue'],
     issueDescription: json['alexa_desc'],
-    alexaImg: json['alexa_img'],
+    alexa_issue_img: json['alexa_issue_img'],
     issueReportOn: json['reported_date'],
     issueReportBy: json['reported_by'],
     issueStatus: json['issue_status'],
@@ -66,7 +66,7 @@ class AlexaIssue {
     'alexa_issue': issueExist,
     'alexa_issueValue': issueName,
     'alexa_desc': issueDescription,
-    'alexa_img': alexaImg, //
+    'alexa_issue_img': alexa_issue_img, //
     'reported_date': issueReportOn,
     'reported_by': issueReportBy,
     'issue_status': issueStatus,

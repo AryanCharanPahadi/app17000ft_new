@@ -13,7 +13,9 @@ class IssueTrackerRecords {
   String? udiseCode;
   String? correctUdise;
   String? uniqueId;
+  String? office;
   String? createdAt;
+  String? created_by;
   int? id;
 
    // Add this field for LibIssue list
@@ -25,6 +27,8 @@ class IssueTrackerRecords {
     this.udiseCode,
     this.correctUdise,
     this.createdAt,
+    this.created_by,
+    this.office,
     this.uniqueId,
     this.id,
 
@@ -37,7 +41,9 @@ class IssueTrackerRecords {
     udiseCode: json["udiseCode"],
     correctUdise: json["correctUdise"],
     createdAt: json["created_at"],
+    created_by: json["created_by"],
     uniqueId: json["uniqueId"],
+    office: json["office"],
     id: json["id"],
 
   );
@@ -48,7 +54,9 @@ class IssueTrackerRecords {
     "udiseCode": udiseCode,
     "correctUdise": correctUdise,
     "created_at": createdAt,
+    "created_by": created_by,
     "uniqueId": uniqueId,
+    "office": office,
     "id": id,
 
   };

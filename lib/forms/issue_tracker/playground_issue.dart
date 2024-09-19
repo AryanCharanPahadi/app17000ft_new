@@ -11,7 +11,7 @@ class PlaygroundIssue {
   String? issueExist;
   String? issueName;
   String? issueDescription;
-  String? playImg;
+  String? play_issue_img;
   String? issueReportOn;
   String? issueReportBy;
   String? issueStatus;
@@ -24,7 +24,7 @@ class PlaygroundIssue {
     this.issueExist,
     this.issueName,
     this.issueDescription,
-    this.playImg,
+    this.play_issue_img,
     this.issueReportOn,
     this.issueReportBy,
     this.issueStatus,
@@ -38,7 +38,7 @@ class PlaygroundIssue {
     issueExist: json['play_issue'],
     issueName: json['play_issue_value'],
     issueDescription: json['play_desc'],
-    playImg: json['play_issue_img'],
+    play_issue_img: json['play_issue_img'],
     issueReportOn: json['reported_on'],
     issueReportBy: json['reported_by'],
     issueStatus: json['issue_status'],
@@ -52,7 +52,7 @@ class PlaygroundIssue {
     'play_issue': issueExist,
     'play_issue_value': issueName,
     'play_desc': issueDescription,
-    'play_issue_img': playImg,
+    'play_issue_img': play_issue_img,
     'reported_on': issueReportOn,
     'reported_by': issueReportBy,
     'issue_status': issueStatus,
