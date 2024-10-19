@@ -11,7 +11,7 @@ class EnrolmentCollectionModel {
     int? id;
     String? tourId;
     String? school;
-    String? registerImage;  // Base64 encoded image
+    String? registerImage;
     String? enrolmentData;
     String? remarks;
     String? createdAt;
@@ -20,21 +20,21 @@ class EnrolmentCollectionModel {
 
     EnrolmentCollectionModel({
         this.id,
-        required this.tourId,
-        required this.school,
-        required this.registerImage,
-        required this.enrolmentData,
-        required this.remarks,
-        required this.createdAt,
-        required this.submittedBy,
-        required this.submittedAt,
+         this.tourId,
+         this.school,
+         this.registerImage,
+         this.enrolmentData,
+         this.remarks,
+         this.createdAt,
+         this.submittedBy,
+         this.submittedAt,
     });
 
     factory EnrolmentCollectionModel.fromJson(Map<String, dynamic> json) => EnrolmentCollectionModel(
         id: json["id"],
         tourId: json["tourId"],
         school: json["school"],
-        registerImage: json["registerImage"],  // Expecting base64 string
+        registerImage: json["registerImage"],
         enrolmentData: json["enrolmentData"],
         remarks: json["remarks"],
         createdAt: json["createdAt"],

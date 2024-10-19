@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
@@ -31,6 +32,8 @@ class _InpersonQualitativeSync extends State<InpersonQualitativeSync> {
   Get.put(InpersonQualitativeController());
   final NetworkManager _networkManager = Get.put(NetworkManager());
   var isLoading = false.obs;
+  var syncProgress = 0.0.obs; // Progress variable for syncing
+  var hasError = false.obs; // Variable to track if syncing failed
 
   @override
   void initState() {
@@ -41,10 +44,20 @@ class _InpersonQualitativeSync extends State<InpersonQualitativeSync> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        bool shouldPop =
-        await BaseClient().showLeaveConfirmationDialog(context);
-        return shouldPop;
+      onWillPop:() async {
+        IconData icon = Icons.check_circle;
+        bool shouldExit = await showDialog(
+            context: context,
+            builder: (_) => Confirmation(
+                iconname: icon,
+                title: 'Exit Confirmation',
+                yes: 'Yes',
+                no: 'no',
+                desc: 'Are you sure you want to leave this screen?',
+                onPressed: () async {
+                  Navigator.of(context).pop(true);
+                }));
+        return shouldExit;
       },
       child: Scaffold(
         appBar: const CustomAppbar(title: 'In-Person Qualitative Sync'),
@@ -63,8 +76,23 @@ class _InpersonQualitativeSync extends State<InpersonQualitativeSync> {
             }
 
             return Obx(() => isLoading.value
-                ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Syncing: ${(syncProgress.value * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  if (hasError.value) // Show error message if syncing failed
+                    const Text(
+                      'Syncing failed. Please try again.',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                ],
+              ),
             )
                 : Column(
               children: [
@@ -78,22 +106,40 @@ class _InpersonQualitativeSync extends State<InpersonQualitativeSync> {
                       final item = inpersonQualitativeController
                           .inPersonQualitativeList[index];
                       return ListTile(
-                        title: Text(
-                          "${index + 1}. Tour ID: ${item.tourId!}\n    School: ${item.school!}",
+                        title:  Text(
+                          "${index + 1}. Tour ID: ${item.tourId}\n"
+                              "School.: ${item.school}\n",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold),
+                          textAlign: TextAlign
+                              .left, // Adjust text alignment if needed
+                          maxLines:
+                          2, // Limit the lines, or remove this if you don't want a limit
+                          overflow: TextOverflow
+                              .ellipsis, // Handles overflow gracefully
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton(
-                              color: AppColors.primary,
+                            Obx(() => IconButton(
+                              color: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? Colors.grey
+                                  : AppColors.primary,
                               icon: const Icon(Icons.sync),
-                              onPressed: () async {
-                                IconData icon = Icons.check_circle;
+                              onPressed: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? null
+                                  : () async {
+                                // Proceed with sync logic when online
+                                IconData icon =
+                                    Icons.check_circle;
                                 showDialog(
-                                    context: context,
-                                    builder: (_) => Confirmation(
+                                  context: context,
+                                  builder: (_) =>
+                                      Confirmation(
                                         iconname: icon,
                                         title: 'Confirm',
                                         yes: 'Confirm',
@@ -102,129 +148,138 @@ class _InpersonQualitativeSync extends State<InpersonQualitativeSync> {
                                         'Are you sure you want to Sync?',
                                         onPressed: () async {
                                           setState(() {
-                                            // isLoadings= true;
+                                            isLoading.value =
+                                            true; // Show loading spinner
+                                            syncProgress.value =
+                                            0.0; // Reset progress
+                                            hasError.value =
+                                            false; // Reset error state
                                           });
-                                          if (_networkManager
-                                              .connectionType.value ==
-                                              0) {
-                                            customSnackbar(
-                                                'Warning',
-                                                'You are offline please connect to the internet',
-                                                AppColors.secondary,
-                                                AppColors.onSecondary,
-                                                Icons.warning);
-                                          } else {
-                                            if (_networkManager
-                                                .connectionType
-                                                .value ==
-                                                1 ||
-                                                _networkManager
-                                                    .connectionType
-                                                    .value ==
-                                                    2) {
-                                              print('ready to insert');
 
-                                              var rsp =
-                                              await insertInPersonQualitative(
-                                                item.tourId,
-                                                item.school,
-                                                item.udicevalue,
-                                                item.correct_udice,
-                                                item.imgPath,
-                                                item.school_digiLab,
-                                                item.school_library,
-                                                item.school_playground,
-                                                item.hm_interview,
-                                                item.hm_reason,
-                                                item.hmques1,
-                                                item.hmques2,
-                                                item.hmques3,
-                                                item.hmques4,
-                                                item.hmques5,
-                                                item.hmques6,
-                                                item.hmques6_1,
-                                                item.hmques7,
-                                                item.hmques8,
-                                                item.hmques9,
-                                                item.hmques10,
-                                                item.steacher_interview,
-                                                item.steacher_reason,
-                                                item.stques1,
-                                                item.stques2,
-                                                item.stques3,
-                                                item.stques4,
-                                                item.stques5,
-                                                item.stques6,
-                                                item.stques6_1,
-                                                item.stques7,
-                                                item.stques7_1,
-                                                item.stques8,
-                                                item.stques8_1,
-                                                item.stques9,
-                                                item.student_interview,
-                                                item.student_reason,
-                                                item.stuques1,
-                                                item.stuques2,
-                                                item.stuques3,
-                                                item.stuques4,
-                                                item.stuques5,
-                                                item.stuques6,
-                                                item.stuques7,
-                                                item.stuques8,
-                                                item.stuques9,
-                                                item.stuques10,
-                                                item.stuques11,
-                                                item.stuques11_1,
-                                                item.stuques11_2,
-                                                item.stuques11_3,
-                                                item.stuques12,
-                                                item.smc_interview,
-                                                item.smc_reason,
-                                                item.smcques1,
-                                                item.smcques2,
-                                                item.smcques3,
-                                                item.smcques3_1,
-                                                item.smcques3_2,
-                                                item.smcques_4,
-                                                item.smcques4_1,
-                                                item.smcques_5,
-                                                item.smcques_6,
-                                                item.smcques_7,
-                                                item.created_at,
-                                                item.submitted_at,
-                                                item.submitted_by,
-                                                item.unique_id,
-                                                item.id,
-                                              );
-
-                                              if (rsp['status'] == 1) {
-                                                customSnackbar(
-                                                    'Successfully',
-                                                    "${rsp['message']}",
-                                                    AppColors.secondary,
-                                                    AppColors.onSecondary,
-                                                    Icons.check);
-                                              } else if (rsp['status'] ==
-                                                  0) {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "${rsp['message']}",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              } else {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "Something went wrong, Please contact Admin",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              }
+                                          if (_networkManager.connectionType.value == 1 ||
+                                              _networkManager.connectionType.value == 2) {
+                                            for (int i = 0;
+                                            i <= 100;
+                                            i++) {
+                                              await Future.delayed(
+                                                  const Duration(
+                                                      milliseconds:
+                                                      50));
+                                              syncProgress.value =
+                                                  i / 100; // Update progress
                                             }
+
+                                            // Call the insert function
+                                            var rsp = await insertInPersonQualitative(
+                                              item.tourId,
+                                              item.school,
+                                              item.udicevalue,
+                                              item.correct_udice,
+                                              item.imgPath,
+                                              item.school_digiLab,
+                                              item.school_library,
+                                              item.school_playground,
+                                              item.hm_interview,
+                                              item.hm_reason,
+                                              item.hmques1,
+                                              item.hmques2,
+                                              item.hmques3,
+                                              item.hmques4,
+                                              item.hmques5,
+                                              item.hmques6,
+                                              item.hmques6_1,
+                                              item.hmques7,
+                                              item.hmques8,
+                                              item.hmques9,
+                                              item.hmques10,
+                                              item.steacher_interview,
+                                              item.steacher_reason,
+                                              item.stques1,
+                                              item.stques2,
+                                              item.stques3,
+                                              item.stques4,
+                                              item.stques5,
+                                              item.stques6,
+                                              item.stques6_1,
+                                              item.stques7,
+                                              item.stques7_1,
+                                              item.stques8,
+                                              item.stques8_1,
+                                              item.stques9,
+                                              item.student_interview,
+                                              item.student_reason,
+                                              item.stuques1,
+                                              item.stuques2,
+                                              item.stuques3,
+                                              item.stuques4,
+                                              item.stuques5,
+                                              item.stuques6,
+                                              item.stuques7,
+                                              item.stuques8,
+                                              item.stuques9,
+                                              item.stuques10,
+                                              item.stuques11,
+                                              item.stuques11_1,
+                                              item.stuques11_2,
+                                              item.stuques11_3,
+                                              item.stuques12,
+                                              item.smc_interview,
+                                              item.smc_reason,
+                                              item.smcques1,
+                                              item.smcques2,
+                                              item.smcques3,
+                                              item.smcques3_1,
+                                              item.smcques3_2,
+                                              item.smcques_4,
+                                              item.smcques4_1,
+                                              item.smcques_5,
+                                              item.smcques_6,
+                                              item.smcques_7,
+                                              item.created_at,
+                                              item.submitted_at,
+                                              item.submitted_by,
+                                              item.unique_id,
+                                              item.id,
+
+                                                  (progress) {
+                                                syncProgress
+                                                    .value =
+                                                    progress; // Update sync progress
+                                              },
+                                            );
+
+                                            if (rsp['status'] ==
+                                                1) {
+                                              customSnackbar(
+                                                'Successfully',
+                                                "${rsp['message']}",
+                                                AppColors
+                                                    .secondary,
+                                                AppColors
+                                                    .onSecondary,
+                                                Icons.check,
+                                              );
+                                            } else {
+                                              hasError.value =
+                                              true; // Set error state if sync fails
+                                              customSnackbar(
+                                                "Error",
+                                                "${rsp['message']}",
+                                                AppColors.error,
+                                                AppColors.onError,
+                                                Icons.warning,
+                                              );
+                                            }
+                                            setState(() {
+                                              isLoading.value =
+                                              false; // Hide loading spinner
+                                            });
                                           }
-                                        }));
+                                        },
+                                      ),
+                                );
                               },
-                            ),
+                            )),
                           ],
                         ),
                         onTap: () {
@@ -254,7 +309,7 @@ Future insertInPersonQualitative(
     String? school,
     String? udicevalue,
     String? correct_udice,
-    String? base64Images,
+    String? imgPath,
     String? school_digiLab,
     String? school_library,
     String? school_playground,
@@ -319,6 +374,7 @@ Future insertInPersonQualitative(
     String? submitted_by,
     String? unique_id,
     int? id,
+    Function(double) updateProgress, // Progress callback
     ) async {
   if (kDebugMode) {
     print('This is InPerson Qualitative Data');
@@ -326,7 +382,7 @@ Future insertInPersonQualitative(
     print('School: $school');
     print('UDICE Value: $udicevalue');
     print('Correct UDICE: $correct_udice');
-    print('Base64 Images: $base64Images');
+    print('Base64 Images: $imgPath');
     print('School Digital Lab: $school_digiLab');
     print('School Library: $school_library');
     print('School Playground: $school_playground');
@@ -470,25 +526,27 @@ Future insertInPersonQualitative(
   });
 
 
-  // Convert Base64 back to file and add it to the request
-  if (base64Images != null && base64Images.isNotEmpty) {
-    try {
-      List<String> imagesList = base64Images.split(",");
-      for (int i = 0; i < imagesList.length; i++) {
-        var imageBytes = base64Decode(imagesList[i]);
-        var file = http.MultipartFile.fromBytes(
-          'image[]', // Ensure 'image' is the correct field name for your API
-          imageBytes,
-          filename: 'image$i.jpg',
-          contentType: MediaType('image', 'jpeg'),
+  if ( imgPath!= null && imgPath.isNotEmpty) {
+    List<String> imagePaths = imgPath.split(',');
+
+    for (String path in imagePaths) {
+      File imageFile = File(path.trim());
+      if (imageFile.existsSync()) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image[]', // Use array-like name for multiple images
+            imageFile.path,
+            contentType: MediaType('image', 'jpeg'),
+          ),
         );
-        request.files.add(file);
+        print("Image file $path attached successfully.");
+      } else {
+        print('Image file does not exist at the path: $path');
+        return {"status": 0, "message": "Image file not found at $path."};
       }
-    } catch (e) {
-      print("Error decoding Base64 images: $e");
     }
   } else {
-    print("No images to upload");
+    print('No image file path provided.');
   }
 
   try {
@@ -517,8 +575,8 @@ Future insertInPersonQualitative(
     }
 
     return parsedResponse;
-  } catch (error) {
-    print("Error: $error");
-    return {"status": 0, "message": "Something went wrong, Please contact Admin"};
+  } catch (responseBody) {
+    print("Error: $responseBody");
+    return {"status": 0, "message": "Something went wrong, Please contact Admin $responseBody"};
   }
 }

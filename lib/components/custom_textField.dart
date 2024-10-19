@@ -14,6 +14,8 @@ class CustomTextFormField extends StatefulWidget {
   final int? maxlines;
   final TextAlign textAlign;
   final bool showCharacterCount;
+  final TextCapitalization textCapitalization; // Add this
+
 
   final String? Function(String?)? validator;
   final String? Function(String?)? onSaved;
@@ -41,6 +43,7 @@ class CustomTextFormField extends StatefulWidget {
     this.inputFormatters,
     this.onChanged,
     this.showCharacterCount = false,
+    this.textCapitalization = TextCapitalization.none, // Default value
   });
 
   @override
@@ -62,6 +65,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           readOnly: widget.readOnly ?? false,
           focusNode: widget.focusNode,
           keyboardType: widget.textInputType,
+
           maxLines: widget.maxlines ?? 1,
           textAlign: widget.textAlign,
           onChanged: (value) {
@@ -75,6 +79,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           validator: widget.validator,
           onSaved: widget.onSaved ?? (value) {},
           inputFormatters: widget.inputFormatters,
+          textCapitalization: widget.textCapitalization, // Pass it to TextFormField
           decoration: InputDecoration(
             prefixIcon: widget.prefixIcon != null
                 ? Icon(widget.prefixIcon)

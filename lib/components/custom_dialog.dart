@@ -1,4 +1,3 @@
-import 'package:app17000ft_new/components/custom_button.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
@@ -30,13 +29,10 @@ class Confirmation extends StatefulWidget {
 class ConfirmationState extends State<Confirmation> {
   @override
   Widget build(BuildContext context) {
-    // Get screen width
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
-        width: screenWidth * 0.8, // Use 80% of screen width
+      child: SizedBox(
+        width: 160, // Fixed width for consistency
         child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
@@ -51,21 +47,18 @@ class ConfirmationState extends State<Confirmation> {
                 color: AppColors.primary,
                 child: Column(
                   children: <Widget>[
-                    SizedBox(height: screenWidth * 0.02), // Dynamic spacing
+                    SizedBox(height: 10), // Fixed height for spacing
                     Icon(
                       widget.iconname,
                       color: Colors.white,
-                      size: screenWidth * 0.1, // Dynamic icon size
+                      size: 40, // Fixed icon size
                     ),
-                    SizedBox(height: screenWidth * 0.02), // Dynamic spacing
+                    SizedBox(height: 10), // Fixed height for spacing
                     Text(
                       widget.title.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenWidth * 0.05, // Dynamic font size
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 20),
                     ),
-                    SizedBox(height: screenWidth * 0.02), // Dynamic spacing
+                    SizedBox(height: 10), // Fixed height for spacing
                   ],
                 ),
               ),
@@ -73,13 +66,10 @@ class ConfirmationState extends State<Confirmation> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: <Widget>[
-                    SizedBox(height: screenWidth * 0.02), // Dynamic spacing
+                    SizedBox(height: 10), // Fixed height for spacing
                     Text(
                       widget.desc ?? "",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: screenWidth * 0.04, // Dynamic font size
-                      ),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ],
                 ),
@@ -92,25 +82,43 @@ class ConfirmationState extends State<Confirmation> {
                       ? MainAxisAlignment.spaceBetween
                       : MainAxisAlignment.center,
                   children: <Widget>[
-                    Flexible(
-                      child: CustomButton(
-                        onPressedButton: () {
-                          widget.onPressed!();
-                          Navigator.of(context).pop();
-                        },
-                        title: widget.yes,
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
                       ),
+                      child: Text(
+                        widget.yes!,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        widget.onPressed!();
+                        Navigator.of(context).pop();
+                      },
                     ),
                     if (widget.no != null)
-                      SizedBox(width: screenWidth * 0.04), // Add spacing between buttons
-                    if (widget.no != null)
-                      Flexible(
-                        child: CustomButton(
-                          title: widget.no,
-                          onPressedButton: () {
-                            Navigator.of(context).pop();
-                          },
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 0, horizontal: 30),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
                         ),
+                        child: Text(
+                          widget.no!,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
                   ],
                 ),

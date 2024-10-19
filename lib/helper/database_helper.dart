@@ -22,6 +22,7 @@ import '../forms/issue_tracker/digilab_issue.dart';
 import '../forms/issue_tracker/furniture_issue.dart';
 import '../forms/issue_tracker/lib_issue_modal.dart';
 import '../forms/issue_tracker/playground_issue.dart';
+import '../forms/issue_tracker/staff_modal.dart';
 import '../forms/school_facilities_&_mapping_form/school_facilities_modals.dart';
 import '../forms/school_staff_vec_form/school_vec_modals.dart';
 
@@ -30,11 +31,14 @@ final NetworkManager networkManager = Get.put(NetworkManager());
 class SqfliteDatabaseHelper {
   SqfliteDatabaseHelper.internal();
   static final SqfliteDatabaseHelper instance =
-      SqfliteDatabaseHelper.internal();
+  SqfliteDatabaseHelper.internal();
   factory SqfliteDatabaseHelper() => instance;
 
   // Name of the tables
   static const tourDetails = 'tour_details';
+  static const formDataTable = 'formDataTable';
+  static const tableStaffNames = 'tableStaffNames';
+
   static const schoolEnrolment = 'schoolEnrolment';
   static const cabMeter_tracing = 'cabMeter_tracing';
   static const inPerson_quantitative = 'inPerson_quantitative';
@@ -51,7 +55,7 @@ class SqfliteDatabaseHelper {
   static const inPerson_qualitative = 'inPerson_qualitative';
   static const schoolRecce = 'schoolRecce';
   static const _dbName = "app17000ft_new.db";
-  static const _dbVersion = 54; // Increment this when you make schema changes
+  static const _dbVersion = 60; // Increment this when you make schema changes
 
   static Database? _db;
 
@@ -67,7 +71,7 @@ class SqfliteDatabaseHelper {
   // Perform tasks
   Future<Database> init() async {
     var dbPath = await getDatabasesPath();
-    print('Database path: $dbPath');  // Add this log to check path on the device
+    print('Database path: $dbPath'); // Add this log to check path on the device
     String dbPathHomeWorkout = path.join(dbPath, _dbName);
 
     bool dbExists = await io.File(dbPathHomeWorkout).exists();
@@ -75,7 +79,7 @@ class SqfliteDatabaseHelper {
     if (!dbExists) {
       ByteData data = await rootBundle.load(path.join("assets/", _dbName));
       List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await io.File(dbPathHomeWorkout).writeAsBytes(bytes, flush: true);
     }
     return await openDatabase(
@@ -94,8 +98,8 @@ class SqfliteDatabaseHelper {
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {
     print('onUpgrade is called from $oldVersion to $newVersion');
     if (oldVersion < newVersion) {
-      if (oldVersion == 53 && newVersion == 54) {
-        print("upgrade");
+      if (oldVersion == 59 && newVersion == 60) {
+        print("upgrading database schema");
         await _createTables(db);
       }
       // Add more migration steps if needed for future versions
@@ -116,6 +120,34 @@ class SqfliteDatabaseHelper {
         submittedAt TEXT
       );
     ''');
+    try {
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS $formDataTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tourId TEXT,
+        school TEXT,
+        data TEXT
+      )
+    ''');
+
+      print("Table formDataTable created successfully");
+    } catch (e) {
+      print("Error creating table: $e");
+    }
+
+    try {
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableStaffNames (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category INTEGER,
+        staff_name TEXT
+      )
+    ''');
+
+      print("Table formDataTable  staff created successfully");
+    } catch (e) {
+      print("Error creating table: $e");
+    }
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $tourDetails (
@@ -155,7 +187,6 @@ imgpath TEXT,
 no_enrolled TEXT,
 timetable_available TEXT,
 class_scheduled TEXT,
-
 remarks_scheduling TEXT,
 admin_appointed TEXT,
 admin_trained TEXT,
@@ -219,6 +250,7 @@ libLocation TEXT,
 librarianName TEXT,
 librarianTraining TEXT,
 libRegisterValue TEXT,
+
 imgRegister TEXT,
 created_by TEXT,
 created_at TEXT
@@ -319,7 +351,6 @@ otherQual TEXT
       unique_id TEXT
     );
   ''');
-
 
     await db.execute('''
     CREATE TABLE IF NOT EXISTS $furniture_issue(
@@ -571,6 +602,117 @@ otherQual TEXT
     _db = await init();
   }
 
+  // Method to insert form data into the database
+  Future<void> insertFormData(
+      String tourId, String school, Map<String, dynamic> data) async {
+    final dbClient = await instance.db;
+
+    try {
+      // Convert the data to JSON string for storage
+      String jsonData = jsonEncode(data);
+
+      // Insert the data, replacing existing entries for the same tourId and school
+      int result = await dbClient.insert(
+        formDataTable,
+        {
+          'tourId': tourId,
+          'school': school,
+          'data': jsonData,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // Debugging output
+      print(
+          "Data inserted for tourId: $tourId, school: $school, result: $result");
+      print("Inserted data: $jsonData");
+    } catch (e) {
+      print("Error inserting data into SQLite: $e");
+    }
+  }
+
+  // Method to retrieve form data from the database for a given tourId and school
+  Future<Map<String, dynamic>> getFormData(String tourId, String school) async {
+    final dbClient = await instance.db;
+
+    // Query the database to get data for the provided tourId and school
+    List<Map<String, dynamic>> result = await dbClient.query(
+      formDataTable, // Ensure this matches the defined table name
+      where: 'tourId = ? AND school = ?',
+      whereArgs: [tourId, school],
+    );
+
+    // Debugging output
+    print("Data fetched for tourId: $tourId, school: $school");
+    if (result.isNotEmpty) {
+      print("Fetched data: ${result.first['data']}");
+      String jsonData = result.first['data'];
+      return jsonDecode(jsonData);
+    }
+
+    // If no data is found
+    print("No data found for tourId: $tourId, school: $school");
+    return {};
+  }
+
+  // Retrieve distinct schools for a specific tourId
+  Future<List<String>> getSchoolsForTourId(String tourId) async {
+    final dbClient = await instance.db;
+
+    // Query the database to get all distinct schools for the given tourId
+    final List<Map<String, dynamic>> result = await dbClient.query(
+      formDataTable, // Ensure this matches the defined table name
+      columns: ['school'],
+      where: 'tourId = ?',
+      whereArgs: [tourId],
+      distinct: true,
+    );
+
+    // Extract the school names into a list
+    List<String> schoolList =
+    result.map((row) => row['school'] as String).toList();
+
+    return schoolList;
+  }
+
+  // Insert staff name
+  Future<void> insertStaffName(int category, String staffName) async {
+    final dbClient = await instance.db;
+    await dbClient.insert(
+      tableStaffNames,
+      {
+        'category': category,
+        'staff_name': staffName,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    print('Inserted staff name: $staffName for category: $category');
+  }
+
+  Future<List<String>> getStaffNamesByCategory(int category) async {
+    final dbClient = await instance.db;
+    final result = await dbClient.query(
+      tableStaffNames,
+      columns: ['staff_name'], // Ensure only the needed columns are fetched
+      where: 'category = ?',
+      whereArgs: [category],
+    );
+
+    if (result.isEmpty) {
+      print('No staff names found for category: $category');
+    } else {
+      print('Staff names found: $result');
+    }
+
+    return result.map((e) => e['staff_name'] as String).toList();
+  }
+
+  Future<void> verifyInsertedData() async {
+    final dbClient = await instance.db;
+    var result = await dbClient.query(tableStaffNames);
+    print('All data in SQLite: $result');
+  }
+
   // Delete function for deleting records from table
   Future<int> delete(String? tableName,
       {String? where, List<dynamic>? whereArgs}) async {
@@ -630,6 +772,7 @@ class LocalDbController {
 
   Future<int> addData({
     TourDetails? tourDetails,
+
     EnrolmentCollectionModel? enrolmentCollectionModel,
     CabMeterTracingRecords? cabMeterTracingRecords,
     InPersonQuantitativeRecords? inPersonQuantitativeRecords,
@@ -637,7 +780,8 @@ class LocalDbController {
     SchoolStaffVecRecords? schoolStaffVecRecords,
     IssueTrackerRecords? issueTrackerRecords,
     List<LibIssue>? libIssues, // Accept a list of LibIssue objects
-    List<PlaygroundIssue>? playgroundIssues, // Accept a list of LibIssue objects
+    List<PlaygroundIssue>?
+    playgroundIssues, // Accept a list of LibIssue objects
     List<FurnitureIssue>? furnitureIssues, // Accept a list of LibIssue objects
     List<DigiLabIssue>? digiLabIssues, // Accept a list of LibIssue objects
     List<AlexaIssue>? alexaIssues, // Accept a list of LibIssue objects
@@ -720,14 +864,15 @@ class LocalDbController {
         if (issueResult <= 0) result = 0; // Indicate failure
       }
 
-
 // Library issue
       if (libIssues != null && libIssues.isNotEmpty) {
-        print('Inserting libIssues: ${libIssues.map((issue) => issue.toJson()).toList()}');
+        print(
+            'Inserting libIssues: ${libIssues.map((issue) => issue.toJson()).toList()}');
         for (var issue in libIssues) {
           print('Inserting library issue: ${issue.toJson()}');
           await dbClient.insert(
-            SqfliteDatabaseHelper.libIssueTable, // Adjust this table name accordingly
+            SqfliteDatabaseHelper
+                .libIssueTable, // Adjust this table name accordingly
             issue.toJson(),
           );
         }
@@ -735,11 +880,13 @@ class LocalDbController {
 
 // Playground issue
       if (playgroundIssues != null && playgroundIssues.isNotEmpty) {
-        print('Inserting playgroundIssues: ${playgroundIssues.map((issue) => issue.toJson()).toList()}');
+        print(
+            'Inserting playgroundIssues: ${playgroundIssues.map((issue) => issue.toJson()).toList()}');
         for (var issue in playgroundIssues) {
           print('Inserting playground issue: ${issue.toJson()}');
           await dbClient.insert(
-            SqfliteDatabaseHelper.play_issue, // Adjust this table name accordingly
+            SqfliteDatabaseHelper
+                .play_issue, // Adjust this table name accordingly
             issue.toJson(),
           );
         }
@@ -747,11 +894,13 @@ class LocalDbController {
 
 // Alexa issue
       if (alexaIssues != null && alexaIssues.isNotEmpty) {
-        print('Inserting alexaIssues: ${alexaIssues.map((issue) => issue.toJson()).toList()}');
+        print(
+            'Inserting alexaIssues: ${alexaIssues.map((issue) => issue.toJson()).toList()}');
         for (var issue in alexaIssues) {
           print('Inserting alexa issue: ${issue.toJson()}');
           await dbClient.insert(
-            SqfliteDatabaseHelper.alexa_issue, // Adjust this table name accordingly
+            SqfliteDatabaseHelper
+                .alexa_issue, // Adjust this table name accordingly
             issue.toJson(),
           );
         }
@@ -759,11 +908,13 @@ class LocalDbController {
 
 // DigiLab issue
       if (digiLabIssues != null && digiLabIssues.isNotEmpty) {
-        print('Inserting digiLabIssues: ${digiLabIssues.map((issue) => issue.toJson()).toList()}');
+        print(
+            'Inserting digiLabIssues: ${digiLabIssues.map((issue) => issue.toJson()).toList()}');
         for (var issue in digiLabIssues) {
           print('Inserting digiLab issue: ${issue.toJson()}');
           await dbClient.insert(
-            SqfliteDatabaseHelper.digiLab_issue, // Adjust this table name accordingly
+            SqfliteDatabaseHelper
+                .digiLab_issue, // Adjust this table name accordingly
             issue.toJson(),
           );
         }
@@ -771,16 +922,17 @@ class LocalDbController {
 
 // Furniture issue
       if (furnitureIssues != null && furnitureIssues.isNotEmpty) {
-        print('Inserting furnitureIssues: ${furnitureIssues.map((issue) => issue.toJson()).toList()}');
+        print(
+            'Inserting furnitureIssues: ${furnitureIssues.map((issue) => issue.toJson()).toList()}');
         for (var issue in furnitureIssues) {
           print('Inserting furniture issue: ${issue.toJson()}');
           await dbClient.insert(
-            SqfliteDatabaseHelper.furniture_issue, // Adjust this table name accordingly
+            SqfliteDatabaseHelper
+                .furniture_issue, // Adjust this table name accordingly
             issue.toJson(),
           );
         }
       }
-
 
       if (alfaObservationModel != null) {
         print('alfaObservationModel called to insert');
@@ -858,25 +1010,25 @@ class LocalDbController {
     return tourList;
   }
 
-    Future<List<CabMeterTracingRecords>> fetchLocalCabMeterTracingRecord() async {
-      var dbClient = await conn.db;
-      List<CabMeterTracingRecords> tourList = [];
-      try {
-        List<Map<String, dynamic>> maps = await dbClient
-            .rawQuery('SELECT image FROM ${SqfliteDatabaseHelper.cabMeter_tracing}');
-        for (var element in maps) {
-          tourList.add(CabMeterTracingRecords.fromJson(element));
-        }
-        print('localcab meter reoord length us ${tourList.length}');
-      } catch (e) {
-        print(
-            "Exception occurred while fetching CabMeterTracingRecords form records: $e");
+  Future<List<CabMeterTracingRecords>> fetchLocalCabMeterTracingRecord() async {
+    var dbClient = await conn.db;
+    List<CabMeterTracingRecords> tourList = [];
+    try {
+      List<Map<String, dynamic>> maps = await dbClient
+          .rawQuery('SELECT * FROM ${SqfliteDatabaseHelper.cabMeter_tracing}');
+      for (var element in maps) {
+        tourList.add(CabMeterTracingRecords.fromJson(element));
       }
-      return tourList;
+      print('localcab meter reoord length us ${tourList.length}');
+    } catch (e) {
+      print(
+          "Exception occurred while fetching CabMeterTracingRecords form records: $e");
     }
+    return tourList;
+  }
 
   Future<List<InPersonQuantitativeRecords>>
-      fetchLocalInPersonQuantitativeRecords() async {
+  fetchLocalInPersonQuantitativeRecords() async {
     var dbClient = await conn.db;
     List<InPersonQuantitativeRecords> tourList = [];
     try {
@@ -894,7 +1046,7 @@ class LocalDbController {
   }
 
   Future<List<SchoolFacilitiesRecords>>
-      fetchLocalSchoolFacilitiesRecords() async {
+  fetchLocalSchoolFacilitiesRecords() async {
     var dbClient = await conn.db;
     List<SchoolFacilitiesRecords> tourList = [];
     try {
@@ -940,7 +1092,8 @@ class LocalDbController {
       }
       print('local Issue record length is ${tourList.length}');
     } catch (e) {
-      print("Exception occurred while fetching IssueTrackerRecords records: $e");
+      print(
+          "Exception occurred while fetching IssueTrackerRecords records: $e");
     }
     return tourList;
   }
@@ -1025,7 +1178,6 @@ class LocalDbController {
     return alexaIssueList;
   }
 
-
   Future<List<AlfaObservationModel>> fetchLocalAlfaObservationModel() async {
     var dbClient = await conn.db;
     List<AlfaObservationModel> tourList = [];
@@ -1061,7 +1213,7 @@ class LocalDbController {
   }
 
   Future<List<InPersonQualitativeRecords>>
-      fetchLocalInPersonQualitativeRecords() async {
+  fetchLocalInPersonQualitativeRecords() async {
     var dbClient = await conn.db;
     List<InPersonQualitativeRecords> tourList = [];
     try {

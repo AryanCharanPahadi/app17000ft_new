@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
-
+import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
@@ -7,6 +8,7 @@ import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
 import 'in_person_quantitative.dart';
@@ -38,7 +40,17 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   final TextEditingController writeResolutionController = TextEditingController();
   final TextEditingController participantsNameController = TextEditingController();
 
+  void clearTrainingInputs() {
 
+    correctUdiseCodeController.clear();
+    update(); // Update the UI after clearing
+  }
+
+  void clearTrainingInputs2() {
+
+    correctUdiseCodeController.clear();
+    update(); // Update the UI after clearing
+  }
 
   // Map to store selected values for radio buttons
   final Map<String, String?> _selectedValues = {};
@@ -52,6 +64,12 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   void setRadioValue(String key, String? value) {
     _selectedValues[key] = value;
     _radioFieldErrors[key] = false; // Clear error when a value is selected
+    update(); // Update the UI
+  }
+
+  // Method to clear the selected value for a given key
+  void clearRadioValue(String key) {
+    _selectedValues[key] = null; // Clear the value
     update(); // Update the UI
   }
 
@@ -137,33 +155,82 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   List<InPersonQuantitativeRecords> _inPersonQuantitativeList = [];
   List<InPersonQuantitativeRecords> get inPersonQuantitative => _inPersonQuantitativeList;
 
+
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-
   List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
-  Future<String> takePhoto(ImageSource source) async {
+
+  final List<XFile> _multipleImage2 = [];
+  List<XFile> get multipleImage2 => _multipleImage2;
+  List<String> _imagePaths2 = [];
+  List<String> get imagePaths2 => _imagePaths2;
+
+  Future<String> takePhoto(ImageSource source, int index) async {
     final ImagePicker picker = ImagePicker();
     List<XFile> selectedImages = [];
+    XFile? pickedImage;
 
-    _imagePaths = [];
+    // Determine which list to use based on the index parameter
+    List<XFile> multipleImages;
+    List<String> imagePaths;
+
+    switch (index) {
+      case 1:
+        multipleImages = _multipleImage;
+        imagePaths = _imagePaths;
+        break;
+      case 2:
+        multipleImages = _multipleImage2;
+        imagePaths = _imagePaths2;
+        break;
+      default:
+        throw ArgumentError('Invalid index: $index');
+    }
+
     if (source == ImageSource.gallery) {
       selectedImages = await picker.pickMultiImage();
-      _multipleImage.addAll(selectedImages);
-      for (var image in _multipleImage) {
-        _imagePaths.add(image.path);
+      for (var selectedImage in selectedImages) {
+        // Compress each selected image
+        String compressedPath = await compressImage(selectedImage.path);
+        multipleImages.add(XFile(compressedPath));
+        imagePaths.add(compressedPath);
       }
+      update();
     } else if (source == ImageSource.camera) {
-      XFile? pickedImage = await picker.pickImage(source: source);
+      pickedImage = await picker.pickImage(source: source);
       if (pickedImage != null) {
-        _multipleImage.add(pickedImage);
-        _imagePaths.add(pickedImage.path);
+        // Compress the picked image
+        String compressedPath = await compressImage(pickedImage.path);
+        multipleImages.add(XFile(compressedPath));
+        imagePaths.add(compressedPath);
       }
+      update();
     }
-    update();
-    return _imagePaths.toString();
+
+    return imagePaths.toString();
   }
+  Future<String> compressImage(String imagePath) async {
+    // Load the image
+    final File imageFile = File(imagePath);
+    final img.Image? originalImage = img.decodeImage(imageFile.readAsBytesSync());
+
+    if (originalImage == null) return imagePath; // Return original path if decoding fails
+
+    // Resize the image (optional) and compress
+    final img.Image resizedImage = img.copyResize(originalImage, width: 768); // Change the width as needed
+    final List<int> compressedImage = img.encodeJpg(resizedImage, quality: 12); // Adjust quality (0-100)
+
+    // Save the compressed image to a new file
+    final Directory appDir = await getTemporaryDirectory();
+    final String compressedImagePath = '${appDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final File compressedFile = File(compressedImagePath);
+    await compressedFile.writeAsBytes(compressedImage);
+
+    return compressedImagePath; // Return the path of the compressed image
+  }
+
 
   void setSchool(String? value) {
     _schoolValue = value;
@@ -175,58 +242,39 @@ class InPersonQuantitativeController extends GetxController with BaseController 
 
   }
 
-  Widget bottomSheet(BuildContext context) {
+
+  Widget bottomSheet(BuildContext context, int index) {
     return Container(
       color: AppColors.primary,
       height: 100,
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
         children: <Widget>[
-          const Text(
-            "Select Image",
-            style: TextStyle(fontSize: 20.0, color: Colors.white),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
+          const Text("Select Image",
+              style: TextStyle(fontSize: 20.0, color: Colors.white)),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  await takePhoto(ImageSource.camera);
+                  await takePhoto(ImageSource.camera, index);
                   Get.back();
                 },
-                child: const Text(
-                  'Camera',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
+                child: const Text('Camera',
+                    style: TextStyle(fontSize: 20.0, color: AppColors.primary)),
               ),
-              const SizedBox(
-                width: 30,
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  await takePhoto(ImageSource.gallery);
-                  Get.back();
-                },
-                child: const Text(
-                  'Gallery',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
-              ),
+              const SizedBox(width: 30),
+
             ],
           ),
         ],
       ),
     );
   }
+
 
   void showImagePreview(String imagePath, BuildContext context) {
     showDialog(

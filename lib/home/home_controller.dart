@@ -1,6 +1,4 @@
-import 'package:app17000ft_new/database/baseDB_controller.dart';
 import 'package:app17000ft_new/helper/api_services.dart';
-import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/helper/shared_prefernce.dart';
 import 'package:app17000ft_new/tourDetails/tour_model.dart';
 import 'package:get/get.dart';
@@ -22,7 +20,7 @@ class HomeController extends GetxController {
   String? get phone => _phone;
   String? _office;
   String? get office => _office;
-    String? _empId;
+  String? _empId;
   String? get empId => _empId;
 
   List<TourDetails> _onlineTourList =[];
@@ -51,17 +49,17 @@ class HomeController extends GetxController {
       print(user);
 
       var offlineTask = user['offlineTask'] as String? ?? '';
-        _office = user['office_name'] as String?;
-       _onlineTourList =   await  ApiService().fetchTourIds(_office);
-  print('this is onlineTourList ${_onlineTourList.length}}');
+      _office = user['office_name'] as String?;
+      _onlineTourList =   await  ApiService().fetchTourIds(_office);
+      print('this is onlineTourList ${_onlineTourList.length}}');
       _username = user['name'] as String?;
       _email = user['email'] as String?;
       _phone = user['phone'] as String?;
-    
-     
+
+
       _empId = user['emp_id'] as String?;
 
- 
+
 
       _offlineTaskList = offlineTask.isNotEmpty ? offlineTask.split(',') : [];
     } catch (e) {

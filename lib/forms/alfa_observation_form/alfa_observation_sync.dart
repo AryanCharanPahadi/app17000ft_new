@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
@@ -32,7 +33,8 @@ class _AlfaObservationSync extends State<AlfaObservationSync> {
   final AlfaObservationController _alfaObservationController = Get.put(AlfaObservationController());
   final NetworkManager _networkManager = Get.put(NetworkManager());
   var isLoading = false.obs;
-
+  var syncProgress = 0.0.obs; // Progress variable for syncing
+  var hasError = false.obs; // Variable to track if syncing failed
   @override
   void initState() {
     super.initState();
@@ -42,9 +44,20 @@ class _AlfaObservationSync extends State<AlfaObservationSync> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        bool shouldPop = await BaseClient().showLeaveConfirmationDialog(context);
-        return shouldPop;
+      onWillPop:  () async {
+        IconData icon = Icons.check_circle;
+        bool shouldExit = await showDialog(
+            context: context,
+            builder: (_) => Confirmation(
+                iconname: icon,
+                title: 'Confirm Exit',
+                yes: 'Exit',
+                no: 'Cancel',
+                desc: 'Are you sure you want to Exit?',
+                onPressed: () async {
+                  Navigator.of(context).pop(true);
+                }));
+        return shouldExit;
       },
       child: Scaffold(
         appBar: const CustomAppbar(title: 'Alfa Observation Sync'),
@@ -63,8 +76,18 @@ class _AlfaObservationSync extends State<AlfaObservationSync> {
             }
 
             return Obx(() => isLoading.value
-                ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Syncing: ${(syncProgress.value * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             )
                 : Column(
               children: [
@@ -76,102 +99,135 @@ class _AlfaObservationSync extends State<AlfaObservationSync> {
                       final item = alfaObservationController.alfaObservationList[index];
                       return ListTile(
                         title: Text(
-                          "${index + 1}. Tour ID: ${item.tourId!}\n    School: ${item.school!}",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          "${index + 1}. Tour ID: ${item.tourId!}\nSchool: ${item.school!}",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: MediaQuery.of(context).size.width * 0.04, // Dynamic font size based on screen width
+                          ),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
 
-                            IconButton(
-                              color: AppColors.primary,
+                            Obx(() => IconButton(
+                              color: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? Colors.grey
+                                  : AppColors.primary,
                               icon: const Icon(Icons.sync),
-                              onPressed: () async {
-                                IconData icon = Icons.check_circle;
+                              onPressed: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? null
+                                  : () async {
+                                // Proceed with sync logic when online
+                                IconData icon =
+                                    Icons.check_circle;
                                 showDialog(
-                                    context: context,
-                                    builder: (_) => Confirmation(
+                                  context: context,
+                                  builder: (_) =>
+                                      Confirmation(
                                         iconname: icon,
                                         title: 'Confirm',
                                         yes: 'Confirm',
                                         no: 'Cancel',
-                                        desc: 'Are you sure you want to Sync?',
+                                        desc:
+                                        'Are you sure you want to Sync?',
                                         onPressed: () async {
                                           setState(() {
-                                            // isLoadings= true;
+                                            isLoading.value =
+                                            true; // Show loading spinner
+                                            syncProgress.value =
+                                            0.0; // Reset progress
+                                            hasError.value =
+                                            false; // Reset error state
                                           });
-                                          if (_networkManager.connectionType.value == 0) {
-                                            customSnackbar(
-                                                'Warning',
-                                                'You are offline please connect to the internet',
-                                                AppColors.secondary,
-                                                AppColors.onSecondary,
-                                                Icons.warning);
-                                          } else {
-                                            if (_networkManager.connectionType.value == 1 ||
-                                                _networkManager.connectionType.value == 2) {
-                                              print('ready to insert');
-                                              print(item.submittedAt);
-                                              var rsp = await insertAlfaObservation(
-                                                item.tourId,
-                                                item.school,
-                                                item.udiseValue,
-                                                item.correctUdise,
-                                                item.noStaffTrained,
-                                                item.imgNurTimeTable,
-                                                item.imgLKGTimeTable,
-                                                item.imgUKGTimeTable,
-                                                item.bookletValue,
-                                                item.moduleValue,
-                                                item.numeracyBooklet,
-                                                item.numeracyValue,
-                                                item.pairValue,
-                                                item.alfaActivityValue,
-                                                item.alfaGradeReport,
-                                                item.imgAlfa,
-                                                item.refresherTrainingValue,
-                                                item.noTrainedTeacher,
-                                                item.imgTraining,
-                                                item.readingValue,
-                                                item.libGradeReport,
-                                                item.imgLibrary,
-                                                item.tlmKitValue,
-                                                item.imgTlm,
-                                                item.classObservation,
-                                                item.createdAt,
-                                                item.submittedAt,
-                                                item.createdBy,
-                                                item.id,
 
-                                              );
-
-                                              if (rsp['status'] == 1) {
-                                                customSnackbar(
-                                                    'Successfully',
-                                                    "${rsp['message']}",
-                                                    AppColors.secondary,
-                                                    AppColors.onSecondary,
-                                                    Icons.check);
-                                              } else if (rsp['status'] == 0) {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "${rsp['message']}",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              } else {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "Something went wrong, Please contact Admin",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              }
+                                          if (_networkManager.connectionType.value == 1 ||
+                                              _networkManager.connectionType.value == 2) {
+                                            for (int i = 0;
+                                            i <= 100;
+                                            i++) {
+                                              await Future.delayed(
+                                                  const Duration(
+                                                      milliseconds:
+                                                      50));
+                                              syncProgress.value =
+                                                  i / 100; // Update progress
                                             }
+
+                                            // Call the insert function
+                                            var rsp = await insertAlfaObservation(
+                                              item.tourId,
+                                              item.school,
+                                              item.udiseValue,
+                                              item.correctUdise,
+                                              item.noStaffTrained,
+                                              item.imgNurTimeTable,
+                                              item.imgLKGTimeTable,
+                                              item.imgUKGTimeTable,
+                                              item.bookletValue,
+                                              item.moduleValue,
+                                              item.numeracyBooklet,
+                                              item.numeracyValue,
+                                              item.pairValue,
+                                              item.alfaActivityValue,
+                                              item.alfaGradeReport,
+                                              item.imgAlfa,
+                                              item.refresherTrainingValue,
+                                              item.noTrainedTeacher,
+                                              item.imgTraining,
+                                              item.readingValue,
+                                              item.libGradeReport,
+                                              item.imgLibrary,
+                                              item.tlmKitValue,
+                                              item.imgTlm,
+                                              item.classObservation,
+                                              item.createdAt,
+                                              item.submittedAt,
+                                              item.createdBy,
+                                              item.id,
+
+                                                  (progress) {
+                                                syncProgress
+                                                    .value =
+                                                    progress; // Update sync progress
+                                              },
+                                            );
+
+                                            if (rsp['status'] ==
+                                                1) {
+                                              customSnackbar(
+                                                'Successfully',
+                                                "${rsp['message']}",
+                                                AppColors
+                                                    .secondary,
+                                                AppColors
+                                                    .onSecondary,
+                                                Icons.check,
+                                              );
+                                            } else {
+                                              hasError.value =
+                                              true; // Set error state if sync fails
+                                              customSnackbar(
+                                                "Error",
+                                                "${rsp['message']}",
+                                                AppColors.error,
+                                                AppColors.onError,
+                                                Icons.warning,
+                                              );
+                                            }
+                                            setState(() {
+                                              isLoading.value =
+                                              false; // Hide loading spinner
+                                            });
                                           }
-                                        }));
+                                        },
+                                      ),
+                                );
                               },
-                            ),
+                            )),
                           ],
                         ),
                         onTap: () {
@@ -224,7 +280,7 @@ Future<Map<String, dynamic>> insertAlfaObservation(
     String? submittedAt,
     String? createdBy,
     int? id,
-
+    Function(double) updateProgress, // Progress callback
     ) async {
   if (kDebugMode) {
     print('Inserting Alfa Observation Data');
@@ -300,116 +356,173 @@ Future<Map<String, dynamic>> insertAlfaObservation(
   });
 
   try {
-    if (imgNurTimeTable != null && imgNurTimeTable.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgNurTimeTable);
+    if ( imgNurTimeTable!= null && imgNurTimeTable.isNotEmpty) {
+      List<String> imagePaths = imgNurTimeTable.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgNurTimeTable[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgNurTimeTable_${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgNurTimeTable[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgLKGTimeTable != null && imgLKGTimeTable.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgLKGTimeTable);
+    if ( imgLKGTimeTable!= null && imgLKGTimeTable.isNotEmpty) {
+      List<String> imagePaths = imgLKGTimeTable.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgLKGTimeTable[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgLKGTimeTable${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgLKGTimeTable[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgUKGTimeTable != null && imgUKGTimeTable.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgUKGTimeTable);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgUKGTimeTable[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgUKGTimeTable${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
+    if ( imgUKGTimeTable!= null && imgUKGTimeTable.isNotEmpty) {
+      List<String> imagePaths = imgUKGTimeTable.split(',');
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgUKGTimeTable[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgAlfa != null && imgAlfa.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgAlfa);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgAlfa[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgAlfa${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+    if ( imgAlfa!= null && imgAlfa.isNotEmpty) {
+      List<String> imagePaths = imgAlfa.split(',');
+
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgAlfa[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgTraining != null && imgTraining.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgTraining);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgTraining[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgTraining${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
+    if ( imgTraining!= null && imgTraining.isNotEmpty) {
+      List<String> imagePaths = imgTraining.split(',');
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgTraining[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgLibrary != null && imgLibrary.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgLibrary);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgLibrary[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgLibrary${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+    if ( imgLibrary!= null && imgLibrary.isNotEmpty) {
+      List<String> imagePaths = imgLibrary.split(',');
+
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgLibrary[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (imgTLM != null && imgTLM.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(imgTLM);
+    if ( imgTLM!= null && imgTLM.isNotEmpty) {
+      List<String> imagePaths = imgTLM.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'imgTLM[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'imgTLM${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'imgTLM[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
+
 
     // Send the request to the server
     var response = await request.send();
@@ -444,15 +557,15 @@ Future<Map<String, dynamic>> insertAlfaObservation(
         }
       } catch (e) {
         print('Error decoding JSON: $e');
-        return {"status": 0, "message": "Invalid response format"};
+        return {"status": 0, "message": "Invalid response format $e"};
       }
     } else {
       print('Server Error Response Code: ${response.statusCode}');
       print('Server Error Response Body: $responseBody');
-      return {"status": 0, "message": "Server returned an error"};
+      return {"status": 0, "message": "Server returned an error $responseBody"};
     }
   } catch (error) {
     print("Error: $error");
-    return {"status": 0, "message": "Something went wrong, Please contact Admin"};
+    return {"status": 0, "message": "Something went wrong, Please contact Admin $error"};
   }
 }

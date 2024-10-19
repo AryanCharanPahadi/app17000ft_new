@@ -1,13 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/fln_observation_form/fln_observation_controller.dart';
-import 'package:app17000ft_new/forms/in_person_quantitative/in_person_quantitative_controller.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
+
 import 'package:app17000ft_new/forms/school_recce_form/school_recce_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
@@ -17,19 +16,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-
 class SchoolRecceSync extends StatefulWidget {
   const SchoolRecceSync({super.key});
 
   @override
-  State<SchoolRecceSync> createState() => _SchoolRecceSync();
+  State<SchoolRecceSync> createState() => _SchoolRecceSyncState();
 }
 
-class _SchoolRecceSync extends State<SchoolRecceSync> {
-  final SchoolRecceController _schoolRecceController =
-      Get.put(SchoolRecceController());
+class _SchoolRecceSyncState extends State<SchoolRecceSync> {
+  final SchoolRecceController _schoolRecceController = Get.put(SchoolRecceController());
   final NetworkManager _networkManager = Get.put(NetworkManager());
   var isLoading = false.obs;
+  var syncProgress = 0.0.obs; // Progress variable for syncing
+  var hasError = false.obs; // Variable to track if syncing failed
 
   @override
   void initState() {
@@ -41,9 +40,21 @@ class _SchoolRecceSync extends State<SchoolRecceSync> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        bool shouldPop =
-            await BaseClient().showLeaveConfirmationDialog(context);
-        return shouldPop;
+        IconData icon = Icons.check_circle;
+        bool shouldExit = await showDialog(
+          context: context,
+          builder: (_) => Confirmation(
+            iconname: icon,
+            title: 'Confirm Exit',
+            yes: 'Exit',
+            no: 'Cancel',
+            desc: 'Are you sure you want to Exit?',
+            onPressed: () async {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        );
+        return shouldExit;
       },
       child: Scaffold(
         appBar: const CustomAppbar(title: 'School Recce Sync'),
@@ -62,164 +73,209 @@ class _SchoolRecceSync extends State<SchoolRecceSync> {
             }
 
             return Obx(() => isLoading.value
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(
+                      color: AppColors.primary),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Syncing: ${(syncProgress.value * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  if (hasError.value)
+                    const Text(
+                      'Syncing failed. Please try again.',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                ],
+              ),
+            )
                 : Column(
-                    children: [
-                      Expanded(
-                        child: ListView.separated(
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const Divider(),
-                          itemCount:
-                              schoolRecceController.schoolRecceList.length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                schoolRecceController.schoolRecceList[index];
-                            return ListTile(
-                              title: Text(
-                                "${index + 1}. Tour ID: ${item.tourId!}\n    School: ${item.school!}",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    color: AppColors.primary,
-                                    icon: const Icon(Icons.sync),
-                                    onPressed: () async {
-                                      IconData icon = Icons.check_circle;
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => Confirmation(
-                                              iconname: icon,
-                                              title: 'Confirm',
-                                              yes: 'Confirm',
-                                              no: 'Cancel',
-                                              desc:
-                                                  'Are you sure you want to Sync?',
-                                              onPressed: () async {
-                                                setState(() {
-                                                  // isLoadings= true;
-                                                });
-                                                if (_networkManager
-                                                        .connectionType.value ==
-                                                    0) {
-                                                  customSnackbar(
-                                                      'Warning',
-                                                      'You are offline please connect to the internet',
-                                                      AppColors.secondary,
-                                                      AppColors.onSecondary,
-                                                      Icons.warning);
-                                                } else {
-                                                  if (_networkManager
-                                                              .connectionType
-                                                              .value ==
-                                                          1 ||
-                                                      _networkManager
-                                                              .connectionType
-                                                              .value ==
-                                                          2) {
-                                                    print('ready to insert');
-
-                                                    var rsp =
-                                                        await insertSchoolRecce(
-                                                      item.tourId,
-                                                      item.school,
-                                                      item.udiseValue,
-                                                      item.udise_correct,
-                                                      item.boardImg,
-                                                      item.buildingImg,
-                                                      item.gradeTaught,
-                                                      item.instituteHead,
-                                                      item.headDesignation,
-                                                      item.headPhone,
-                                                      item.headEmail,
-                                                      item.appointedYear,
-                                                      item.noTeachingStaff,
-                                                      item.noNonTeachingStaff,
-                                                      item.totalStaff,
-                                                      item.registerImg,
-                                                      item.smcHeadName,
-                                                      item.smcPhone,
-                                                      item.smcQual,
-                                                      item.qualOther,
-                                                      item.totalSmc,
-                                                      item.meetingDuration,
-                                                      item.meetingOther,
-                                                      item.smcDesc,
-                                                      item.noUsableClass,
-                                                      item.electricityAvailability,
-                                                      item.networkAvailability,
-                                                      item.digitalLearning,
-                                                      item.smartClassImg,
-                                                      item.projectorImg,
-                                                      item.computerImg,
-                                                      item.libraryExisting,
-                                                      item.libImg,
-                                                      item.playGroundSpace,
-                                                      item.spaceImg,
-                                                      item.enrollmentReport,
-                                                      item.enrollmentImg,
-                                                      item.academicYear,
-                                                      item.gradeReportYear1,
-                                                      item.gradeReportYear2,
-                                                      item.gradeReportYear3,
-                                                      item.DigiLabRoomImg,
-                                                      item.libRoomImg,
-                                                      item.remoteInfo,
-                                                      item.motorableRoad,
-                                                      item.languageSchool,
-                                                      item.languageOther,
-                                                      item.supportingNgo,
-                                                      item.otherNgo,
-                                                      item.observationPoint,
-                                                      item.submittedBy,
-                                                      item.createdAt,
-                                                      item.id,
-                                                    );
-
-                                                    if (rsp['status'] == 1) {
-                                                      customSnackbar(
-                                                          'Successfully',
-                                                          "${rsp['message']}",
-                                                          AppColors.secondary,
-                                                          AppColors.onSecondary,
-                                                          Icons.check);
-                                                    } else if (rsp['status'] ==
-                                                        0) {
-                                                      customSnackbar(
-                                                          "Error",
-                                                          "${rsp['message']}",
-                                                          AppColors.error,
-                                                          AppColors.onError,
-                                                          Icons.warning);
-                                                    } else {
-                                                      customSnackbar(
-                                                          "Error",
-                                                          "Something went wrong, Please contact Admin",
-                                                          AppColors.error,
-                                                          AppColors.onError,
-                                                          Icons.warning);
-                                                    }
-                                                  }
-                                                }
-                                              }));
-                                    },
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                schoolRecceController
-                                    .schoolRecceList[index].tourId;
-                              },
-                            );
-                          },
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                    separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(),
+                    itemCount:
+                    schoolRecceController.schoolRecceList.length,
+                    itemBuilder: (context, index) {
+                      final item =
+                      schoolRecceController.schoolRecceList[index];
+                      return ListTile(
+                        title: Text(
+                          "${index + 1}. Tour ID: ${item.tourId}\n"
+                              "School.: ${item.school}\n",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign
+                              .left, // Adjust text alignment if needed
+                          maxLines:
+                          2, // Limit the lines, or remove this if you don't want a limit
+                          overflow: TextOverflow
+                              .ellipsis, // Handles overflow gracefully
                         ),
-                      ),
-                    ],
-                  ));
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Obx(() => IconButton(
+                              color: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? Colors.grey
+                                  : AppColors.primary,
+                              icon: const Icon(Icons.sync),
+                              onPressed: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? null
+                                  : () async {
+                                // Proceed with sync logic when online
+                                IconData icon =
+                                    Icons.check_circle;
+                                showDialog(
+                                  context: context,
+                                  builder: (_) =>
+                                      Confirmation(
+                                        iconname: icon,
+                                        title: 'Confirm',
+                                        yes: 'Confirm',
+                                        no: 'Cancel',
+                                        desc:
+                                        'Are you sure you want to Sync?',
+                                        onPressed: () async {
+                                          setState(() {
+                                            isLoading.value =
+                                            true; // Show loading spinner
+                                            syncProgress.value =
+                                            0.0; // Reset progress
+                                            hasError.value =
+                                            false; // Reset error state
+                                          });
+
+                                          if (_networkManager.connectionType.value == 1 ||
+                                              _networkManager.connectionType.value == 2) {
+                                            for (int i = 0;
+                                            i <= 100;
+                                            i++) {
+                                              await Future.delayed(
+                                                  const Duration(
+                                                      milliseconds:
+                                                      50));
+                                              syncProgress.value =
+                                                  i / 100; // Update progress
+                                            }
+
+                                            // Call the insert function
+                                            var rsp =
+                                            await insertSchoolRecce(
+                                              item.tourId,
+                                              item.school,
+                                              item.udiseValue,
+                                              item.udise_correct,
+                                              item.boardImg,
+                                              item.buildingImg,
+                                              item.gradeTaught,
+                                              item.instituteHead,
+                                              item.headDesignation,
+                                              item.headPhone,
+                                              item.headEmail,
+                                              item.appointedYear,
+                                              item.noTeachingStaff,
+                                              item.noNonTeachingStaff,
+                                              item.totalStaff,
+                                              item.registerImg,
+                                              item.smcHeadName,
+                                              item.smcPhone,
+                                              item.smcQual,
+                                              item.qualOther,
+                                              item.totalSmc,
+                                              item.meetingDuration,
+                                              item.meetingOther,
+                                              item.smcDesc,
+                                              item.noUsableClass,
+                                              item.electricityAvailability,
+                                              item.networkAvailability,
+                                              item.digitalLearning,
+                                              item.smartClassImg,
+                                              item.projectorImg,
+                                              item.computerImg,
+                                              item.libraryExisting,
+                                              item.libImg,
+                                              item.playGroundSpace,
+                                              item.spaceImg,
+                                              item.enrollmentReport,
+                                              item.enrollmentImg,
+                                              item.academicYear,
+                                              item.gradeReportYear1,
+                                              item.gradeReportYear2,
+                                              item.gradeReportYear3,
+                                              item.DigiLabRoomImg,
+                                              item.libRoomImg,
+                                              item.remoteInfo,
+                                              item.motorableRoad,
+                                              item.languageSchool,
+                                              item.languageOther,
+                                              item.supportingNgo,
+                                              item.otherNgo,
+                                              item.observationPoint,
+                                              item.submittedBy,
+                                              item.createdAt,
+                                              item.id,
+
+                                              (progress) {
+                                                syncProgress
+                                                    .value =
+                                                    progress; // Update sync progress
+                                              },
+                                            );
+
+                                            if (rsp['status'] ==
+                                                1) {
+                                              customSnackbar(
+                                                'Successfully',
+                                                "${rsp['message']}",
+                                                AppColors
+                                                    .secondary,
+                                                AppColors
+                                                    .onSecondary,
+                                                Icons.check,
+                                              );
+                                            } else {
+                                              hasError.value =
+                                              true; // Set error state if sync fails
+                                              customSnackbar(
+                                                "Error",
+                                                "${rsp['message']}",
+                                                AppColors.error,
+                                                AppColors.onError,
+                                                Icons.warning,
+                                              );
+                                            }
+                                            setState(() {
+                                              isLoading.value =
+                                              false; // Hide loading spinner
+                                            });
+                                          }
+                                        },
+                                      ),
+                                );
+                              },
+                            )),
+                          ],
+                        ),
+                        onTap: () {
+                          schoolRecceController
+                              .schoolRecceList[index].tourId;
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ));
           },
         ),
       ),
@@ -227,62 +283,64 @@ class _SchoolRecceSync extends State<SchoolRecceSync> {
   }
 }
 
+
 var baseurl = "https://mis.17000ft.org/apis/fast_apis/insert_recce.php";
 Future insertSchoolRecce(
-    String? tourId,
-    String? school,
-    String? udiseValue,
-    String? udise_correct,
-    String? boardImg,
-    String? buildingImg,
-    String? gradeTaught,
-    String? instituteHead,
-    String? headDesignation,
-    String? headPhone,
-    String? headEmail,
-    String? appointedYear,
-    String? noTeachingStaff,
-    String? noNonTeachingStaff,
-    String? totalStaff,
-    String? registerImg,
-    String? smcHeadName,
-    String? smcPhone,
-    String? smcQual,
-    String? qualOther,
-    String? totalSmc,
-    String? meetingDuration,
-    String? meetingOther,
-    String? smcDesc,
-    String? noUsableClass,
-    String? electricityAvailability,
-    String? networkAvailability,
-    String? digitalLearning,
-    String? smartClassImg,
-    String? projectorImg,
-    String? computerImg,
-    String? libraryExisting,
-    String? libImg,
-    String? playGroundSpace,
-    String? spaceImg,
-    String? enrollmentReport,
-    String? enrollmentImg,
-    String? academicYear,
-    String? gradeReportYear1,
-    String? gradeReportYear2,
-    String? gradeReportYear3,
-    String? DigiLabRoomImg,
-    String? libRoomImg,
-    String? remoteInfo,
-    String? motorableRoad,
-    String? languageSchool,
-    String? languageOther,
-    String? supportingNgo,
-    String? otherNgo,
-    String? observationPoint,
-    String? submittedBy,
-    String? createdAt,
-    int? id,
-    ) async {
+  String? tourId,
+  String? school,
+  String? udiseValue,
+  String? udise_correct,
+  String? boardImg,
+  String? buildingImg,
+  String? gradeTaught,
+  String? instituteHead,
+  String? headDesignation,
+  String? headPhone,
+  String? headEmail,
+  String? appointedYear,
+  String? noTeachingStaff,
+  String? noNonTeachingStaff,
+  String? totalStaff,
+  String? registerImg,
+  String? smcHeadName,
+  String? smcPhone,
+  String? smcQual,
+  String? qualOther,
+  String? totalSmc,
+  String? meetingDuration,
+  String? meetingOther,
+  String? smcDesc,
+  String? noUsableClass,
+  String? electricityAvailability,
+  String? networkAvailability,
+  String? digitalLearning,
+  String? smartClassImg,
+  String? projectorImg,
+  String? computerImg,
+  String? libraryExisting,
+  String? libImg,
+  String? playGroundSpace,
+  String? spaceImg,
+  String? enrollmentReport,
+  String? enrollmentImg,
+  String? academicYear,
+  String? gradeReportYear1,
+  String? gradeReportYear2,
+  String? gradeReportYear3,
+  String? DigiLabRoomImg,
+  String? libRoomImg,
+  String? remoteInfo,
+  String? motorableRoad,
+  String? languageSchool,
+  String? languageOther,
+  String? supportingNgo,
+  String? otherNgo,
+  String? observationPoint,
+  String? submittedBy,
+  String? createdAt,
+  int? id,
+  Function(double) updateProgress, // Progress callback
+) async {
   if (kDebugMode) {
     print('This is School Recce Data');
     print('Tour ID: $tourId');
@@ -358,8 +416,6 @@ Future insertSchoolRecce(
     'school': school ?? '',
     'udiseValue': udiseValue ?? '',
     'udise_correct': udise_correct ?? '',
-
-
     'gradeTaught': gradeTaught ?? '',
     'instituteHead': instituteHead ?? '',
     'headDesignation': headDesignation ?? '',
@@ -369,7 +425,6 @@ Future insertSchoolRecce(
     'noTeachingStaff': noTeachingStaff ?? '',
     'noNonTeachingStaff': noNonTeachingStaff ?? '',
     'totalStaff': totalStaff ?? '',
-
     'smcHeadName': smcHeadName ?? '',
     'smcPhone': smcPhone ?? '',
     'smcQual': smcQual ?? '',
@@ -382,21 +437,13 @@ Future insertSchoolRecce(
     'electricityAvailability': electricityAvailability ?? '',
     'networkAvailability': networkAvailability ?? '',
     'digitalLearning': digitalLearning ?? '',
-
-
-
     'libraryExisting': libraryExisting ?? '',
-
     'playGroundSpace': playGroundSpace ?? '',
-
     'enrollmentReport': enrollmentReportJsonData ?? '',
-
     'academicYear': academicYear ?? '',
     'gradeReportYear1': gradeReportYear1JsonData ?? '',
     'gradeReportYear2': gradeReportYear2JsonData ?? '',
     'gradeReportYear3': gradeReportYear3JsonData ?? '',
-
-
     'remoteInfo': remoteInfo ?? '',
     'motorableRoad': motorableRoad ?? '',
     'languageSchool': languageSchool ?? '',
@@ -409,180 +456,259 @@ Future insertSchoolRecce(
   });
 
   try {
-    if (boardImg != null && boardImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(boardImg);
+    if ( boardImg!= null && boardImg.isNotEmpty) {
+      List<String> imagePaths = boardImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'boardImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'boardImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'boardImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (buildingImg != null && buildingImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(buildingImg);
+    if ( buildingImg!= null && buildingImg.isNotEmpty) {
+      List<String> imagePaths = buildingImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'buildingImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'buildingImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'buildingImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (registerImg != null && registerImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(registerImg);
+    if ( registerImg!= null && registerImg.isNotEmpty) {
+      List<String> imagePaths = registerImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'registerImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'registerImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'registerImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (smartClassImg != null && smartClassImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(smartClassImg);
+    if ( smartClassImg!= null && smartClassImg.isNotEmpty) {
+      List<String> imagePaths = smartClassImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'smartClassImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'smartClassImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'smartClassImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (projectorImg != null && projectorImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(projectorImg);
+    if ( projectorImg!= null && projectorImg.isNotEmpty) {
+      List<String> imagePaths = projectorImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'projectorImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'projectorImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'projectorImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (computerImg != null && computerImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(computerImg);
+    if ( computerImg!= null && computerImg.isNotEmpty) {
+      List<String> imagePaths = computerImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'computerImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'computerImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'computerImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (libImg != null && libImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(libImg);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'libImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'libImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
+    if ( libImg!= null && libImg.isNotEmpty) {
+      List<String> imagePaths = libImg.split(',');
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'libImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (spaceImg != null && spaceImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(spaceImg);
+    if ( spaceImg!= null && spaceImg.isNotEmpty) {
+      List<String> imagePaths = spaceImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'spaceImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'spaceImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'spaceImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (enrollmentImg != null && enrollmentImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(enrollmentImg);
+    if ( enrollmentImg!= null && enrollmentImg.isNotEmpty) {
+      List<String> imagePaths = enrollmentImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'enrollmentImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'enrollmentImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'enrollmentImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (DigiLabRoomImg != null && DigiLabRoomImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(DigiLabRoomImg);
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'DigiLabRoomImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'DigiLabRoomImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
+    if ( DigiLabRoomImg!= null && DigiLabRoomImg.isNotEmpty) {
+      List<String> imagePaths = DigiLabRoomImg.split(',');
 
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'DigiLabRoomImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
-    if (libRoomImg != null && libRoomImg.isNotEmpty) {
-      // Convert Base64 image to Uint8List
-      Uint8List imageBytes = base64Decode(libRoomImg);
+    if ( libRoomImg!= null && libRoomImg.isNotEmpty) {
+      List<String> imagePaths = libRoomImg.split(',');
 
-      // Create MultipartFile from the image bytes
-      var multipartFile = http.MultipartFile.fromBytes(
-        'libRoomImg[]', // Name of the field in the server request
-        imageBytes,
-        filename: 'libRoomImg${id ?? ''}.jpg', // Custom file name
-        contentType: MediaType('image', 'jpeg'), // Specify the content type
-      );
-
-      // Add the image to the request
-      request.files.add(multipartFile);
+      for (String path in imagePaths) {
+        File imageFile = File(path.trim());
+        if (imageFile.existsSync()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'libRoomImg[]', // Use array-like name for multiple images
+              imageFile.path,
+              contentType: MediaType('image', 'jpeg'),
+            ),
+          );
+          print("Image file $path attached successfully.");
+        } else {
+          print('Image file does not exist at the path: $path');
+          return {"status": 0, "message": "Image file not found at $path."};
+        }
+      }
+    } else {
+      print('No image file path provided.');
     }
 
     // Send the request to the server
@@ -614,7 +740,10 @@ Future insertSchoolRecce(
           return parsedResponse;
         } else {
           print('Server Response Error: ${parsedResponse['message']}');
-          return {"status": 0, "message": parsedResponse['message'] ?? 'Failed to insert data'};
+          return {
+            "status": 0,
+            "message": parsedResponse['message'] ?? 'Failed to insert data'
+          };
         }
       } catch (e) {
         print('Error decoding JSON: $e');
@@ -623,10 +752,13 @@ Future insertSchoolRecce(
     } else {
       print('Server Error Response Code: ${response.statusCode}');
       print('Server Error Response Body: $responseBody');
-      return {"status": 0, "message": "Server returned an error"};
+      return {"status": 0, "message": "Server returned an error $responseBody"};
     }
   } catch (error) {
     print("Error: $error");
-    return {"status": 0, "message": "Something went wrong, Please contact Admin"};
+    return {
+      "status": 0,
+      "message": "Something went wrong, Please contact Admin"
+    };
   }
 }

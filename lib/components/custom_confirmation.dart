@@ -1,8 +1,8 @@
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
+
 class Confirmation extends StatefulWidget {
   final String? desc;
   final String? title;
@@ -33,7 +33,7 @@ class ConfirmationState extends State<Confirmation> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: SizedBox(
-        width: 160,
+        width: 160, // Fixed width for consistency
         child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
@@ -48,18 +48,18 @@ class ConfirmationState extends State<Confirmation> {
                 color: AppColors.primary,
                 child: Column(
                   children: <Widget>[
-                    Container(height: 10),
+                    SizedBox(height: 10), // Use SizedBox for spacing
                     Icon(
                       widget.iconname,
                       color: Colors.white,
-                      size: 40,
+                      size: 40, // Fixed icon size
                     ),
-                    Container(height: 10),
+                    SizedBox(height: 10), // Use SizedBox for spacing
                     Text(
                       widget.title.toString(),
                       style: const TextStyle(color: Colors.white, fontSize: 20),
                     ),
-                    Container(height: 10),
+                    SizedBox(height: 10), // Use SizedBox for spacing
                   ],
                 ),
               ),
@@ -67,7 +67,7 @@ class ConfirmationState extends State<Confirmation> {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: <Widget>[
-                    Container(height: 10),
+                    SizedBox(height: 10), // Use SizedBox for spacing
                     Text(
                       widget.desc ?? "",
                       style: const TextStyle(color: Colors.black, fontSize: 16),

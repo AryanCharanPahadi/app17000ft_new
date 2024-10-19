@@ -7,39 +7,71 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   final String baseUrl = 'https://mis.17000ft.org/apis/fast_apis/';
-List<TourDetails> _tourList = [];
-List<TourDetails> get tourList => _tourList;
+  List<TourDetails> _tourList = [];
+  List<TourDetails> get tourList => _tourList;
 
-  //fetch tour ids
-   Future <List<TourDetails>> fetchTourIds(String? office) async {
-    print('fetchTour ids is called for $office');
+  // Fetch tour ids
+  Future<List<TourDetails>> fetchTourIds(String? office) async {
+    print('Fetching Tour IDs for office: $office');
     _tourList = [];
-   
+
     var request = {'office': office ?? ''};
-   
-    var response = await BaseClient()
-        .post(baseUrl,'tourIds.php', request)
-        .catchError((error) {
+    print('Request payload: $request');
+
+    var response;
+    try {
+      response = await BaseClient().post(baseUrl, 'tourIds.php', request);
+      print('Response received: $response');
+    } catch (error) {
       if (error is BadRequestException) {
+        // Decode and print the API error
         var apiError = json.decode(error.message!);
-      //  DialogHelper.showErroDialog(description: apiError["reason"]);
+        print('API Error: $apiError');
       } else {
-        //handleError(error);
+        // Print other errors
+        print('An unexpected error occurred: ${error.toString()}');
       }
-    });
-
-     _tourList = tourDetailsFromJson(response);
-     // print('this is response ${response.body}');
-    
-    if(_tourList.isNotEmpty) {
-      SqfliteDatabaseHelper().delete('tour_details');
-      for(int i = 0; i < _tourList.length; i++) {
-      await  LocalDbController().addData(tourDetails: _tourList[i]);
-      }
-
+      return [];  // Return an empty list on error
     }
-   
 
-    return _tourList;
+    if (response == null) {
+      print('No response received from the API.');
+      return [];
+    }
+
+    try {
+      _tourList = tourDetailsFromJson(response);
+      print('Parsed tour details: $_tourList');
+    } catch (e) {
+      print('Error parsing response to TourDetails: $e');
+      return [];  // Return an empty list if parsing fails
+    }
+
+    // Check if there are any tour details to write to the local database
+    if (_tourList.isNotEmpty) {
+      print('Deleting existing tour details from the local database...');
+      await SqfliteDatabaseHelper().delete('tour_details');
+      for (var tour in _tourList) {
+        print('Adding tour detail to local database: $tour');
+        await LocalDbController().addData(tourDetails: tour);
+      }
+      print('All tour details saved to local database.');
+    } // Removed else clause to suppress output when no tour details are available
+
+    return _tourList; // Return the list, whether empty or populated
+  }
+
+  // Clear tour details upon logout
+  Future<void> clearTourDetailsOnLogout() async {
+    print('Clearing tour details on logout...');
+    await SqfliteDatabaseHelper().delete('tour_details');  // Clear from local DB
+    _tourList.clear();  // Clear in-memory list
+    print('Tour details cleared.');
+  }
+
+  // Refresh tour details on login
+  Future<void> refreshTourDetailsOnLogin(String? office) async {
+    print('Refreshing tour details on login...');
+    await fetchTourIds(office);  // Fetch fresh data and update local storage
   }
 }

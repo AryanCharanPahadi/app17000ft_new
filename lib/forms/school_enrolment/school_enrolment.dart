@@ -1,5 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'package:app17000ft_new/forms/edit_form/edit%20controller.dart';
+import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart'; // For a safer directory path handling
 
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_button.dart';
@@ -17,17 +24,27 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_dropdown.dart';
 import 'package:app17000ft_new/components/custom_labeltext.dart';
 import 'package:app17000ft_new/components/custom_sizedBox.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/home/home_screen.dart';
 
+import '../../components/custom_confirmation.dart';
+
 class SchoolEnrollmentForm extends StatefulWidget {
   String? userid;
   final EnrolmentCollectionModel? existingRecord;
-  SchoolEnrollmentForm({super.key, this.userid, this.existingRecord});
+  String? tourId; // Add this line
+  String? school; // Add this line for school
+
+  SchoolEnrollmentForm({
+    super.key,
+    this.userid,
+    this.existingRecord,
+    this.school,
+    this.tourId, // Update the constructor to accept tourId
+  });
 
   @override
   State<SchoolEnrollmentForm> createState() => _SchoolEnrollmentFormState();
@@ -41,7 +58,8 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
   List<String> splitSchoolLists = [];
-
+  final EditController editController =
+  Get.put(EditController());
   //final TourController _tourController = Get.put(TourController());
   // Define lists to hold the controllers and total notifiers for each grade
   final List<TextEditingController> boysControllers = [];
@@ -63,7 +81,8 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
 
   final List<String> grades = [
     'Nursery',
-    'KG',
+    'L.K.G',
+    'U.K.G',
     '1st',
     '2nd',
     '3rd',
@@ -113,6 +132,8 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
       schoolEnrolmentController.setSchool(existingRecord.school);
       schoolEnrolmentController.remarksController.text =
           existingRecord.remarks ?? '';
+
+      widget.userid = existingRecord.submittedBy;
 
       final enrolmentDataString = existingRecord.enrolmentData;
 
@@ -228,39 +249,64 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
     super.dispose();
   }
 
-  TableRow tableRowMethod(String classname, TextEditingController boyController,
-      TextEditingController girlController, ValueNotifier<int> totalNotifier) {
+  TableRow tableRowMethod(
+      String classname,
+      TextEditingController boyController,
+      TextEditingController girlController,
+      ValueNotifier<int> totalNotifier) {
     return TableRow(
       children: [
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
           child: Center(
-              child: Text(classname,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold))),
-        ),
-        TableCell(
-          child: TextFormField(
-            controller: boyController,
-            decoration: const InputDecoration(border: InputBorder.none),
-            textAlign: TextAlign.center,
+            child: Text(
+              classname,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
         TableCell(
-          child: TextFormField(
-            controller: girlController,
-            decoration: const InputDecoration(border: InputBorder.none),
-            textAlign: TextAlign.center,
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+          child: Center( // Ensure the TextFormField is centered
+            child: TextFormField(
+              controller: boyController,
+              decoration: const InputDecoration(border: InputBorder.none),
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly, // Allow only digits
+                LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+              ],
+            ),
           ),
         ),
         TableCell(
-          child: ValueListenableBuilder<int>(
-            valueListenable: totalNotifier,
-            builder: (context, total, child) {
-              return Center(
-                  child: Text(total.toString(),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)));
-            },
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+          child: Center( // Ensure the TextFormField is centered
+            child: TextFormField(
+              controller: girlController,
+              decoration: const InputDecoration(border: InputBorder.none),
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly, // Allow only digits
+                LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+              ],
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+          child: Center(
+            child: ValueListenableBuilder<int>(
+              valueListenable: totalNotifier,
+              builder: (context, total, child) {
+                return Text(
+                  total.toString(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -273,11 +319,19 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
 
     return WillPopScope(
       onWillPop: () async {
-        bool shouldPop =
-            await BaseClient().showLeaveConfirmationDialog(context);
-        return shouldPop;
-        // Custom back button behavior for Screen1
-        //ault back button behavior
+        IconData icon = Icons.check_circle;
+        bool shouldExit = await showDialog(
+            context: context,
+            builder: (_) => Confirmation(
+                iconname: icon,
+                title: 'Exit Confirmation',
+                yes: 'Yes',
+                no: 'no',
+                desc: 'Are you sure you want to leave exit?',
+                onPressed: () async {
+                  Navigator.of(context).pop(true);
+                }));
+        return shouldExit;
       },
       child: Scaffold(
         appBar: const CustomAppbar(
@@ -309,30 +363,33 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                       side: 'height',
                                     ),
                                     CustomDropdownFormField(
-                                        focusNode: schoolEnrolmentController
-                                            .tourIdFocusNode,
-                                        options: tourController.getLocalTourList
-                                            .map((e) => e.tourId)
-                                            .toList(),
-                                        selectedOption:
-                                            schoolEnrolmentController.tourValue,
-                                        onChanged: (value) {
-                                          splitSchoolLists = tourController
-                                              .getLocalTourList
+                                      focusNode: schoolEnrolmentController.tourIdFocusNode,
+                                      options: tourController.getLocalTourList
+                                          .map((e) => e.tourId!) // Ensure tourId is non-nullable
+                                          .toList(),
+                                      selectedOption: schoolEnrolmentController.tourValue,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          // Reset splitSchoolLists to avoid appending previous tour's schools
+                                          splitSchoolLists = [];
+
+                                          // Safely handle the school list splitting by commas for the new tour ID
+                                          splitSchoolLists = tourController.getLocalTourList
                                               .where((e) => e.tourId == value)
-                                              .map((e) => e.allSchool
-                                                  .split('|')
-                                                  .toList())
+                                              .map((e) => e.allSchool!
+                                              .split(',')
+                                              .map((s) => s.trim())
+                                              .toList())
                                               .expand((x) => x)
                                               .toList();
-                                          setState(() {
-                                            schoolEnrolmentController
-                                                .setSchool(null);
-                                            schoolEnrolmentController
-                                                .setTour(value);
-                                          });
-                                        },
-                                        labelText: "Select Tour ID"),
+
+                                          // Update the selected tour and reset the selected school
+                                          schoolEnrolmentController.setSchool(null);
+                                          schoolEnrolmentController.setTour(value);
+                                        });
+                                      },
+                                      labelText: "Select Tour ID",
+                                    ),
                                     CustomSizedBox(
                                       value: 20,
                                       side: 'height',
@@ -355,27 +412,24 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                       popupProps: PopupProps.menu(
                                         showSelectedItems: true,
                                         showSearchBox: true,
-                                        disabledItemFn: (String s) =>
-                                            s.startsWith('I'),
+                                        disabledItemFn: (String s) => s.startsWith('I'), // Disable based on condition
                                       ),
-                                      items: splitSchoolLists,
-                                      dropdownDecoratorProps:
-                                          const DropDownDecoratorProps(
-                                        dropdownSearchDecoration:
-                                            InputDecoration(
+                                      items: splitSchoolLists, // Use the updated school list
+                                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                                        dropdownSearchDecoration: InputDecoration(
                                           labelText: "Select School",
-                                          hintText: "Select School ",
+                                          hintText: "Select School",
                                         ),
                                       ),
                                       onChanged: (value) {
+                                        // Set the selected school
                                         setState(() {
-                                          schoolEnrolmentController
-                                              .setSchool(value);
+                                          schoolEnrolmentController.setSchool(value);
                                         });
                                       },
-                                      selectedItem:
-                                          schoolEnrolmentController.schoolValue,
+                                      selectedItem: schoolEnrolmentController.schoolValue,
                                     ),
+
                                     CustomSizedBox(
                                       value: 20,
                                       side: 'height',
@@ -531,37 +585,57 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                             const TableRow(
                                               children: [
                                                 TableCell(
-                                                    child: Center(
-                                                        child: Text('Grade',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
+                                                  child: Center(
+                                                    child: Text('Grade',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                  ),
+                                                ),
                                                 TableCell(
-                                                    child: Center(
-                                                        child: Text('Boys',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
+                                                  child: Center(
+                                                    child: Text('Boys',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                  ),
+                                                ),
                                                 TableCell(
-                                                    child: Center(
-                                                        child: Text('Girls',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
+                                                  child: Center(
+                                                    child: Text('Girls',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                  ),
+                                                ),
                                                 TableCell(
-                                                    child: Center(
-                                                        child: Text('Total',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
+                                                  child: Center(
+                                                    child: Text('Total',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                             for (int i = 0;
@@ -576,15 +650,22 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                             TableRow(
                                               children: [
                                                 const TableCell(
-                                                    child: Center(
-                                                        child: Text(
-                                                            'Grand Total',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)))),
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
+                                                  child: Center(
+                                                    child: Text('Grand Total',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold)),
+                                                  ),
+                                                ),
                                                 TableCell(
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
                                                   child: ValueListenableBuilder<
                                                       int>(
                                                     valueListenable:
@@ -592,17 +673,22 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                                     builder: (context, total,
                                                         child) {
                                                       return Center(
-                                                          child: Text(
-                                                              total.toString(),
-                                                              style: const TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)));
+                                                        child: Text(
+                                                          total.toString(),
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      );
                                                     },
                                                   ),
                                                 ),
                                                 TableCell(
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
                                                   child: ValueListenableBuilder<
                                                       int>(
                                                     valueListenable:
@@ -610,30 +696,37 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                                     builder: (context, total,
                                                         child) {
                                                       return Center(
-                                                          child: Text(
-                                                              total.toString(),
-                                                              style: const TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)));
+                                                        child: Text(
+                                                          total.toString(),
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      );
                                                     },
                                                   ),
                                                 ),
                                                 TableCell(
+                                                  verticalAlignment:
+                                                      TableCellVerticalAlignment
+                                                          .middle, // Align vertically to middle
                                                   child: ValueListenableBuilder<
                                                       int>(
                                                     valueListenable: grandTotal,
                                                     builder: (context, total,
                                                         child) {
                                                       return Center(
-                                                          child: Text(
-                                                              total.toString(),
-                                                              style: const TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)));
+                                                        child: Text(
+                                                          total.toString(),
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      );
                                                     },
                                                   ),
                                                 ),
@@ -643,11 +736,11 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                         ),
                                       ],
                                     ),
-                                    ErrorText(
-                                      isVisible: validateEnrolmentRecords,
-                                      message:
-                                          'Atleast one enrolment record is required',
-                                    ),
+                                    // ErrorText(
+                                    //   isVisible: validateEnrolmentRecords,
+                                    //   message:
+                                    //       'Atleast one enrolment record is required',
+                                    // ),
                                     CustomSizedBox(
                                       value: 40,
                                       side: 'height',
@@ -658,13 +751,13 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                     CustomSizedBox(side: 'height', value: 10),
                                     LabelText(
                                       label: 'Remarks',
-                                      astrick: true,
                                     ),
                                     CustomSizedBox(side: 'height', value: 20),
                                     CustomTextFormField(
                                       textController: schoolEnrolmentController
                                           .remarksController,
                                       labelText: 'Write your comments..',
+                                      maxlines: 2,
                                     ),
                                     CustomSizedBox(
                                       value: 20,
@@ -675,11 +768,15 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                       onPressedButton: () async {
                                         // Perform validation
                                         setState(() {
-                                          validateRegister = schoolEnrolmentController.multipleImage.isEmpty;
-                                          validateEnrolmentRecords = jsonData.isEmpty;
+                                          validateRegister =
+                                              schoolEnrolmentController
+                                                  .multipleImage.isEmpty;
+                                          // validateEnrolmentRecords =
+                                          //     jsonData.isEmpty;
                                         });
 
-                                        if (schoolEnrolmentController.multipleImage.isEmpty) {
+                                        if (schoolEnrolmentController
+                                            .multipleImage.isEmpty) {
                                           customSnackbar(
                                             'Error',
                                             'Please upload or capture a register photo',
@@ -690,79 +787,172 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                           return;
                                         }
 
-                                        if (validateEnrolmentRecords) {
-                                          customSnackbar(
-                                            'Error',
-                                            'At least one enrollment record is required',
-                                            AppColors.error,
-                                            Colors.white,
-                                            Icons.error,
-                                          );
-                                          return;
-                                        }
+                                        // if (validateEnrolmentRecords) {
+                                        //   customSnackbar(
+                                        //     'Error',
+                                        //     'At least one enrollment record is required',
+                                        //     AppColors.error,
+                                        //     Colors.white,
+                                        //     Icons.error,
+                                        //   );
+                                        //   return;
+                                        // }
 
                                         if (_formKey.currentState!.validate()) {
                                           DateTime now = DateTime.now();
-                                          String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                                          String formattedDate =
+                                              DateFormat('yyyy-MM-dd')
+                                                  .format(now);
 
-                                          // Convert images to Base64
-                                          List<String> base64Images = await schoolEnrolmentController.convertImagesToBase64();
+                                          // Convert image paths to File format
+                                          List<File> registerImageFiles = [];
+                                          for (var imagePath
+                                              in schoolEnrolmentController
+                                                  .imagePaths) {
+                                            registerImageFiles.add(File(
+                                                imagePath)); // Convert image path to File
+                                          }
+                                          String generateUniqueId(int length) {
+                                            const _chars =
+                                                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                            Random _rnd = Random();
+                                            return String.fromCharCodes(
+                                                Iterable.generate(
+                                                    length,
+                                                    (_) => _chars.codeUnitAt(
+                                                        _rnd.nextInt(
+                                                            _chars.length))));
+                                          }
 
-                                          // Convert `jsonData` to a JSON string
-                                          String enrolmentDataJson = jsonEncode(jsonData); // Ensure the JSON data is properly encoded
+                                          String uniqueId = generateUniqueId(6);
+                                          // Check if the image files have been created correctly
+                                          if (registerImageFiles.isEmpty) {
+                                            customSnackbar(
+                                              'Error',
+                                              'Image files could not be found',
+                                              AppColors.error,
+                                              Colors.white,
+                                              Icons.error,
+                                            );
+                                            return;
+                                          }
+
+                                          // Prepare image file paths to store in the database (comma-separated)
+                                          String registerImageFilePaths =
+                                              registerImageFiles
+                                                  .map((file) => file.path)
+                                                  .join(',');
+
+                                          // Convert `jsonData` to a JSON string for enrolment records
+                                          String enrolmentDataJson = jsonEncode(
+                                              jsonData); // Ensure the JSON data is properly encoded
 
                                           // Create the enrolment collection object
-                                          EnrolmentCollectionModel enrolmentCollectionObj = EnrolmentCollectionModel(
-                                            tourId: schoolEnrolmentController.tourValue ?? '',
-                                            school: schoolEnrolmentController.schoolValue ?? '',
-                                            registerImage: base64Images.join(','), // Convert list to a single string
-                                            enrolmentData: enrolmentDataJson, // Store as valid JSON string
-                                            remarks: schoolEnrolmentController.remarksController.text ?? '',
+                                          EnrolmentCollectionModel
+                                              enrolmentCollectionObj =
+                                              EnrolmentCollectionModel(
+                                            tourId: schoolEnrolmentController
+                                                    .tourValue ??
+                                                '',
+                                            school: schoolEnrolmentController
+                                                    .schoolValue ??
+                                                '',
+                                            registerImage:
+                                                registerImageFilePaths, // Store file paths instead of converting to Base64
+                                            enrolmentData:
+                                                enrolmentDataJson, // Store as valid JSON string
+                                            remarks: schoolEnrolmentController
+                                                    .remarksController.text ??
+                                                '',
                                             createdAt: formattedDate,
                                             submittedAt: formattedDate,
-                                            submittedBy: widget.userid.toString(),
+                                            submittedBy:
+                                                widget.userid.toString(),
                                           );
 
                                           // Insert the data into the local database
-                                          int result = await LocalDbController().addData(
-                                            enrolmentCollectionModel: enrolmentCollectionObj,
+                                          int result =
+                                              await LocalDbController().addData(
+                                            enrolmentCollectionModel:
+                                                enrolmentCollectionObj,
                                           );
 
                                           if (result > 0) {
-                                            schoolEnrolmentController.clearFields();
+                                            // Clear form fields upon successful insertion
+                                            schoolEnrolmentController
+                                                .clearFields();
+                                            schoolEnrolmentController
+                                                .remarksController
+                                                .clear();
+                                            editController
+                                                .clearFields();
+                                            // Reset any additional variables (like jsonData) in the current state
                                             setState(() {
-                                              jsonData = {};
+                                              jsonData =
+                                                  {}; // Resetting JSON data if required
                                             });
 
+                                            String jsonData1 = jsonEncode(
+                                                enrolmentCollectionObj
+                                                    .toJson());
+
+                                            try {
+                                              JsonFileDownloader downloader =
+                                                  JsonFileDownloader();
+                                              String? filePath = await downloader
+                                                  .downloadJsonFile(
+                                                      jsonData1,
+                                                      uniqueId,
+                                                      registerImageFiles); // Pass the registerImageFiles
+                                              // Notify user of success
+                                              customSnackbar(
+                                                'File Downloaded Successfully',
+                                                'File saved at $filePath',
+                                                AppColors.primary,
+                                                AppColors.onPrimary,
+                                                Icons.download_done,
+                                              );
+                                            } catch (e) {
+                                              customSnackbar(
+                                                'Error',
+                                                e.toString(),
+                                                AppColors.primary,
+                                                AppColors.onPrimary,
+                                                Icons.error,
+                                              );
+                                              print(e);
+                                            }
                                             customSnackbar(
                                               'Submitted Successfully',
-                                              'submitted',
+                                              'Your data has been submitted',
                                               AppColors.primary,
                                               AppColors.onPrimary,
                                               Icons.verified,
                                             );
+
                                             // Navigate to HomeScreen
                                             Navigator.pushReplacement(
                                               context,
                                               MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      HomeScreen()),
+                                                builder: (context) =>
+                                                    EnrolmentSync(),
+                                              ),
                                             );
                                           } else {
                                             customSnackbar(
                                               'Error',
                                               'Something went wrong',
-                                              AppColors.primary,
-                                              AppColors.onPrimary,
+                                              AppColors.error,
+                                              Colors.white,
                                               Icons.error,
                                             );
                                           }
                                         } else {
-                                          FocusScope.of(context).requestFocus(FocusNode());
+                                          FocusScope.of(context)
+                                              .requestFocus(FocusNode());
                                         }
                                       },
                                     )
-
                                   ],
                                 );
                               }));
@@ -773,5 +963,75 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
         ),
       ),
     );
+  }
+}
+
+class JsonFileDownloader {
+  // Method to download JSON data to the Downloads directory
+  Future<String?> downloadJsonFile(
+      String jsonData,
+      String uniqueId,
+      List<File> imageFiles,
+      ) async {
+    // Request storage permission
+
+
+    Directory? downloadsDirectory;
+
+    if (Platform.isAndroid) {
+      downloadsDirectory = await _getAndroidDirectory();
+    } else if (Platform.isIOS) {
+      downloadsDirectory = await getApplicationDocumentsDirectory();
+    } else {
+      downloadsDirectory = await getDownloadsDirectory();
+    }
+
+
+    if (downloadsDirectory != null) {
+      // Prepare file path to save the JSON
+      String filePath =
+          '${downloadsDirectory.path}/school_enrollment_form_$uniqueId.txt';
+      File file = File(filePath);
+
+      // Convert images to Base64
+      List<String> base64Images = [];
+      for (var image in imageFiles) {
+        List<int> imageBytes = await image.readAsBytes();
+        String base64Image = base64Encode(imageBytes);
+        base64Images.add(base64Image);
+      }
+
+      // Add Base64 image data to the JSON object
+      Map<String, dynamic> jsonObject = jsonDecode(jsonData);
+      jsonObject['images'] = base64Images;
+
+      // Write the updated JSON data to the file
+      await file.writeAsString(jsonEncode(jsonObject));
+
+      // Return the file path for further use if needed
+      return filePath;
+    } else {
+      throw Exception('Could not find the download directory');
+    }
+  }
+
+
+
+  // Method to get the correct directory for Android based on version
+  Future<Directory?> _getAndroidDirectory() async {
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+
+      // Android 11+ (API level 30 and above) - Use manage external storage
+      if (androidInfo.version.sdkInt >= 30 &&
+          await Permission.manageExternalStorage.isGranted) {
+        return Directory('/storage/emulated/0/Download');
+      }
+      // Android 10 and below - Use external storage directory
+      else if (await Permission.storage.isGranted) {
+        return await getExternalStorageDirectory();
+      }
+    }
+    return null;
   }
 }

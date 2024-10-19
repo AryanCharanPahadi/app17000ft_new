@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:math';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_button.dart';
 import 'package:app17000ft_new/components/custom_imagepreview.dart';
@@ -25,7 +29,9 @@ import 'package:app17000ft_new/components/custom_sizedBox.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/home/home_screen.dart';
 
+import '../../components/custom_confirmation.dart';
 import 'alfa_observation_controller.dart';
+import 'alfa_observation_sync.dart';
 
 class AlfaObservationForm extends StatefulWidget {
   String? userid;
@@ -238,6 +244,7 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
 
   @override
   void dispose() {
+    super.dispose();
     _scrollController.dispose();
 
     // Dispose controllers and notifiers
@@ -253,6 +260,19 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
     grandTotalBoys.dispose();
     grandTotalGirls.dispose();
     grandTotal.dispose();
+
+    for (var controller in teachingStaffControllers) {
+      controller.dispose();
+    }
+    for (var controller in nonTeachingStaffControllers) {
+      controller.dispose();
+    }
+    for (var notifier in staffTotalNotifiers) {
+      notifier.dispose();
+    }
+    grandTotalTeachingStaff.dispose();
+    grandTotalNonTeachingStaff.dispose();
+    grandTotalStaff.dispose();
   }
 
   TableRow tableRowMethod(String classname, TextEditingController boyController,
@@ -260,33 +280,56 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
     return TableRow(
       children: [
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: Center(
-              child: Text(classname,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold))),
+            child: Text(
+              classname,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: TextFormField(
             controller: boyController,
             decoration: const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly, // Allow only digits
+              LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+            ],
           ),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: TextFormField(
             controller: girlController,
             decoration: const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly, // Allow only digits
+              LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+            ],
           ),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: ValueListenableBuilder<int>(
             valueListenable: totalNotifier,
             builder: (context, total, child) {
               return Center(
-                  child: Text(total.toString(),
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)));
+                child: Text(
+                  total.toString(),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              );
             },
           ),
         ),
@@ -302,26 +345,44 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
     return TableRow(
       children: [
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: Center(
               child: Text(roleName,
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold))),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: TextFormField(
             controller: teachingController,
+            keyboardType: TextInputType.number, // Set keyboard type to number
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // Allow only digits
+              LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+            ],
             decoration: const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
           ),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: TextFormField(
             controller: nonTeachingController,
+            keyboardType: TextInputType.number, // Set keyboard type to number
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // Allow only digits
+              LengthLimitingTextInputFormatter(3), // Limit to 3 digits
+            ],
             decoration: const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
           ),
         ),
         TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle, // Align vertically to middle
+
           child: ValueListenableBuilder<int>(
             valueListenable: totalNotifier,
             builder: (context, total, child) {
@@ -341,9 +402,19 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
     final responsive = Responsive(context);
     return WillPopScope(
         onWillPop: () async {
-          bool shouldPop =
-              await BaseClient().showLeaveConfirmationDialog(context);
-          return shouldPop;
+          IconData icon = Icons.check_circle;
+          bool shouldExit = await showDialog(
+              context: context,
+              builder: (_) => Confirmation(
+                  iconname: icon,
+                  title: 'Exit Confirmation',
+                  yes: 'Yes',
+                  no: 'no',
+                  desc: 'Are you sure you want to leave exit?',
+                  onPressed: () async {
+                    Navigator.of(context).pop(true);
+                  }));
+          return shouldExit;
         },
         child: Scaffold(
             appBar: const CustomAppbar(
@@ -362,10 +433,17 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                 child: GetBuilder<TourController>(
                                     init: TourController(),
                                     builder: (tourController) {
-                                      tourController.fetchTourDetails();
+                                      // Fetch tour details once, not on every rebuild.
+                                      if (tourController
+                                          .getLocalTourList.isEmpty) {
+                                        tourController.fetchTourDetails();
+                                      }
+
                                       return Column(children: [
                                         if (showBasicDetails) ...[
-                                          LabelText(label: 'Basic Details'),
+                                          LabelText(
+                                            label: 'Basic Details',
+                                          ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -379,35 +457,39 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             side: 'height',
                                           ),
                                           CustomDropdownFormField(
-                                              focusNode:
-                                                  alfaObservationController
-                                                      .tourIdFocusNode,
-                                              options: tourController
+                                            focusNode: alfaObservationController
+                                                .tourIdFocusNode,
+                                            options: tourController
+                                                .getLocalTourList
+                                                .map((e) => e
+                                                    .tourId!) // Ensure tourId is non-nullable
+                                                .toList(),
+                                            selectedOption:
+                                                alfaObservationController
+                                                    .tourValue,
+                                            onChanged: (value) {
+                                              // Safely handle the school list splitting by commas
+                                              splitSchoolLists = tourController
                                                   .getLocalTourList
-                                                  .map((e) => e.tourId)
-                                                  .toList(),
-                                              selectedOption:
-                                                  alfaObservationController
-                                                      .tourValue,
-                                              onChanged: (value) {
-                                                splitSchoolLists =
-                                                    tourController
-                                                        .getLocalTourList
-                                                        .where((e) =>
-                                                            e.tourId == value)
-                                                        .map((e) => e.allSchool
-                                                            .split('|')
-                                                            .toList())
-                                                        .expand((x) => x)
-                                                        .toList();
-                                                setState(() {
-                                                  alfaObservationController
-                                                      .setSchool(null);
-                                                  alfaObservationController
-                                                      .setTour(value);
-                                                });
-                                              },
-                                              labelText: "Select Tour ID"),
+                                                  .where(
+                                                      (e) => e.tourId == value)
+                                                  .map((e) => e.allSchool!
+                                                      .split(',')
+                                                      .map((s) => s.trim())
+                                                      .toList())
+                                                  .expand((x) => x)
+                                                  .toList();
+
+                                              // Single setState call for efficiency
+                                              setState(() {
+                                                alfaObservationController
+                                                    .setSchool(null);
+                                                alfaObservationController
+                                                    .setTour(value);
+                                              });
+                                            },
+                                            labelText: "Select Tour ID",
+                                          ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -420,6 +502,7 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             value: 20,
                                             side: 'height',
                                           ),
+                                          // DropdownSearch for selecting a single school
                                           DropdownSearch<String>(
                                             validator: (value) {
                                               if (value == null ||
@@ -432,18 +515,21 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                               showSelectedItems: true,
                                               showSearchBox: true,
                                               disabledItemFn: (String s) =>
-                                                  s.startsWith('I'),
+                                                  s.startsWith(
+                                                      'I'), // Disable based on condition
                                             ),
-                                            items: splitSchoolLists,
+                                            items:
+                                                splitSchoolLists, // Split school list as strings
                                             dropdownDecoratorProps:
                                                 const DropDownDecoratorProps(
                                               dropdownSearchDecoration:
                                                   InputDecoration(
                                                 labelText: "Select School",
-                                                hintText: "Select School ",
+                                                hintText: "Select School",
                                               ),
                                             ),
                                             onChanged: (value) {
+                                              // Set the selected school
                                               setState(() {
                                                 alfaObservationController
                                                     .setSchool(value);
@@ -477,6 +563,11 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                     alfaObservationController
                                                         .setRadioValue(
                                                             'udiCode', value);
+                                                    if (value == 'Yes') {
+                                                      alfaObservationController
+                                                          .correctUdiseCodeController
+                                                          .clear();
+                                                    }
                                                   },
                                                 ),
                                                 const Text('Yes'),
@@ -546,6 +637,12 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                       .correctUdiseCodeController,
                                               textInputType:
                                                   TextInputType.number,
+                                              inputFormatters: [
+                                                LengthLimitingTextInputFormatter(
+                                                    13),
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly,
+                                              ],
                                               labelText:
                                                   'Enter correct UDISE code',
                                               validator: (value) {
@@ -645,7 +742,7 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                       builder: ((builder) =>
                                                           alfaObservationController
                                                               .bottomSheet(
-                                                                  context)));
+                                                                  context,1)));
                                                 }),
                                           ),
                                           ErrorText(
@@ -762,139 +859,100 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                           Container(
                                             height: 60,
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
+                                              borderRadius: BorderRadius.circular(10.0),
                                               border: Border.all(
-                                                  width: 2,
-                                                  color: _isImageUploadedLkg ==
-                                                          false
-                                                      ? AppColors.primary
-                                                      : AppColors.error),
+                                                width: 2,
+                                                color: _isImageUploadedLkg == false
+                                                    ? AppColors.primary
+                                                    : AppColors.error,
+                                              ),
                                             ),
                                             child: ListTile(
-                                                title:
-                                                    _isImageUploadedLkg == false
-                                                        ? const Text(
-                                                            'Click or Upload Image',
-                                                          )
-                                                        : const Text(
-                                                            'Click or Upload Image',
-                                                            style: TextStyle(
-                                                                color: AppColors
-                                                                    .error),
-                                                          ),
-                                                trailing: const Icon(
-                                                    Icons.camera_alt,
-                                                    color:
-                                                        AppColors.onBackground),
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                      backgroundColor:
-                                                          AppColors.primary,
-                                                      context: context,
-                                                      builder: ((builder) =>
-                                                          alfaObservationController
-                                                              .bottomSheet2(
-                                                                  context)));
-                                                }),
+                                              title: Text(
+                                                'Click or Upload Image',
+                                                style: TextStyle(
+                                                  color: _isImageUploadedLkg == false
+                                                      ? Colors.black
+                                                      : AppColors.error,
+                                                ),
+                                              ),
+                                              trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                  backgroundColor: AppColors.primary,
+                                                  context: context,
+                                                  builder: (builder) => alfaObservationController.bottomSheet(context, 2),
+                                                );
+                                              },
+                                            ),
                                           ),
                                           ErrorText(
                                             isVisible: validateLkg,
-                                            message:
-                                                'library Register Image Required',
+                                            message: 'Library Register Image Required',
                                           ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
                                           ),
-                                          alfaObservationController
-                                                  .multipleImage2.isNotEmpty
+                                          alfaObservationController.multipleImage2.isNotEmpty
                                               ? Container(
-                                                  width: responsive
-                                                      .responsiveValue(
-                                                          small: 600.0,
-                                                          medium: 900.0,
-                                                          large: 1400.0),
-                                                  height: responsive
-                                                      .responsiveValue(
-                                                          small: 170.0,
-                                                          medium: 170.0,
-                                                          large: 170.0),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                            width: responsive.responsiveValue(
+                                              small: 600.0,
+                                              medium: 900.0,
+                                              large: 1400.0,
+                                            ),
+                                            height: responsive.responsiveValue(
+                                              small: 170.0,
+                                              medium: 170.0,
+                                              large: 170.0,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.grey),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: alfaObservationController.multipleImage2.length,
+                                              itemBuilder: (context, index) {
+                                                return SizedBox(
+                                                  height: 200,
+                                                  width: 200,
+                                                  child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            CustomImagePreview.showImagePreview(
+                                                              alfaObservationController.multipleImage2[index].path,
+                                                              context,
+                                                            );
+                                                          },
+                                                          child: Image.file(
+                                                            File(alfaObservationController.multipleImage2[index].path),
+                                                            width: 190,
+                                                            height: 120,
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            alfaObservationController.multipleImage2.removeAt(index);
+                                                          });
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child:
-                                                      alfaObservationController
-                                                              .multipleImage2
-                                                              .isEmpty
-                                                          ? const Center(
-                                                              child: Text(
-                                                                  'No images selected.'),
-                                                            )
-                                                          : ListView.builder(
-                                                              scrollDirection:
-                                                                  Axis.horizontal,
-                                                              itemCount:
-                                                                  alfaObservationController
-                                                                      .multipleImage2
-                                                                      .length,
-                                                              itemBuilder:
-                                                                  (context,
-                                                                      index) {
-                                                                return SizedBox(
-                                                                  height: 200,
-                                                                  width: 200,
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                        child:
-                                                                            GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            CustomImagePreview2.showImagePreview2(alfaObservationController.multipleImage2[index].path,
-                                                                                context);
-                                                                          },
-                                                                          child:
-                                                                              Image.file(
-                                                                            File(alfaObservationController.multipleImage2[index].path),
-                                                                            width:
-                                                                                190,
-                                                                            height:
-                                                                                120,
-                                                                            fit:
-                                                                                BoxFit.fill,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            alfaObservationController.multipleImage2.removeAt(index);
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .delete,
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                )
+                                                );
+                                              },
+                                            ),
+                                          )
                                               : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
@@ -912,139 +970,100 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                           Container(
                                             height: 60,
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
+                                              borderRadius: BorderRadius.circular(10.0),
                                               border: Border.all(
-                                                  width: 2,
-                                                  color: _isImageUploadedUkg ==
-                                                          false
-                                                      ? AppColors.primary
-                                                      : AppColors.error),
+                                                width: 2,
+                                                color: _isImageUploadedUkg == false
+                                                    ? AppColors.primary
+                                                    : AppColors.error,
+                                              ),
                                             ),
                                             child: ListTile(
-                                                title:
-                                                    _isImageUploadedUkg == false
-                                                        ? const Text(
-                                                            'Click or Upload Image',
-                                                          )
-                                                        : const Text(
-                                                            'Click or Upload Image',
-                                                            style: TextStyle(
-                                                                color: AppColors
-                                                                    .error),
-                                                          ),
-                                                trailing: const Icon(
-                                                    Icons.camera_alt,
-                                                    color:
-                                                        AppColors.onBackground),
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                      backgroundColor:
-                                                          AppColors.primary,
-                                                      context: context,
-                                                      builder: ((builder) =>
-                                                          alfaObservationController
-                                                              .bottomSheet3(
-                                                                  context)));
-                                                }),
+                                              title: Text(
+                                                'Click or Upload Image',
+                                                style: TextStyle(
+                                                  color: _isImageUploadedUkg == false
+                                                      ? Colors.black
+                                                      : AppColors.error,
+                                                ),
+                                              ),
+                                              trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                  backgroundColor: AppColors.primary,
+                                                  context: context,
+                                                  builder: (builder) => alfaObservationController.bottomSheet(context, 3),
+                                                );
+                                              },
+                                            ),
                                           ),
                                           ErrorText(
                                             isVisible: validateUkg,
-                                            message:
-                                                'library Register Image Required',
+                                            message: 'Library Register Image Required',
                                           ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
                                           ),
-                                          alfaObservationController
-                                                  .multipleImage3.isNotEmpty
+                                          alfaObservationController.multipleImage3.isNotEmpty
                                               ? Container(
-                                                  width: responsive
-                                                      .responsiveValue(
-                                                          small: 600.0,
-                                                          medium: 900.0,
-                                                          large: 1400.0),
-                                                  height: responsive
-                                                      .responsiveValue(
-                                                          small: 170.0,
-                                                          medium: 170.0,
-                                                          large: 170.0),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                            width: responsive.responsiveValue(
+                                              small: 600.0,
+                                              medium: 900.0,
+                                              large: 1400.0,
+                                            ),
+                                            height: responsive.responsiveValue(
+                                              small: 170.0,
+                                              medium: 170.0,
+                                              large: 170.0,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.grey),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: alfaObservationController.multipleImage3.length,
+                                              itemBuilder: (context, index) {
+                                                return SizedBox(
+                                                  height: 200,
+                                                  width: 200,
+                                                  child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            CustomImagePreview.showImagePreview(
+                                                              alfaObservationController.multipleImage3[index].path,
+                                                              context,
+                                                            );
+                                                          },
+                                                          child: Image.file(
+                                                            File(alfaObservationController.multipleImage3[index].path),
+                                                            width: 190,
+                                                            height: 120,
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            alfaObservationController.multipleImage3.removeAt(index);
+                                                          });
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child:
-                                                      alfaObservationController
-                                                              .multipleImage3
-                                                              .isEmpty
-                                                          ? const Center(
-                                                              child: Text(
-                                                                  'No images selected.'),
-                                                            )
-                                                          : ListView.builder(
-                                                              scrollDirection:
-                                                                  Axis.horizontal,
-                                                              itemCount:
-                                                                  alfaObservationController
-                                                                      .multipleImage3
-                                                                      .length,
-                                                              itemBuilder:
-                                                                  (context,
-                                                                      index) {
-                                                                return SizedBox(
-                                                                  height: 200,
-                                                                  width: 200,
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                        child:
-                                                                            GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            CustomImagePreview3.showImagePreview3(alfaObservationController.multipleImage3[index].path,
-                                                                                context);
-                                                                          },
-                                                                          child:
-                                                                              Image.file(
-                                                                            File(alfaObservationController.multipleImage3[index].path),
-                                                                            width:
-                                                                                190,
-                                                                            height:
-                                                                                120,
-                                                                            fit:
-                                                                                BoxFit.fill,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            alfaObservationController.multipleImage3.removeAt(index);
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .delete,
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                )
+                                                );
+                                              },
+                                            ),
+                                          )
                                               : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
@@ -1140,19 +1159,19 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             textInputType: TextInputType.number,
                                             labelText:
                                                 'Enter number between 1-80',
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return 'Please fill this field';
-                                              }
-                                              if (!RegExp(r'^[0-9]+$')
-                                                  .hasMatch(value)) {
-                                                return 'Please enter a valid number';
-                                              }
-                                              return null;
-                                            },
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly, // Only allow digits
+                                              LengthLimitingTextInputFormatter(
+                                                  2), // Limit input length to 2 digits
+                                              NumericRangeTextInputFormatter(
+                                                  min: 1,
+                                                  max:
+                                                      80), // Custom input formatter for range
+                                            ],
                                             showCharacterCount: true,
                                           ),
+
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1245,6 +1264,16 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                 alfaObservationController
                                                     .alfaNumercyController,
                                             textInputType: TextInputType.number,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly, // Only allow digits
+                                              LengthLimitingTextInputFormatter(
+                                                  2), // Limit input length to 2 digits
+                                              NumericRangeTextInputFormatter(
+                                                  min: 1,
+                                                  max:
+                                                      48), // Custom input formatter for range
+                                            ],
                                             labelText:
                                                 'Enter number between 1-48',
                                             validator: (value) {
@@ -1341,20 +1370,43 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             title: 'Next',
                                             onPressedButton: () {
                                               // Perform radio button validations
-                                              final isRadioValid1 = alfaObservationController.validateRadioSelection('udiCode');
-                                              final isRadioValid2 = alfaObservationController.validateRadioSelection('alfaEnglishBooklet');
-                                              final isRadioValid3 = alfaObservationController.validateRadioSelection('alfaNumeracy');
-                                              final isRadioValid4 = alfaObservationController.validateRadioSelection('childrenPairs');
+                                              final isRadioValid1 =
+                                                  alfaObservationController
+                                                      .validateRadioSelection(
+                                                          'udiCode');
+                                              final isRadioValid2 =
+                                                  alfaObservationController
+                                                      .validateRadioSelection(
+                                                          'alfaEnglishBooklet');
+                                              final isRadioValid3 =
+                                                  alfaObservationController
+                                                      .validateRadioSelection(
+                                                          'alfaNumeracy');
+                                              final isRadioValid4 =
+                                                  alfaObservationController
+                                                      .validateRadioSelection(
+                                                          'childrenPairs');
                                               setState(() {
-                                                validateNursery = alfaObservationController.multipleImage.isEmpty;
-                                                validateLkg = alfaObservationController.multipleImage2.isEmpty;
-                                                validateUkg = alfaObservationController.multipleImage3.isEmpty;
+                                                validateNursery =
+                                                    alfaObservationController
+                                                        .multipleImage.isEmpty;
+                                                validateLkg =
+                                                    alfaObservationController
+                                                        .multipleImage2.isEmpty;
+                                                validateUkg =
+                                                    alfaObservationController
+                                                        .multipleImage3.isEmpty;
                                               });
 
                                               if (_formKey.currentState!
-                                                      .validate()
-                                                  && isRadioValid1 && isRadioValid2 && isRadioValid3 && isRadioValid4
-                                                && !validateNursery && !validateLkg && !validateUkg  ) {
+                                                      .validate() &&
+                                                  isRadioValid1 &&
+                                                  isRadioValid2 &&
+                                                  isRadioValid3 &&
+                                                  isRadioValid4 &&
+                                                  !validateNursery &&
+                                                  !validateLkg &&
+                                                  !validateUkg) {
                                                 setState(() {
                                                   showBasicDetails = false;
                                                   showAlfamoduleActivities =
@@ -1464,6 +1516,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                     const TableRow(
                                                       children: [
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Grade',
@@ -1473,6 +1528,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Boys',
@@ -1482,6 +1540,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Girls',
@@ -1491,6 +1552,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Total',
@@ -1513,6 +1577,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                     TableRow(
                                                       children: [
                                                         const TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Grand Total',
@@ -1522,6 +1589,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -1542,6 +1612,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           ),
                                                         ),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -1562,6 +1635,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           ),
                                                         ),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -1613,142 +1689,101 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                           Container(
                                             height: 60,
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
+                                              borderRadius: BorderRadius.circular(10.0),
                                               border: Border.all(
-                                                  width: 2,
-                                                  color:
-                                                      _isImageUploadedAlfaModule ==
-                                                              false
-                                                          ? AppColors.primary
-                                                          : AppColors.error),
+                                                width: 2,
+                                                color: _isImageUploadedAlfaModule == false
+                                                    ? AppColors.primary
+                                                    : AppColors.error,
+                                              ),
                                             ),
                                             child: ListTile(
-                                                title:
-                                                    _isImageUploadedAlfaModule ==
-                                                            false
-                                                        ? const Text(
-                                                            'Click or Upload Image',
-                                                          )
-                                                        : const Text(
-                                                            'Click or Upload Image',
-                                                            style: TextStyle(
-                                                                color: AppColors
-                                                                    .error),
-                                                          ),
-                                                trailing: const Icon(
-                                                    Icons.camera_alt,
-                                                    color:
-                                                        AppColors.onBackground),
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                      backgroundColor:
-                                                          AppColors.primary,
-                                                      context: context,
-                                                      builder: ((builder) =>
-                                                          alfaObservationController
-                                                              .bottomSheet4(
-                                                                  context)));
-                                                }),
+                                              title: Text(
+                                                'Click or Upload Image',
+                                                style: TextStyle(
+                                                  color: _isImageUploadedAlfaModule == false
+                                                      ? Colors.black
+                                                      : AppColors.error,
+                                                ),
+                                              ),
+                                              trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                  backgroundColor: AppColors.primary,
+                                                  context: context,
+                                                  builder: (builder) => alfaObservationController.bottomSheet(context, 4),
+                                                );
+                                              },
+                                            ),
                                           ),
                                           ErrorText(
                                             isVisible: validateAlfamodule,
-                                            message: 'Image Required',
+                                            message: 'Library Register Image Required',
                                           ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
                                           ),
-                                          alfaObservationController
-                                                  .multipleImage4.isNotEmpty
+                                          alfaObservationController.multipleImage4.isNotEmpty
                                               ? Container(
-                                                  width: responsive
-                                                      .responsiveValue(
-                                                          small: 600.0,
-                                                          medium: 900.0,
-                                                          large: 1400.0),
-                                                  height: responsive
-                                                      .responsiveValue(
-                                                          small: 170.0,
-                                                          medium: 170.0,
-                                                          large: 170.0),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                            width: responsive.responsiveValue(
+                                              small: 600.0,
+                                              medium: 900.0,
+                                              large: 1400.0,
+                                            ),
+                                            height: responsive.responsiveValue(
+                                              small: 170.0,
+                                              medium: 170.0,
+                                              large: 170.0,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.grey),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: alfaObservationController.multipleImage4.length,
+                                              itemBuilder: (context, index) {
+                                                return SizedBox(
+                                                  height: 200,
+                                                  width: 200,
+                                                  child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            CustomImagePreview.showImagePreview(
+                                                              alfaObservationController.multipleImage4[index].path,
+                                                              context,
+                                                            );
+                                                          },
+                                                          child: Image.file(
+                                                            File(alfaObservationController.multipleImage4[index].path),
+                                                            width: 190,
+                                                            height: 120,
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            alfaObservationController.multipleImage4.removeAt(index);
+                                                          });
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child:
-                                                      alfaObservationController
-                                                              .multipleImage4
-                                                              .isEmpty
-                                                          ? const Center(
-                                                              child: Text(
-                                                                  'No images selected.'),
-                                                            )
-                                                          : ListView.builder(
-                                                              scrollDirection:
-                                                                  Axis.horizontal,
-                                                              itemCount:
-                                                                  alfaObservationController
-                                                                      .multipleImage4
-                                                                      .length,
-                                                              itemBuilder:
-                                                                  (context,
-                                                                      index) {
-                                                                return SizedBox(
-                                                                  height: 200,
-                                                                  width: 200,
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                        child:
-                                                                            GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            CustomImagePreview4.showImagePreview4(alfaObservationController.multipleImage4[index].path,
-                                                                                context);
-                                                                          },
-                                                                          child:
-                                                                              Image.file(
-                                                                            File(alfaObservationController.multipleImage4[index].path),
-                                                                            width:
-                                                                                190,
-                                                                            height:
-                                                                                120,
-                                                                            fit:
-                                                                                BoxFit.fill,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            alfaObservationController.multipleImage4.removeAt(index);
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .delete,
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                )
+                                                );
+                                              },
+                                            ),
+                                          )
                                               : const SizedBox(),
-
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1764,37 +1799,49 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           false;
                                                     });
                                                   }),
-
                                               const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
-                                                  final isRadioValid5 = alfaObservationController
-                                                      .validateRadioSelection('alfaModuleActivities');
+                                                  final isRadioValid5 =
+                                                      alfaObservationController
+                                                          .validateRadioSelection(
+                                                              'alfaModuleActivities');
 
                                                   setState(() {
                                                     // Validate enrolment records only when 'refresherTrainingOnALFA' is 'Yes'
-                                                    if (alfaObservationController.getSelectedValue('alfaModuleActivities') == 'Yes') {
-                                                      validateEnrolmentRecords = jsonData.isEmpty;
+                                                    if (alfaObservationController
+                                                            .getSelectedValue(
+                                                                'alfaModuleActivities') ==
+                                                        'Yes') {
+                                                      validateEnrolmentRecords =
+                                                          jsonData.isEmpty;
                                                     } else {
-                                                      validateEnrolmentRecords = false; // Skip validation
+                                                      validateEnrolmentRecords =
+                                                          false; // Skip validation
                                                     }
 
-                                                    validateAlfamodule = alfaObservationController.multipleImage4.isEmpty;
+                                                    validateAlfamodule =
+                                                        alfaObservationController
+                                                            .multipleImage4
+                                                            .isEmpty;
                                                   });
 
-                                                  if (_formKey.currentState!.validate() &&
+                                                  if (_formKey.currentState!
+                                                          .validate() &&
                                                       isRadioValid5 &&
                                                       !validateEnrolmentRecords &&
-                                                      !validateAlfamodule) { // Include image validation here
+                                                      !validateAlfamodule) {
+                                                    // Include image validation here
                                                     setState(() {
-                                                      showAlfamoduleActivities = false;
-                                                      showReferesherTraining = true;
+                                                      showAlfamoduleActivities =
+                                                          false;
+                                                      showReferesherTraining =
+                                                          true;
                                                     });
                                                   }
                                                 },
                                               ),
-
                                             ],
                                           ),
 
@@ -1864,6 +1911,14 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                         .setRadioValue(
                                                             'refresherTrainingOnALFA',
                                                             value);
+                                                    if (value == 'No') {
+                                                      alfaObservationController
+                                                          .noOfTeacherTrainedController
+                                                          .clear();
+                                                      alfaObservationController
+                                                          .multipleImage5
+                                                          .clear();
+                                                    }
                                                   },
                                                 ),
                                                 const Text('No'),
@@ -1937,136 +1992,100 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             Container(
                                               height: 60,
                                               decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                borderRadius: BorderRadius.circular(10.0),
                                                 border: Border.all(
-                                                    width: 2,
-                                                    color:
-                                                        _isImageUploadedTeacherTraining ==
-                                                                false
-                                                            ? AppColors.primary
-                                                            : AppColors.error),
+                                                  width: 2,
+                                                  color: _isImageUploadedTeacherTraining == false
+                                                      ? AppColors.primary
+                                                      : AppColors.error,
+                                                ),
                                               ),
                                               child: ListTile(
-                                                  title:
-                                                      _isImageUploadedTeacherTraining ==
-                                                              false
-                                                          ? const Text(
-                                                              'Click or Upload Image',
-                                                            )
-                                                          : const Text(
-                                                              'Click or Upload Image',
-                                                              style: TextStyle(
-                                                                  color: AppColors
-                                                                      .error),
-                                                            ),
-                                                  trailing: const Icon(
-                                                      Icons.camera_alt,
-                                                      color: AppColors
-                                                          .onBackground),
-                                                  onTap: () {
-                                                    showModalBottomSheet(
-                                                        backgroundColor:
-                                                            AppColors.primary,
-                                                        context: context,
-                                                        builder: ((builder) =>
-                                                            alfaObservationController
-                                                                .bottomSheet5(
-                                                                    context)));
-                                                  }),
+                                                title: Text(
+                                                  'Click or Upload Image',
+                                                  style: TextStyle(
+                                                    color: _isImageUploadedTeacherTraining == false
+                                                        ? Colors.black
+                                                        : AppColors.error,
+                                                  ),
+                                                ),
+                                                trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                                onTap: () {
+                                                  showModalBottomSheet(
+                                                    backgroundColor: AppColors.primary,
+                                                    context: context,
+                                                    builder: (builder) => alfaObservationController.bottomSheet(context, 5),
+                                                  );
+                                                },
+                                              ),
                                             ),
                                             ErrorText(
-                                              isVisible:
-                                                  validateTeacherTraining,
-                                              message: 'Image Required',
+                                              isVisible: validateTeacherTraining,
+                                              message: 'Library Register Image Required',
                                             ),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
                                             ),
-                                            alfaObservationController
-                                                    .multipleImage5.isNotEmpty
+                                            alfaObservationController.multipleImage5.isNotEmpty
                                                 ? Container(
-                                                    width: responsive
-                                                        .responsiveValue(
-                                                            small: 600.0,
-                                                            medium: 900.0,
-                                                            large: 1400.0),
-                                                    height: responsive
-                                                        .responsiveValue(
-                                                            small: 170.0,
-                                                            medium: 170.0,
-                                                            large: 170.0),
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
+                                              width: responsive.responsiveValue(
+                                                small: 600.0,
+                                                medium: 900.0,
+                                                large: 1400.0,
+                                              ),
+                                              height: responsive.responsiveValue(
+                                                small: 170.0,
+                                                medium: 170.0,
+                                                large: 170.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: ListView.builder(
+                                                scrollDirection: Axis.horizontal,
+                                                itemCount: alfaObservationController.multipleImage5.length,
+                                                itemBuilder: (context, index) {
+                                                  return SizedBox(
+                                                    height: 200,
+                                                    width: 200,
+                                                    child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              CustomImagePreview.showImagePreview(
+                                                                alfaObservationController.multipleImage5[index].path,
+                                                                context,
+                                                              );
+                                                            },
+                                                            child: Image.file(
+                                                              File(alfaObservationController.multipleImage5[index].path),
+                                                              width: 190,
+                                                              height: 120,
+                                                              fit: BoxFit.fill,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              alfaObservationController.multipleImage5.removeAt(index);
+                                                            });
+                                                          },
+                                                          child: const Icon(
+                                                            Icons.delete,
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    child:
-                                                        alfaObservationController
-                                                                .multipleImage5
-                                                                .isEmpty
-                                                            ? const Center(
-                                                                child: Text(
-                                                                    'No images selected.'),
-                                                              )
-                                                            : ListView.builder(
-                                                                scrollDirection:
-                                                                    Axis.horizontal,
-                                                                itemCount:
-                                                                    alfaObservationController
-                                                                        .multipleImage5
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (context,
-                                                                        index) {
-                                                                  return SizedBox(
-                                                                    height: 200,
-                                                                    width: 200,
-                                                                    child:
-                                                                        Column(
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .all(
-                                                                              8.0),
-                                                                          child:
-                                                                              GestureDetector(
-                                                                            onTap:
-                                                                                () {
-                                                                              CustomImagePreview5.showImagePreview5(alfaObservationController.multipleImage5[index].path, context);
-                                                                            },
-                                                                            child:
-                                                                                Image.file(
-                                                                              File(alfaObservationController.multipleImage5[index].path),
-                                                                              width: 190,
-                                                                              height: 120,
-                                                                              fit: BoxFit.fill,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            setState(() {
-                                                                              alfaObservationController.multipleImage5.removeAt(index);
-                                                                            });
-                                                                          },
-                                                                          child:
-                                                                              const Icon(
-                                                                            Icons.delete,
-                                                                            color:
-                                                                                Colors.red,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                  )
+                                                  );
+                                                },
+                                              ),
+                                            )
                                                 : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
@@ -2090,28 +2109,40 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
-                                                  final isRadioValid6 = alfaObservationController.validateRadioSelection('refresherTrainingOnALFA');
+                                                  final isRadioValid6 =
+                                                      alfaObservationController
+                                                          .validateRadioSelection(
+                                                              'refresherTrainingOnALFA');
 
                                                   setState(() {
-                                                    if (isRadioValid6 && alfaObservationController.getSelectedValue('refresherTrainingOnALFA') == 'Yes') {
-                                                      validateTeacherTraining = alfaObservationController.multipleImage5.isEmpty;
+                                                    if (isRadioValid6 &&
+                                                        alfaObservationController
+                                                                .getSelectedValue(
+                                                                    'refresherTrainingOnALFA') ==
+                                                            'Yes') {
+                                                      validateTeacherTraining =
+                                                          alfaObservationController
+                                                              .multipleImage5
+                                                              .isEmpty;
                                                     } else {
-                                                      validateTeacherTraining = false; // Skip validation
+                                                      validateTeacherTraining =
+                                                          false; // Skip validation
                                                     }
                                                   });
 
                                                   // Proceed only if form is valid, radio selection is valid, and (if needed) teacher training validation passes
-                                                  if (_formKey.currentState!.validate() &&
+                                                  if (_formKey.currentState!
+                                                          .validate() &&
                                                       isRadioValid6 &&
                                                       !validateTeacherTraining) {
                                                     setState(() {
-                                                      showReferesherTraining = false;
+                                                      showReferesherTraining =
+                                                          false;
                                                       showLibraryReading = true;
                                                     });
                                                   }
                                                 },
                                               ),
-
                                             ],
                                           ),
 
@@ -2180,6 +2211,11 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                         .setRadioValue(
                                                             'readingActivities',
                                                             value);
+                                                    if (value == 'No') {
+                                                      alfaObservationController
+                                                          .multipleImage6
+                                                          .clear();
+                                                    }
                                                   },
                                                 ),
                                                 const Text('No'),
@@ -2220,6 +2256,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                     const TableRow(
                                                       children: [
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Grade',
@@ -2229,6 +2268,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Boys',
@@ -2238,6 +2280,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Girls',
@@ -2247,6 +2292,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Total',
@@ -2271,6 +2319,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                     TableRow(
                                                       children: [
                                                         const TableCell(
+                                                            verticalAlignment:
+                                                            TableCellVerticalAlignment
+                                                                .middle, // Align vertically to middle
                                                             child: Center(
                                                                 child: Text(
                                                                     'Grand Total',
@@ -2280,6 +2331,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                         fontWeight:
                                                                             FontWeight.bold)))),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -2300,6 +2354,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           ),
                                                         ),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -2320,6 +2377,9 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           ),
                                                         ),
                                                         TableCell(
+                                                          verticalAlignment:
+                                                          TableCellVerticalAlignment
+                                                              .middle, // Align vertically to middle
                                                           child:
                                                               ValueListenableBuilder<
                                                                   int>(
@@ -2366,136 +2426,100 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                             Container(
                                               height: 60,
                                               decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                borderRadius: BorderRadius.circular(10.0),
                                                 border: Border.all(
-                                                    width: 2,
-                                                    color:
-                                                        _isImageUploadedReadingActivities ==
-                                                                false
-                                                            ? AppColors.primary
-                                                            : AppColors.error),
+                                                  width: 2,
+                                                  color: _isImageUploadedReadingActivities == false
+                                                      ? AppColors.primary
+                                                      : AppColors.error,
+                                                ),
                                               ),
                                               child: ListTile(
-                                                  title:
-                                                      _isImageUploadedReadingActivities ==
-                                                              false
-                                                          ? const Text(
-                                                              'Click or Upload Image',
-                                                            )
-                                                          : const Text(
-                                                              'Click or Upload Image',
-                                                              style: TextStyle(
-                                                                  color: AppColors
-                                                                      .error),
-                                                            ),
-                                                  trailing: const Icon(
-                                                      Icons.camera_alt,
-                                                      color: AppColors
-                                                          .onBackground),
-                                                  onTap: () {
-                                                    showModalBottomSheet(
-                                                        backgroundColor:
-                                                            AppColors.primary,
-                                                        context: context,
-                                                        builder: ((builder) =>
-                                                            alfaObservationController
-                                                                .bottomSheet6(
-                                                                    context)));
-                                                  }),
+                                                title: Text(
+                                                  'Click or Upload Image',
+                                                  style: TextStyle(
+                                                    color: _isImageUploadedReadingActivities == false
+                                                        ? Colors.black
+                                                        : AppColors.error,
+                                                  ),
+                                                ),
+                                                trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                                onTap: () {
+                                                  showModalBottomSheet(
+                                                    backgroundColor: AppColors.primary,
+                                                    context: context,
+                                                    builder: (builder) => alfaObservationController.bottomSheet(context, 6),
+                                                  );
+                                                },
+                                              ),
                                             ),
                                             ErrorText(
-                                              isVisible:
-                                                  validateReadingActivities,
-                                              message: 'Image Required',
+                                              isVisible: validateReadingActivities,
+                                              message: 'Library Register Image Required',
                                             ),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
                                             ),
-                                            alfaObservationController
-                                                    .multipleImage6.isNotEmpty
+                                            alfaObservationController.multipleImage6.isNotEmpty
                                                 ? Container(
-                                                    width: responsive
-                                                        .responsiveValue(
-                                                            small: 600.0,
-                                                            medium: 900.0,
-                                                            large: 1400.0),
-                                                    height: responsive
-                                                        .responsiveValue(
-                                                            small: 170.0,
-                                                            medium: 170.0,
-                                                            large: 170.0),
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
+                                              width: responsive.responsiveValue(
+                                                small: 600.0,
+                                                medium: 900.0,
+                                                large: 1400.0,
+                                              ),
+                                              height: responsive.responsiveValue(
+                                                small: 170.0,
+                                                medium: 170.0,
+                                                large: 170.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: ListView.builder(
+                                                scrollDirection: Axis.horizontal,
+                                                itemCount: alfaObservationController.multipleImage6.length,
+                                                itemBuilder: (context, index) {
+                                                  return SizedBox(
+                                                    height: 200,
+                                                    width: 200,
+                                                    child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              CustomImagePreview.showImagePreview(
+                                                                alfaObservationController.multipleImage6[index].path,
+                                                                context,
+                                                              );
+                                                            },
+                                                            child: Image.file(
+                                                              File(alfaObservationController.multipleImage6[index].path),
+                                                              width: 190,
+                                                              height: 120,
+                                                              fit: BoxFit.fill,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              alfaObservationController.multipleImage6.removeAt(index);
+                                                            });
+                                                          },
+                                                          child: const Icon(
+                                                            Icons.delete,
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    child:
-                                                        alfaObservationController
-                                                                .multipleImage6
-                                                                .isEmpty
-                                                            ? const Center(
-                                                                child: Text(
-                                                                    'No images selected.'),
-                                                              )
-                                                            : ListView.builder(
-                                                                scrollDirection:
-                                                                    Axis.horizontal,
-                                                                itemCount:
-                                                                    alfaObservationController
-                                                                        .multipleImage6
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (context,
-                                                                        index) {
-                                                                  return SizedBox(
-                                                                    height: 200,
-                                                                    width: 200,
-                                                                    child:
-                                                                        Column(
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: const EdgeInsets
-                                                                              .all(
-                                                                              8.0),
-                                                                          child:
-                                                                              GestureDetector(
-                                                                            onTap:
-                                                                                () {
-                                                                              CustomImagePreview6.showImagePreview6(alfaObservationController.multipleImage6[index].path, context);
-                                                                            },
-                                                                            child:
-                                                                                Image.file(
-                                                                              File(alfaObservationController.multipleImage6[index].path),
-                                                                              width: 190,
-                                                                              height: 120,
-                                                                              fit: BoxFit.fill,
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            setState(() {
-                                                                              alfaObservationController.multipleImage6.removeAt(index);
-                                                                            });
-                                                                          },
-                                                                          child:
-                                                                              const Icon(
-                                                                            Icons.delete,
-                                                                            color:
-                                                                                Colors.red,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                  )
+                                                  );
+                                                },
+                                              ),
+                                            )
                                                 : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
@@ -2519,31 +2543,46 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
-                                                  final isRadioValid6 = alfaObservationController.validateRadioSelection('readingActivities');
+                                                  final isRadioValid6 =
+                                                      alfaObservationController
+                                                          .validateRadioSelection(
+                                                              'readingActivities');
 
                                                   setState(() {
-                                                    if (isRadioValid6 && alfaObservationController.getSelectedValue('readingActivities') == 'Yes') {
-                                                      validateStaffData = staffJsonData.isEmpty;
-                                                      validateReadingActivities = alfaObservationController.multipleImage6.isEmpty;
+                                                    if (isRadioValid6 &&
+                                                        alfaObservationController
+                                                                .getSelectedValue(
+                                                                    'readingActivities') ==
+                                                            'Yes') {
+                                                      validateStaffData =
+                                                          staffJsonData.isEmpty;
+                                                      validateReadingActivities =
+                                                          alfaObservationController
+                                                              .multipleImage6
+                                                              .isEmpty;
                                                     } else {
-                                                      validateStaffData = false; // Skip validation
-                                                      validateReadingActivities = false; // Skip validation
+                                                      validateStaffData =
+                                                          false; // Skip validation
+                                                      validateReadingActivities =
+                                                          false; // Skip validation
                                                     }
                                                   });
 
                                                   // Proceed only if form is valid, radio selection is valid, and conditional validations pass
-                                                  if (_formKey.currentState!.validate() &&
+                                                  if (_formKey.currentState!
+                                                          .validate() &&
                                                       isRadioValid6 &&
                                                       !validateStaffData &&
                                                       !validateReadingActivities) {
                                                     setState(() {
-                                                      showLibraryReading = false;
-                                                      showClassroomObservation = true;
+                                                      showLibraryReading =
+                                                          false;
+                                                      showClassroomObservation =
+                                                          true;
                                                     });
                                                   }
                                                 },
                                               ),
-
                                             ],
                                           ),
 
@@ -2657,139 +2696,100 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                           Container(
                                             height: 60,
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
+                                              borderRadius: BorderRadius.circular(10.0),
                                               border: Border.all(
-                                                  width: 2,
-                                                  color:
-                                                      _isImageUploadedTlmKit ==
-                                                              false
-                                                          ? AppColors.primary
-                                                          : AppColors.error),
+                                                width: 2,
+                                                color: _isImageUploadedTlmKit == false
+                                                    ? AppColors.primary
+                                                    : AppColors.error,
+                                              ),
                                             ),
                                             child: ListTile(
-                                                title: _isImageUploadedTlmKit ==
-                                                        false
-                                                    ? const Text(
-                                                        'Click or Upload Image',
-                                                      )
-                                                    : const Text(
-                                                        'Click or Upload Image',
-                                                        style: TextStyle(
-                                                            color: AppColors
-                                                                .error),
-                                                      ),
-                                                trailing: const Icon(
-                                                    Icons.camera_alt,
-                                                    color:
-                                                        AppColors.onBackground),
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                      backgroundColor:
-                                                          AppColors.primary,
-                                                      context: context,
-                                                      builder: ((builder) =>
-                                                          alfaObservationController
-                                                              .bottomSheet7(
-                                                                  context)));
-                                                }),
+                                              title: Text(
+                                                'Click or Upload Image',
+                                                style: TextStyle(
+                                                  color: _isImageUploadedTlmKit == false
+                                                      ? Colors.black
+                                                      : AppColors.error,
+                                                ),
+                                              ),
+                                              trailing: const Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              onTap: () {
+                                                showModalBottomSheet(
+                                                  backgroundColor: AppColors.primary,
+                                                  context: context,
+                                                  builder: (builder) => alfaObservationController.bottomSheet(context, 7),
+                                                );
+                                              },
+                                            ),
                                           ),
                                           ErrorText(
                                             isVisible: validateTlmKit,
-                                            message: 'Image Required',
+                                            message: 'Library Register Image Required',
                                           ),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
                                           ),
-                                          alfaObservationController
-                                                  .multipleImage7.isNotEmpty
+                                          alfaObservationController.multipleImage7.isNotEmpty
                                               ? Container(
-                                                  width: responsive
-                                                      .responsiveValue(
-                                                          small: 600.0,
-                                                          medium: 900.0,
-                                                          large: 1400.0),
-                                                  height: responsive
-                                                      .responsiveValue(
-                                                          small: 170.0,
-                                                          medium: 170.0,
-                                                          large: 170.0),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
+                                            width: responsive.responsiveValue(
+                                              small: 600.0,
+                                              medium: 900.0,
+                                              large: 1400.0,
+                                            ),
+                                            height: responsive.responsiveValue(
+                                              small: 170.0,
+                                              medium: 170.0,
+                                              large: 170.0,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.grey),
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: ListView.builder(
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: alfaObservationController.multipleImage7.length,
+                                              itemBuilder: (context, index) {
+                                                return SizedBox(
+                                                  height: 200,
+                                                  width: 200,
+                                                  child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            CustomImagePreview.showImagePreview(
+                                                              alfaObservationController.multipleImage7[index].path,
+                                                              context,
+                                                            );
+                                                          },
+                                                          child: Image.file(
+                                                            File(alfaObservationController.multipleImage7[index].path),
+                                                            width: 190,
+                                                            height: 120,
+                                                            fit: BoxFit.fill,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            alfaObservationController.multipleImage7.removeAt(index);
+                                                          });
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child:
-                                                      alfaObservationController
-                                                              .multipleImage7
-                                                              .isEmpty
-                                                          ? const Center(
-                                                              child: Text(
-                                                                  'No images selected.'),
-                                                            )
-                                                          : ListView.builder(
-                                                              scrollDirection:
-                                                                  Axis.horizontal,
-                                                              itemCount:
-                                                                  alfaObservationController
-                                                                      .multipleImage7
-                                                                      .length,
-                                                              itemBuilder:
-                                                                  (context,
-                                                                      index) {
-                                                                return SizedBox(
-                                                                  height: 200,
-                                                                  width: 200,
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                        child:
-                                                                            GestureDetector(
-                                                                          onTap:
-                                                                              () {
-                                                                            CustomImagePreview7.showImagePreview7(alfaObservationController.multipleImage7[index].path,
-                                                                                context);
-                                                                          },
-                                                                          child:
-                                                                              Image.file(
-                                                                            File(alfaObservationController.multipleImage7[index].path),
-                                                                            width:
-                                                                                190,
-                                                                            height:
-                                                                                120,
-                                                                            fit:
-                                                                                BoxFit.fill,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                      GestureDetector(
-                                                                        onTap:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            alfaObservationController.multipleImage7.removeAt(index);
-                                                                          });
-                                                                        },
-                                                                        child:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .delete,
-                                                                          color:
-                                                                              Colors.red,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
-                                                )
+                                                );
+                                              },
+                                            ),
+                                          )
                                               : const SizedBox(),
 
                                           CustomSizedBox(
@@ -2857,7 +2857,74 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
 
                                                     if (_formKey.currentState!
                                                             .validate() &&
-                                                        isRadioValid7 && !validateTlmKit) {
+                                                        isRadioValid7 &&
+                                                        !validateTlmKit) {
+                                                      List<File>
+                                                          nurTimeTableFiles =
+                                                          [];
+                                                      for (var imagePath
+                                                          in alfaObservationController
+                                                              .imagePaths) {
+                                                        nurTimeTableFiles.add(File(
+                                                            imagePath)); // Convert image path to File
+                                                      }
+
+                                                      List<File>
+                                                          lkgTimeTableFiles =
+                                                          [];
+                                                      for (var imagePath2
+                                                          in alfaObservationController
+                                                              .imagePaths2) {
+                                                        lkgTimeTableFiles.add(File(
+                                                            imagePath2)); // Convert image path to File
+                                                      }
+
+                                                      List<File>
+                                                          ukgTimeTableFiles =
+                                                          [];
+                                                      for (var imagePath3
+                                                          in alfaObservationController
+                                                              .imagePaths3) {
+                                                        ukgTimeTableFiles.add(File(
+                                                            imagePath3)); // Convert image path to File
+                                                      }
+
+                                                      List<File> alfaImgFiles =
+                                                          [];
+                                                      for (var imagePath4
+                                                          in alfaObservationController
+                                                              .imagePaths4) {
+                                                        alfaImgFiles.add(File(
+                                                            imagePath4)); // Convert image path to File
+                                                      }
+
+                                                      List<File>
+                                                          trainingImgFiles = [];
+                                                      for (var imagePath5
+                                                          in alfaObservationController
+                                                              .imagePaths5) {
+                                                        trainingImgFiles.add(File(
+                                                            imagePath5)); // Convert image path to File
+                                                      }
+
+                                                      List<File> libImgFiles =
+                                                          [];
+                                                      for (var imagePath6
+                                                          in alfaObservationController
+                                                              .imagePaths6) {
+                                                        libImgFiles.add(File(
+                                                            imagePath6)); // Convert image path to File
+                                                      }
+
+                                                      List<File> tlmImgFiles =
+                                                          [];
+                                                      for (var imagePath7
+                                                          in alfaObservationController
+                                                              .imagePaths7) {
+                                                        tlmImgFiles.add(File(
+                                                            imagePath7)); // Convert image path to File
+                                                      }
+
                                                       DateTime now =
                                                           DateTime.now();
                                                       String formattedDate =
@@ -2865,59 +2932,129 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                                   'yyyy-MM-dd')
                                                               .format(now);
 
-                                                      // Convert images to Base64
-                                                      List<String> base64Images = await alfaObservationController.convertImagesToBase64();
-                                                      List<String> base64Images2 = await alfaObservationController.convertImagesToBase64_2();
-                                                      List<String> base64Images3 = await alfaObservationController.convertImagesToBase64_3();
-                                                      List<String> base64Images4 = await alfaObservationController.convertImagesToBase64_4();
-                                                      List<String> base64Images5 = await alfaObservationController.convertImagesToBase64_5();
-                                                      List<String> base64Images6 = await alfaObservationController.convertImagesToBase64_6();
-                                                      List<String> base64Images7 = await alfaObservationController.convertImagesToBase64_7();
+                                                      String
+                                                          nurTimeTableFilePaths =
+                                                          nurTimeTableFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String
+                                                          lkgTimeTableFilePaths =
+                                                          lkgTimeTableFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String
+                                                          ukgTimeTableFilePaths =
+                                                          ukgTimeTableFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String alfaImgFilesPaths =
+                                                          alfaImgFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String
+                                                          trainingImgFilesPaths =
+                                                          trainingImgFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String libImgFilesPaths =
+                                                          libImgFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
+                                                      String tlmImgFilesPaths =
+                                                          tlmImgFiles
+                                                              .map((file) =>
+                                                                  file.path)
+                                                              .join(',');
 
                                                       // Convert `jsonData` to a JSON string
-                                                      String alfaGradeReport = jsonEncode(jsonData); // Ensure the JSON data is properly encoded
-                                                      String libGradeReport = jsonEncode(staffJsonData); // Ensure the JSON data is properly encoded
+                                                      String alfaGradeReport =
+                                                          jsonEncode(
+                                                              jsonData); // Ensure the JSON data is properly encoded
+                                                      String libGradeReport =
+                                                          jsonEncode(
+                                                              staffJsonData); // Ensure the JSON data is properly encoded
+
+                                                      String generateUniqueId(
+                                                          int length) {
+                                                        const _chars =
+                                                            'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                                        Random _rnd = Random();
+                                                        return String.fromCharCodes(
+                                                            Iterable.generate(
+                                                                length,
+                                                                    (_) => _chars
+                                                                    .codeUnitAt(_rnd
+                                                                    .nextInt(
+                                                                    _chars
+                                                                        .length))));
+                                                      }
+
+                                                      String uniqueId =
+                                                      generateUniqueId(6);
 
                                                       // Create the enrolment collection object
-                                                      AlfaObservationModel alfaObservationObj = AlfaObservationModel(
-                                                          tourId: alfaObservationController.tourValue ??
-                                                              '',
-                                                          school: alfaObservationController.schoolValue ??
-                                                              '',
-                                                          udiseValue:
-                                                              alfaObservationController.getSelectedValue('udiCode') ??
+                                                      AlfaObservationModel
+                                                          alfaObservationObj =
+                                                          AlfaObservationModel(
+                                                              tourId: alfaObservationController.tourValue ??
                                                                   '',
-                                                          correctUdise:
-                                                              alfaObservationController
+                                                              school: alfaObservationController.schoolValue ??
+                                                                  '',
+                                                              udiseValue:
+                                                                  alfaObservationController.getSelectedValue('udiCode') ??
+                                                                      '',
+                                                              correctUdise: alfaObservationController
                                                                   .correctUdiseCodeController
                                                                   .text,
-                                                          noStaffTrained:
-                                                              alfaObservationController
-                                                                  .noOfStaffTrainedController
+                                                              noStaffTrained:
+                                                                  alfaObservationController
+                                                                      .noOfStaffTrainedController
+                                                                      .text,
+                                                              imgNurTimeTable:
+                                                                  nurTimeTableFilePaths, // Convert list to a single string
+                                                              imgLKGTimeTable:
+                                                                  lkgTimeTableFilePaths, // Convert list to a single string
+                                                              imgUKGTimeTable:
+                                                                  ukgTimeTableFilePaths, // Convert list to a single string
+                                                              bookletValue:
+                                                                  alfaObservationController.getSelectedValue('alfaEnglishBooklet') ??
+                                                                      '',
+                                                              moduleValue: alfaObservationController
+                                                                  .moduleEnglishController
                                                                   .text,
-                                                          imgNurTimeTable: base64Images.join(','), // Convert list to a single string
-                                                          imgLKGTimeTable: base64Images2.join(','), // Convert list to a single string
-                                                          imgUKGTimeTable: base64Images3.join(','), // Convert list to a single string
-                                                          bookletValue: alfaObservationController.getSelectedValue('alfaEnglishBooklet') ?? '',
-                                                          moduleValue: alfaObservationController.moduleEnglishController.text,
-                                                          numeracyBooklet: alfaObservationController.getSelectedValue('alfaNumeracy') ?? '',
-                                                          numeracyValue: alfaObservationController.alfaNumercyController.text,
-                                                          pairValue: alfaObservationController.getSelectedValue('childrenPairs') ?? '',
-                                                          alfaActivityValue: alfaObservationController.getSelectedValue('alfaModuleActivities') ?? '',
-                                                          alfaGradeReport:alfaGradeReport,
-                                                          imgAlfa: base64Images4.join(','), // Convert list to a single string
-                                                          refresherTrainingValue: alfaObservationController.getSelectedValue('refresherTrainingOnALFA') ?? '',
-                                                          noTrainedTeacher: alfaObservationController.noOfTeacherTrainedController.text,
-                                                          imgTraining: base64Images5.join(','), // Convert list to a single string
-                                                          readingValue: alfaObservationController.getSelectedValue('readingActivities') ?? '',
-                                                          libGradeReport: libGradeReport,
-                                                          imgLibrary: base64Images6.join(','), // Convert list to a single string
-                                                          tlmKitValue: alfaObservationController.getSelectedValue('tlmKit') ?? '',
-                                                          imgTlm: base64Images7.join(','), // Convert list to a single string
-                                                          classObservation: alfaObservationController.remarksController.text,
-                                                          createdAt: formattedDate.toString(),
-                                                          submittedAt: formattedDate.toString(),
-                                                          createdBy: widget.userid.toString());
+                                                              numeracyBooklet:
+                                                                  alfaObservationController.getSelectedValue('alfaNumeracy') ??
+                                                                      '',
+                                                              numeracyValue: alfaObservationController
+                                                                  .alfaNumercyController
+                                                                  .text,
+                                                              pairValue:
+                                                                  alfaObservationController.getSelectedValue('childrenPairs') ??
+                                                                      '',
+                                                              alfaActivityValue:
+                                                                  alfaObservationController.getSelectedValue('alfaModuleActivities') ??
+                                                                      '',
+                                                              alfaGradeReport:
+                                                                  alfaGradeReport,
+                                                              imgAlfa: alfaImgFilesPaths, // Convert list to a single string
+                                                              refresherTrainingValue: alfaObservationController.getSelectedValue('refresherTrainingOnALFA') ?? '',
+                                                              noTrainedTeacher: alfaObservationController.noOfTeacherTrainedController.text,
+                                                              imgTraining: trainingImgFilesPaths, // Convert list to a single string
+                                                              readingValue: alfaObservationController.getSelectedValue('readingActivities') ?? '',
+                                                              libGradeReport: libGradeReport,
+                                                              imgLibrary: libImgFilesPaths, // Convert list to a single string
+                                                              tlmKitValue: alfaObservationController.getSelectedValue('tlmKit') ?? '',
+                                                              imgTlm: tlmImgFilesPaths, // Convert list to a single string
+                                                              classObservation: alfaObservationController.remarksController.text,
+                                                              createdAt: formattedDate.toString(),
+                                                              submittedAt: formattedDate.toString(),
+                                                              createdBy: widget.userid.toString());
                                                       int result =
                                                           await LocalDbController()
                                                               .addData(
@@ -2930,6 +3067,45 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                           jsonData = {};
                                                           staffJsonData = {};
                                                         });
+                                                        String jsonData1 =
+                                                        jsonEncode(
+                                                            alfaObservationObj
+                                                                .toJson());
+
+                                                        try {
+                                                          JsonFileDownloader
+                                                          downloader =
+                                                          JsonFileDownloader();
+                                                          String? filePath = await downloader
+                                                              .downloadJsonFile(
+                                                              jsonData1,
+                                                              uniqueId,
+                                                              nurTimeTableFiles,
+                                                              lkgTimeTableFiles,
+                                                              ukgTimeTableFiles,
+
+                                                              tlmImgFiles,
+
+                                                              trainingImgFiles,libImgFiles,alfaImgFiles
+
+                                                             );
+                                                          // Notify user of success
+                                                          customSnackbar(
+                                                            'File Downloaded Successfully',
+                                                            'File saved at $filePath',
+                                                            AppColors.primary,
+                                                            AppColors.onPrimary,
+                                                            Icons.download_done,
+                                                          );
+                                                        } catch (e) {
+                                                          customSnackbar(
+                                                            'Error',
+                                                            e.toString(),
+                                                            AppColors.primary,
+                                                            AppColors.onPrimary,
+                                                            Icons.error,
+                                                          );
+                                                        }
 
                                                         customSnackbar(
                                                             'Submitted Successfully',
@@ -2939,11 +3115,12 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                                             Icons.verified);
 
                                                         // Navigate to HomeScreen
-                                                        Navigator.pushReplacement(
+                                                        Navigator
+                                                            .pushReplacement(
                                                           context,
                                                           MaterialPageRoute(
                                                               builder: (context) =>
-                                                                  HomeScreen()),
+                                                                  AlfaObservationSync()),
                                                         );
                                                       } else {
                                                         customSnackbar(
@@ -2966,5 +3143,124 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
                                     }));
                           })
                     ])))));
+  }
+}
+
+class JsonFileDownloader {
+  // Method to download JSON data to the Downloads directory
+  Future<String?> downloadJsonFile(
+
+      String jsonData,
+      String uniqueId,
+      List<File> nurTimeTableFiles,
+      List<File> lkgTimeTableFiles,
+      List<File> ukgTimeTableFiles,
+      List<File> alfaImgFiles,
+      List<File> trainingImgFiles,
+      List<File> libImgFiles,
+      List<File> tlmImgFiles,
+      ) async {
+
+
+    Directory? downloadsDirectory;
+
+    if (Platform.isAndroid) {
+      downloadsDirectory = await _getAndroidDirectory();
+    } else if (Platform.isIOS) {
+      downloadsDirectory = await getApplicationDocumentsDirectory();
+    } else {
+      downloadsDirectory = await getDownloadsDirectory();
+    }
+
+    if (downloadsDirectory != null) {
+      // Prepare file path to save the JSON
+      String filePath =
+          '${downloadsDirectory.path}/alfa_observation_form_$uniqueId.txt';
+      File file = File(filePath);
+
+      // Convert images to Base64 for each image list
+      Map<String, dynamic> jsonObject = jsonDecode(jsonData);
+
+      jsonObject['base64_nurTimeTableImages'] =
+      await _convertImagesToBase64(nurTimeTableFiles);
+      jsonObject['base64_lkgTimeTableImages'] =
+      await _convertImagesToBase64(lkgTimeTableFiles);
+      jsonObject['base64_ukgTimeTableImages'] =
+      await _convertImagesToBase64(ukgTimeTableFiles);
+      jsonObject['base64_alfaImages'] =
+      await _convertImagesToBase64(alfaImgFiles);
+      jsonObject['base64_tlmImages'] =
+      await _convertImagesToBase64(tlmImgFiles);
+      jsonObject['base64_trainingImages'] =
+      await _convertImagesToBase64(trainingImgFiles);
+      jsonObject['base64_libImages'] =
+      await _convertImagesToBase64(libImgFiles);
+
+      // Write the updated JSON data to the file
+      await file.writeAsString(jsonEncode(jsonObject));
+
+      // Return the file path for further use if needed
+      return filePath;
+    } else {
+      throw Exception('Could not find the download directory');
+    }
+  }
+
+  Future<String> _convertImagesToBase64(List<File> imageFiles) async {
+    List<String> base64Images = [];
+
+    for (File image in imageFiles) {
+      if (await image.exists()) {
+        List<int> imageBytes = await image.readAsBytes();
+        String base64Image = base64Encode(imageBytes);
+        base64Images.add(base64Image);
+      }
+    }
+
+    // Return Base64-encoded images as a comma-separated string
+    return base64Images.join(',');
+  }
+
+
+
+  // Method to get the correct directory for Android based on version
+  Future<Directory?> _getAndroidDirectory() async {
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+
+      // Android 11+ (API level 30 and above) - Use manage external storage
+      if (androidInfo.version.sdkInt >= 30 &&
+          await Permission.manageExternalStorage.isGranted) {
+        return Directory('/storage/emulated/0/Download');
+      }
+      // Android 10 and below - Use external storage directory
+      else if (await Permission.storage.isGranted) {
+        return await getExternalStorageDirectory();
+      }
+    }
+    return null;
+  }
+}
+
+
+class NumericRangeTextInputFormatter extends TextInputFormatter {
+  final int min;
+  final int max;
+
+  NumericRangeTextInputFormatter({required this.min, required this.max});
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue; // Allow empty input
+    }
+
+    final int? newValueInt = int.tryParse(newValue.text);
+    if (newValueInt != null && (newValueInt < min || newValueInt > max)) {
+      return oldValue; // Prevent entering numbers outside the range
+    }
+
+    return newValue; // Allow valid input
   }
 }

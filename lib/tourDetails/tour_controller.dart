@@ -9,16 +9,16 @@ class TourController extends GetxController {
 
   void initState() {
     super.onInit();
-   
+
   }
 
   fetchTourDetails() async {
-  
+
 
     localTourList = await LocalDbController().fetchLocalTourDetails();
-    print('this is localtour list $localTourList');
+    // print('this is localtour list $localTourList');
 
-    
+
     update();
   }
 }

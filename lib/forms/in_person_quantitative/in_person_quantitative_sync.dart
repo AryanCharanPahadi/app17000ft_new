@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
@@ -28,6 +29,8 @@ class _InPersonQuantitativeSync extends State<InPersonQuantitativeSync> {
   final InPersonQuantitativeController _inPersonQuantitativeController = Get.put(InPersonQuantitativeController());
   final NetworkManager _networkManager = Get.put(NetworkManager());
   var isLoading = false.obs;
+  var syncProgress = 0.0.obs; // Progress variable for syncing
+  var hasError = false.obs; // Variable to track if syncing failed
 
   @override
   void initState() {
@@ -38,9 +41,20 @@ class _InPersonQuantitativeSync extends State<InPersonQuantitativeSync> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async {
-        bool shouldPop = await BaseClient().showLeaveConfirmationDialog(context);
-        return shouldPop;
+      onWillPop:() async {
+        IconData icon = Icons.check_circle;
+        bool shouldExit = await showDialog(
+            context: context,
+            builder: (_) => Confirmation(
+                iconname: icon,
+                title: 'Exit Confirmation',
+                yes: 'Yes',
+                no: 'no',
+                desc: 'Are you sure you want to leave this screen?',
+                onPressed: () async {
+                  Navigator.of(context).pop(true);
+                }));
+        return shouldExit;
       },
       child: Scaffold(
         appBar: const CustomAppbar(title: 'In Person Quantitative Sync'),
@@ -59,8 +73,23 @@ class _InPersonQuantitativeSync extends State<InPersonQuantitativeSync> {
             }
 
             return Obx(() => isLoading.value
-                ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Syncing: ${(syncProgress.value * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  if (hasError.value) // Show error message if syncing failed
+                    const Text(
+                      'Syncing failed. Please try again.',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                ],
+              ),
             )
                 : Column(
               children: [
@@ -71,113 +100,156 @@ class _InPersonQuantitativeSync extends State<InPersonQuantitativeSync> {
                     itemBuilder: (context, index) {
                       final item = inPersonQuantitativeController.inPersonQuantitative[index];
                       return ListTile(
-                        title: Text(
-                          "${index + 1}. Tour ID: ${item.tourId!}\n    School: ${item.school!}",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        title:  Text(
+                          "${index + 1}. Tour ID: ${item.tourId}\n"
+                              "School.: ${item.school}\n",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign
+                              .left, // Adjust text alignment if needed
+                          maxLines:
+                          2, // Limit the lines, or remove this if you don't want a limit
+                          overflow: TextOverflow
+                              .ellipsis, // Handles overflow gracefully
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
 
-                            IconButton(
-                              color: AppColors.primary,
+                            Obx(() => IconButton(
+                              color: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? Colors.grey
+                                  : AppColors.primary,
                               icon: const Icon(Icons.sync),
-                              onPressed: () async {
-                                IconData icon = Icons.check_circle;
+                              onPressed: _networkManager
+                                  .connectionType.value ==
+                                  0
+                                  ? null
+                                  : () async {
+                                // Proceed with sync logic when online
+                                IconData icon =
+                                    Icons.check_circle;
                                 showDialog(
-                                    context: context,
-                                    builder: (_) => Confirmation(
+                                  context: context,
+                                  builder: (_) =>
+                                      Confirmation(
                                         iconname: icon,
                                         title: 'Confirm',
                                         yes: 'Confirm',
                                         no: 'Cancel',
-                                        desc: 'Are you sure you want to Sync?',
+                                        desc:
+                                        'Are you sure you want to Sync?',
                                         onPressed: () async {
                                           setState(() {
-                                            // isLoadings= true;
+                                            isLoading.value =
+                                            true; // Show loading spinner
+                                            syncProgress.value =
+                                            0.0; // Reset progress
+                                            hasError.value =
+                                            false; // Reset error state
                                           });
-                                          if (_networkManager.connectionType.value == 0) {
-                                            customSnackbar(
-                                                'Warning',
-                                                'You are offline please connect to the internet',
-                                                AppColors.secondary,
-                                                AppColors.onSecondary,
-                                                Icons.warning);
-                                          } else {
-                                            if (_networkManager.connectionType.value == 1 ||
-                                                _networkManager.connectionType.value == 2) {
-                                              var rsp = await insertInPersonQuantitativeRecords(
-                                                  item.tourId,
-                                                  item.school,
-                                                  item.udicevalue,
-                                                  item.correct_udice,
-                                                  item.no_enrolled,
-                                                  item.imgpath,
-                                                  item.timetable_available,
-                                                  item.class_scheduled,
 
-                                                  item.remarks_scheduling,
-                                                  item.admin_appointed,
-                                                  item.admin_trained,
-                                                  item.admin_name,
-                                                  item.admin_phone,
-                                                  item.sub_teacher_trained,
-                                                  item.teacher_ids,
-
-                                                  item.no_staff,
-                                                  item.training_pic,
-                                                  item.specifyOtherTopics,
-                                                  item.practical_demo,
-                                                  item.reason_demo,
-                                                  item.comments_capacity,
-                                                  item.children_comfortable,
-                                                  item.children_understand,
-                                                  item.post_test,
-                                                  item.resolved_doubts,
-                                                  item.logs_filled,
-                                                  item.filled_correctly,
-                                                  item.send_report,
-                                                  item.app_installed,
-                                                  item.data_synced,
-                                                  item.last_syncedDate,
-                                                  item.lib_timetable,
-                                                  item.timetable_followed,
-                                                  item.registered_updated,
-                                                  item.observation_comment,
-                                                  item.topicsCoveredInTraining,
-                                                  item.participant_name,
-                                                  item.major_issue,
-                                                  item.created_at,
-                                                  item.submitted_by,
-                                                  item.unique_id,
-                                                  item.id);
-                                              if (rsp['status'] == 1) {
-                                                customSnackbar(
-                                                    'Successfully',
-                                                    "${rsp['message']}",
-                                                    AppColors.secondary,
-                                                    AppColors.onSecondary,
-                                                    Icons.check);
-                                              } else if (rsp['status'] == 0) {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "${rsp['message']}",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              } else {
-                                                customSnackbar(
-                                                    "Error",
-                                                    "Something went wrong, Please contact Admin",
-                                                    AppColors.error,
-                                                    AppColors.onError,
-                                                    Icons.warning);
-                                              }
+                                          if (_networkManager.connectionType.value == 1 ||
+                                              _networkManager.connectionType.value == 2) {
+                                            for (int i = 0;
+                                            i <= 100;
+                                            i++) {
+                                              await Future.delayed(
+                                                  const Duration(
+                                                      milliseconds:
+                                                      50));
+                                              syncProgress.value =
+                                                  i / 100; // Update progress
                                             }
+
+                                            // Call the insert function
+                                            var rsp = await insertInPersonQuantitativeRecords(
+                                              item.tourId,
+                                              item.school,
+                                              item.udicevalue,
+                                              item.correct_udice,
+                                              item.no_enrolled,
+                                              item.imgpath,
+                                              item.timetable_available,
+                                              item.class_scheduled,
+
+                                              item.remarks_scheduling,
+                                              item.admin_appointed,
+                                              item.admin_trained,
+                                              item.admin_name,
+                                              item.admin_phone,
+                                              item.sub_teacher_trained,
+                                              item.teacher_ids,
+
+                                              item.no_staff,
+                                              item.training_pic,
+                                              item.specifyOtherTopics,
+                                              item.practical_demo,
+                                              item.reason_demo,
+                                              item.comments_capacity,
+                                              item.children_comfortable,
+                                              item.children_understand,
+                                              item.post_test,
+                                              item.resolved_doubts,
+                                              item.logs_filled,
+                                              item.filled_correctly,
+                                              item.send_report,
+                                              item.app_installed,
+                                              item.data_synced,
+                                              item.last_syncedDate,
+                                              item.lib_timetable,
+                                              item.timetable_followed,
+                                              item.registered_updated,
+                                              item.observation_comment,
+                                              item.topicsCoveredInTraining,
+                                              item.participant_name,
+                                              item.major_issue,
+                                              item.created_at,
+                                              item.submitted_by,
+                                              item.unique_id,
+                                              item.id,
+
+                                                  (progress) {
+                                                syncProgress
+                                                    .value =
+                                                    progress; // Update sync progress
+                                              },
+                                            );
+
+                                            if (rsp['status'] ==
+                                                1) {
+                                              customSnackbar(
+                                                'Successfully',
+                                                "${rsp['message']}",
+                                                AppColors
+                                                    .secondary,
+                                                AppColors
+                                                    .onSecondary,
+                                                Icons.check,
+                                              );
+                                            } else {
+                                              hasError.value =
+                                              true; // Set error state if sync fails
+                                              customSnackbar(
+                                                "Error",
+                                                "${rsp['message']}",
+                                                AppColors.error,
+                                                AppColors.onError,
+                                                Icons.warning,
+                                              );
+                                            }
+                                            setState(() {
+                                              isLoading.value =
+                                              false; // Hide loading spinner
+                                            });
                                           }
-                                        }));
+                                        },
+                                      ),
+                                );
                               },
-                            ),
+                            )),
                           ],
                         ),
                         onTap: () {
@@ -245,6 +317,7 @@ Future insertInPersonQuantitativeRecords(
     String? submitted_by,
     String? unique_id,
     int? id,
+    Function(double) updateProgress, // Progress callback
 
     ) async {
   print('This is In person quantitative Data');
@@ -342,46 +415,52 @@ Future insertInPersonQuantitativeRecords(
   });
 
   // Convert Base64 back to file and add it to the request for imgpath
-  if (imgpath != null && imgpath.isNotEmpty) {
-    try {
-      List<String> imagesList = imgpath.split(",");
-      for (int i = 0; i < imagesList.length; i++) {
-        var imageBytes = base64Decode(imagesList[i]);
-        var file = http.MultipartFile.fromBytes(
-          'imgpath[]', // Ensure 'image' is the correct field name for your API
-          imageBytes,
-          filename: 'imgpath$i.jpg',
-          contentType: MediaType('image', 'jpeg'),
+  if ( imgpath!= null && imgpath.isNotEmpty) {
+    List<String> imagePaths = imgpath.split(',');
+
+    for (String path in imagePaths) {
+      File imageFile = File(path.trim());
+      if (imageFile.existsSync()) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'imgpath[]', // Use array-like name for multiple images
+            imageFile.path,
+            contentType: MediaType('image', 'jpeg'),
+          ),
         );
-        request.files.add(file);
+        print("Image file $path attached successfully.");
+      } else {
+        print('Image file does not exist at the path: $path');
+        return {"status": 0, "message": "Image file not found at $path."};
       }
-    } catch (e) {
-      print("Error decoding Base64 images: $e");
     }
   } else {
-    print("No images to upload");
+    print('No image file path provided.');
   }
 
 // Convert Base64 back to file and add it to the request for training_pic
   // Convert Base64 back to file and add it to the request for imgpath
-  if (training_pic != null && training_pic.isNotEmpty) {
-    try {
-      List<String> imagesList = training_pic.split(",");
-      for (int i = 0; i < imagesList.length; i++) {
-        var imageBytes = base64Decode(imagesList[i]);
-        var file = http.MultipartFile.fromBytes(
-          'training_pic[]', // Ensure 'image' is the correct field name for your API
-          imageBytes,
-          filename: 'training_pic$i.jpg',
-          contentType: MediaType('image', 'jpeg'),
+  if ( training_pic!= null && training_pic.isNotEmpty) {
+    List<String> imagePaths = training_pic.split(',');
+
+    for (String path in imagePaths) {
+      File imageFile = File(path.trim());
+      if (imageFile.existsSync()) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'training_pic[]', // Use array-like name for multiple images
+            imageFile.path,
+            contentType: MediaType('image', 'jpeg'),
+          ),
         );
-        request.files.add(file);
+        print("Image file $path attached successfully.");
+      } else {
+        print('Image file does not exist at the path: $path');
+        return {"status": 0, "message": "Image file not found at $path."};
       }
-    } catch (e) {
-      print("Error decoding Base64 images: $e");
     }
   } else {
-    print("No images to upload");
+    print('No image file path provided.');
   }
 
   try {
@@ -389,14 +468,6 @@ Future insertInPersonQuantitativeRecords(
     var responseBody = await response.stream.bytesToString();
     print('Raw response body: $responseBody');
 
-    // Check if the response body contains HTML (which suggests an issue with the server)
-    if (responseBody.contains('<br />') || responseBody.contains('<b>')) {
-      print("HTML error response detected.");
-      return {
-        "status": 0,
-        "message": "Server returned HTML instead of JSON. Please check the API."
-      };
-    }
 
     // Try parsing the response as JSON
     var parsedResponse = json.decode(responseBody);
@@ -413,11 +484,11 @@ Future insertInPersonQuantitativeRecords(
     }
 
     return parsedResponse;
-  } catch (error) {
-    print("Error: $error");
+  } catch (responseBody) {
+    print("Error: $responseBody");
     return {
       "status": 0,
-      "message": "Something went wrong, Please contact Admin"
+      "message": "Something went wrong, Please contact Admin $responseBody"
     };
   }
 }
