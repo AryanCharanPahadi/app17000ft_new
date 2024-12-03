@@ -46,11 +46,13 @@ class InPersonQuantitativeRecords {
     this.registered_updated,
     this.observation_comment,
     this.topicsCoveredInTraining,
+    this.is_refresher_conduct,
     this.participant_name,
     this.major_issue,
     this.created_at,
     this.submitted_by,
     this.unique_id,
+    this.office,
   });
 
   int? id;
@@ -93,6 +95,7 @@ class InPersonQuantitativeRecords {
   String? registered_updated;
   String? observation_comment;
   String? topicsCoveredInTraining;
+  String? is_refresher_conduct;
   String? participant_name;
   String? major_issue;
 
@@ -100,6 +103,7 @@ class InPersonQuantitativeRecords {
   String? submitted_by;
 
   String? unique_id;
+  String? office;
 
   factory InPersonQuantitativeRecords.fromJson(Map<String, dynamic> json) => InPersonQuantitativeRecords(
     id: json["id"],
@@ -141,6 +145,7 @@ class InPersonQuantitativeRecords {
     registered_updated: json["registered_updated"],
     observation_comment: json["observation_comment"],
     topicsCoveredInTraining: json["topicsCoveredInTraining"],
+    is_refresher_conduct: json["is_refresher_conduct"],
     participant_name: json["participant_name"],
     major_issue: json["major_issue"],
 
@@ -148,6 +153,7 @@ class InPersonQuantitativeRecords {
     submitted_by: json["submitted_by"],
 
     unique_id: json["unique_id"],
+    office: json["office"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -190,6 +196,7 @@ class InPersonQuantitativeRecords {
     "registered_updated": registered_updated,
     "observation_comment": observation_comment,
     "topicsCoveredInTraining": topicsCoveredInTraining,
+    "is_refresher_conduct": is_refresher_conduct,
     "participant_name": participant_name,
     "major_issue": major_issue,
 
@@ -197,5 +204,6 @@ class InPersonQuantitativeRecords {
     "submitted_by": submitted_by,
 
     "unique_id": unique_id,
+    "office": office,
   };
 }

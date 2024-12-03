@@ -1,19 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
-
 import 'package:app17000ft_new/forms/school_facilities_&_mapping_form/school_facilities_modals.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
+import 'package:path_provider/path_provider.dart';
 import '../../base_client/baseClient_controller.dart';
-
 
 class SchoolFacilitiesController extends GetxController with BaseController {
   var counterText = ''.obs;
@@ -24,135 +19,67 @@ class SchoolFacilitiesController extends GetxController with BaseController {
   String? get schoolValue => _schoolValue;
 
   bool isLoading = false;
-  final TextEditingController noOfEnrolledStudentAsOnDateController = TextEditingController();
-  final TextEditingController noOfFunctionalClassroomController = TextEditingController();
-  final TextEditingController nameOfLibrarianController = TextEditingController();
-  final TextEditingController correctUdiseCodeController = TextEditingController();
+  final TextEditingController noOfEnrolledStudentAsOnDateController =
+      TextEditingController();
+  final TextEditingController noOfFunctionalClassroomController =
+      TextEditingController();
+  final TextEditingController nameOfLibrarianController =
+      TextEditingController();
+  final TextEditingController correctUdiseCodeController =
+      TextEditingController();
 
+  // Map to store selected values for radio buttons
+  final Map<String, String?> _selectedValues = {};
+  String? getSelectedValue(String key) => _selectedValues[key];
 
+  // Map to store error states for radio buttons
+  final Map<String, bool> _radioFieldErrors = {};
+  bool getRadioFieldError(String key) => _radioFieldErrors[key] ?? false;
 
-  final FocusNode _tourIdFocusNode = FocusNode();
-  FocusNode get tourIdFocusNode => _tourIdFocusNode;
+  // Method to set the selected value and clear any previous error
+  void setRadioValue(String key, String? value) {
+    _selectedValues[key] = value;
+    _radioFieldErrors[key] = false; // Clear error when a value is selected
+    update(); // Update the UI
+  }
 
-  final FocusNode _schoolFocusNode = FocusNode();
-  FocusNode get schoolFocusNode => _schoolFocusNode;
-
-  List<SchoolFacilitiesRecords> _schoolFacilitiesList = [];
-  List<SchoolFacilitiesRecords> get schoolFacilitiesList => _schoolFacilitiesList;
-
-  final List<XFile> _multipleImage = [];
-  List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
-  List<String> get imagePaths => _imagePaths;
-  // This will hold the converted list of File objects
-  List<File> _imageFiles = [];
-  List<File> get imageFiles => _imageFiles;
-
-  final List<XFile> _multipleImage2 = [];
-  List<XFile> get multipleImage2 => _multipleImage2;
-  List<String> _imagePaths2 = [];
-  List<String> get imagePaths2 => _imagePaths2;
-  List<File> _imageFiles2 = [];
-  List<File> get imageFiles2 => _imageFiles2;
-
-
-  // Method to capture or pick photos
-  Future<String> takePhoto(ImageSource source) async {
-    final ImagePicker picker = ImagePicker();
-    _multipleImage.clear();  // Clear the existing images
-    _imagePaths = [];
-    _imageFiles = [];  // Clear the converted File objects
-
-    if (source == ImageSource.gallery) {
-      final selectedImages = await picker.pickMultiImage();
-      if (selectedImages != null) {
-        _multipleImage.addAll(selectedImages);
-        _imagePaths = selectedImages.map((image) => image.path).toList();
-        _imageFiles = selectedImages.map((xfile) => File(xfile.path)).toList();  // Convert to File
-      }
-    } else if (source == ImageSource.camera) {
-      final pickedImage = await picker.pickImage(source: source);
-      if (pickedImage != null) {
-        _multipleImage.add(pickedImage);
-        _imagePaths.add(pickedImage.path);
-        _imageFiles.add(File(pickedImage.path));  // Convert to File
-      }
+  // Method to validate radio button selection
+  bool validateRadioSelection(String key) {
+    if (_selectedValues[key] == null) {
+      _radioFieldErrors[key] = true;
+      update(); // Update the UI
+      return false;
     }
-    update();
-    return _imagePaths.toString();
+    _radioFieldErrors[key] = false;
+    update(); // Update the UI
+    return true;
   }
 
+  // Start of selecting Field
+  String? selectedValue = ''; // For the UDISE code
+  String? selectedValue2 = ''; // For the Residential School
+  String? selectedValue3 = ''; // For the Electricity Available
+  String? selectedValue4 = ''; // For the Internet Connectivity
+  String? selectedValue5 = ''; // For the Projector
+  String? selectedValue6 = ''; // For the Smart Classroom
+  String? selectedValue7 = ''; // For the Playground Available
+  String? selectedValue8 = ''; // For the Library Available
+  String? selectedValue9 = ''; // For the librarian training
+  String? selectedValue10 = ''; // For the librarian register
+  // End of selecting Field error
 
-
-
-// Method to capture or pick photos
-  Future<String> takePhoto2(ImageSource source) async {
-    final ImagePicker picker2 = ImagePicker();
-    _multipleImage2.clear();  // Clear the existing images
-    _imagePaths2 = [];
-    _imageFiles2 = [];  // Clear the converted File objects
-
-
-    if (source == ImageSource.gallery) {
-      final selectedImages2 = await picker2.pickMultiImage();
-      if (selectedImages2 != null) {
-        _multipleImage2.addAll(selectedImages2);
-        _imagePaths2 = selectedImages2.map((image) => image.path).toList();
-        _imageFiles2 = selectedImages2.map((xfile) => File(xfile.path)).toList();  // Convert to File
-      }
-    } else if (source == ImageSource.camera) {
-      final pickedImage2 = await picker2.pickImage(source: source);
-      if (pickedImage2 != null) {
-        _multipleImage2.add(pickedImage2);
-        _imagePaths2.add(pickedImage2.path);
-        _imageFiles2.add(File(pickedImage2.path));  // Convert to File
-      }
-    }
-    update();
-    return _imagePaths2.toString();
-  }
-
-
-  // Convert a File to Base64 String
-  Future<List<String>> convertImagesToBase64() async {
-    List<String> base64Images = [];
-
-    for (var image in _imageFiles) { // _imageFiles is the list of File objects
-      final bytes = await image.readAsBytes();
-      base64Images.add(base64Encode(bytes));
-    }
-
-    return base64Images;
-  }
-
-
-
-  // Convert a File to Base64 String
-  Future<List<String>> convertImagesToBase64_2() async {
-    List<String> base64Images2 = [];
-
-    for (var image in _imageFiles2) { // _imageFiles is the list of File objects
-      final bytes = await image.readAsBytes();
-      base64Images2.add(base64Encode(bytes));
-    }
-    return base64Images2;
-  }
-
-
-  void setSchool(String? value) {
-    _schoolValue = value;
-
-  }
-
-  void setTour(String? value) {
-    _tourValue = value;
-
-  }
-
-
-
-  List<String> splitSchoolLists = [];
-  String? selectedDesignation;
+  // Start of radio Field
+  bool radioFieldError = false; // For the UDISE code
+  bool radioFieldError2 = false; // For the Residential School
+  bool radioFieldError3 = false; // For the Electricity Available
+  bool radioFieldError4 = false; // For the Internet Connectivity
+  bool radioFieldError5 = false; // For the Projector
+  bool radioFieldError6 = false; // For the Smart Classroom
+  bool radioFieldError7 = false; // For the Playground Available
+  bool radioFieldError8 = false; // For the Library Available
+  bool radioFieldError9 = false; // For the librarian training
+  bool radioFieldError10 = false; // For the librarian register
+  // End of radio Field error
 
   // Start of Showing Fields
   bool showBasicDetails = true; // For show Basic Details
@@ -166,104 +93,122 @@ class SchoolFacilitiesController extends GetxController with BaseController {
   bool validateRegister2 = false;
   bool isImageUploaded2 = false;
 
+  List<String> splitSchoolLists = [];
+  String? selectedDesignation;
 
-  Widget bottomSheet(BuildContext context) {
-    return Container(
-      color: AppColors.primary,
-      height: 100,
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-          vertical: 20,
-      ),
-      child: Column(
-        children: <Widget>[
-          const Text(
-            "Select Image",
-            style: TextStyle(fontSize: 20.0, color: Colors.white),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  await takePhoto(ImageSource.camera);
-                  Get.back();
-                },
-                child: const Text(
-                  'Camera',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
-              ),
-              const SizedBox(
-                width: 30,
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  await takePhoto(ImageSource.gallery);
-                  Get.back();
-                },
-                child: const Text(
-                  'Gallery',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  final FocusNode _tourIdFocusNode = FocusNode();
+  FocusNode get tourIdFocusNode => _tourIdFocusNode;
+
+  final FocusNode _schoolFocusNode = FocusNode();
+  FocusNode get schoolFocusNode => _schoolFocusNode;
+
+  List<SchoolFacilitiesRecords> _schoolFacilitiesList = [];
+  List<SchoolFacilitiesRecords> get schoolFacilitiesList =>
+      _schoolFacilitiesList;
+
+  final List<XFile> _multipleImage = [];
+  List<XFile> get multipleImage => _multipleImage;
+  List<String> _imagePaths = [];
+  List<String> get imagePaths => _imagePaths;
+
+  final List<XFile> _multipleImage2 = [];
+  List<XFile> get multipleImage2 => _multipleImage2;
+  List<String> _imagePaths2 = [];
+  List<String> get imagePaths2 => _imagePaths2;
+
+  Future<String> takePhoto(ImageSource source, int index) async {
+    final ImagePicker picker = ImagePicker();
+    List<XFile> selectedImages = [];
+    XFile? pickedImage;
+
+    // Determine which list to use based on the index parameter
+    List<XFile> multipleImages;
+    List<String> imagePaths;
+
+    switch (index) {
+      case 1:
+        multipleImages = _multipleImage;
+        imagePaths = _imagePaths;
+        break;
+      case 2:
+        multipleImages = _multipleImage2;
+        imagePaths = _imagePaths2;
+        break;
+
+      default:
+        throw ArgumentError('Invalid index: $index');
+    }
+
+    if (source == ImageSource.gallery) {
+      selectedImages = await picker.pickMultiImage(
+        imageQuality: 50, // Set image quality (0-100, where 0 is lowest)
+        maxWidth: 800, // Set max width to resize
+        maxHeight: 600, // Set max height to resize
+      );
+      for (var selectedImage in selectedImages) {
+        // Add the selected image path directly
+        multipleImages.add(selectedImage);
+        imagePaths.add(selectedImage.path);
+      }
+      update();
+    } else if (source == ImageSource.camera) {
+      pickedImage = await picker.pickImage(
+        source: source,
+        imageQuality: 50, // Set image quality (0-100)
+        maxWidth: 800, // Set max width to resize
+        maxHeight: 600, // Set max height to resize
+      );
+      if (pickedImage != null) {
+        // Add the picked image path directly
+        multipleImages.add(pickedImage);
+        imagePaths.add(pickedImage.path);
+      }
+      update();
+    }
+
+    return imagePaths.toString();
   }
-  Widget bottomSheet2(BuildContext context) {
+
+  void setSchool(String? value) {
+    _schoolValue = value;
+  }
+
+  void setTour(String? value) {
+    _tourValue = value;
+  }
+
+  Widget bottomSheet(BuildContext context, int index) {
     return Container(
       color: AppColors.primary,
       height: 100,
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
         children: <Widget>[
-          const Text(
-            "Select Image",
-            style: TextStyle(fontSize: 20.0, color: Colors.white),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
+          const Text("Select Image",
+              style: TextStyle(fontSize: 20.0, color: Colors.white)),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  await takePhoto2(ImageSource.camera);
+                  await takePhoto(ImageSource.camera, index);
                   Get.back();
                 },
-                child: const Text(
-                  'Camera',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
+                child: const Text('Camera',
+                    style: TextStyle(fontSize: 20.0, color: AppColors.primary)),
               ),
-              const SizedBox(
-                width: 30,
-              ),
+              const SizedBox(width: 30),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  await takePhoto2(ImageSource.gallery);
+                  await takePhoto(ImageSource.gallery, index);
                   Get.back();
                 },
-                child: const Text(
-                  'Gallery',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
+                child: const Text('Gallery',
+                    style: TextStyle(fontSize: 20.0, color: AppColors.primary)),
               ),
             ],
           ),
@@ -288,43 +233,13 @@ class SchoolFacilitiesController extends GetxController with BaseController {
               onTap: () {
                 Navigator.pop(context);
               },
-              child: Image.file(
-                File(imagePath),
-                fit: BoxFit.contain,
-              ),
+              child: Image.file(File(imagePath), fit: BoxFit.contain),
             ),
           ),
         );
       },
     );
   }
- void showImagePreview2(String imagePath2, BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Image.file(
-                File(imagePath2),
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
 
   void clearFields() {
     _tourValue = null;
@@ -334,14 +249,15 @@ class SchoolFacilitiesController extends GetxController with BaseController {
     noOfEnrolledStudentAsOnDateController.clear();
     nameOfLibrarianController.clear();
     correctUdiseCodeController.clear();
-
   }
 
   Future<void> fetchData() async {
     isLoading = true;
-    update();
-    _schoolFacilitiesList = await LocalDbController().fetchLocalSchoolFacilitiesRecords();
-    isLoading = false;
+    _schoolFacilitiesList = [];
+
+    _schoolFacilitiesList =
+        await LocalDbController().fetchLocalSchoolFacilitiesRecords();
+
     update();
   }
 }

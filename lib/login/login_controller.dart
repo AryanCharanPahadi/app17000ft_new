@@ -10,25 +10,31 @@ class LoginController extends GetxController with BaseController {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-  authUser(String? username,String? password) async {
+
+
+  authUser(String? username, String? password) async {
     var request = {'username': username ?? '', 'password': password ?? ''};
     showLoading('Please wait...');
-    var response = await BaseClient()
-        .post('https://mis.17000ft.org/apis/fast_apis/','login.php', request)
-        .catchError((error) {
+
+    try {
+      var response = await BaseClient()
+          .post('https://mis.17000ft.org/apis/fast_apis/', 'login.php', request);
+
+      var myresp = json.decode(response);
+      hideLoading();
+
+      return myresp;
+    } catch (error) {
+      hideLoading(); // Ensure loading dialog is hidden on error
       if (error is BadRequestException) {
         var apiError = json.decode(error.message!);
         DialogHelper.showErrorDialog(description: apiError["reason"]);
       } else {
         handleError(error);
       }
-    });
-    if (response == null) return;
-    var myresp = json.decode(response);
-    hideLoading();
-
-    return myresp;
+    }
   }
+
 
   clearFields() {
     usernameController.clear();

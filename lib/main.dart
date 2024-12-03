@@ -1,26 +1,21 @@
 import 'dart:async';
-
 import 'package:app17000ft_new/helper/shared_prefernce.dart';
 import 'package:app17000ft_new/home/home_screen.dart';
-import 'package:app17000ft_new/home/tour_data.dart';
 import 'package:app17000ft_new/login/login_screen.dart';
 import 'package:app17000ft_new/splash/splash_screen.dart';
 import 'package:app17000ft_new/utils/dependency_injection.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:get_storage/get_storage.dart ';
 import 'package:get/get.dart';
 import 'package:app17000ft_new/theme/theme_constants.dart';
 import 'package:app17000ft_new/theme/theme_manager.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure widgets are initialized
-  await GetStorage.init(); // Initialize GetStorage
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
   DependencyInjection.init();
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  String version = packageInfo.version;
-  GetStorage().write('version', version);
-  runApp(const MyApp()); // Run the app
+
+  runApp(const MyApp());
 }
 
 ThemeManager themeManager = ThemeManager();
@@ -33,6 +28,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   bool? _isLoggedIn;
 
   @override
@@ -55,27 +51,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
-    await GetStorage.init();
-    await Future.delayed(const Duration(seconds: 3));
-    _checkLoginState();
+    // Add a short delay to allow the splash screen to display briefly
+    await Future.delayed(const Duration(seconds: 4));
+
+    // Fetch login state and store in _isLoggedIn
+    _isLoggedIn = await SharedPreferencesHelper.getLoginState();
+
+    // Navigate based on login state
+    _navigateBasedOnAuth();
   }
 
-  Future<void> _checkLoginState() async {
-    bool isLoggedIn = await SharedPreferencesHelper.getLoginState();
-    setState(() {
-      _isLoggedIn = isLoggedIn;
-    });
-    if (_isLoggedIn != null) {
-      _isLoggedIn!
-          ? Get.offAll(() => const HomeScreen())
-          : Get.offAll(() => const LoginScreen());
+  void _navigateBasedOnAuth() {
+    if (_isLoggedIn == true) {
+      Get.offAll(() => const HomeScreen());
+    } else {
+      Get.offAll(() => const LoginScreen());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: 'offline17000ft',
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeManager.themeMode,

@@ -1,21 +1,23 @@
-import 'dart:convert';
-import 'dart:io';
 
+import 'dart:io';
+import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
+import '../../home/home_controller.dart';
+class SchoolEnrolmentController extends GetxController with BaseController{
 
-class SchoolEnrolmentController extends GetxController with BaseController {
   String? _tourValue;
   String? get tourValue => _tourValue;
 
-  // School Value
+  //school Value
   String? _schoolValue;
   String? get schoolValue => _schoolValue;
 
@@ -23,116 +25,130 @@ class SchoolEnrolmentController extends GetxController with BaseController {
 
   final TextEditingController remarksController = TextEditingController();
 
-  // Focus nodes
+  //Focus nodes
   final FocusNode _tourIdFocusNode = FocusNode();
-  FocusNode get tourIdFocusNode => _tourIdFocusNode;
+  FocusNode get  tourIdFocusNode => _tourIdFocusNode;
   final FocusNode _schoolFocusNode = FocusNode();
-  FocusNode get schoolFocusNode => _schoolFocusNode;
+  FocusNode get  schoolFocusNode => _schoolFocusNode;
 
-  List<EnrolmentCollectionModel> _enrolmentList = [];
+  List<EnrolmentCollectionModel> _enrolmentList =[];
   List<EnrolmentCollectionModel> get enrolmentList => _enrolmentList;
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-
   List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
-  // This will hold the converted list of File objects
-  List<File> _imageFiles = [];
-  List<File> get imageFiles => _imageFiles;
 
-  // Method to capture or pick photos
   Future<String> takePhoto(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
-    _multipleImage.clear();  // Clear the existing images
-    _imagePaths = [];
-    _imageFiles = [];  // Clear the converted File objects
+    List<XFile> selectedImages = [];
+    XFile? pickedImage;
 
     if (source == ImageSource.gallery) {
-      final selectedImages = await picker.pickMultiImage();
-      if (selectedImages != null) {
-        _multipleImage.addAll(selectedImages);
-        _imagePaths = selectedImages.map((image) => image.path).toList();
-        _imageFiles = selectedImages.map((xfile) => File(xfile.path)).toList();  // Convert to File
+      selectedImages = await picker.pickMultiImage(
+        imageQuality: 50,  // Set the image quality (0-100)
+        maxWidth: 800,     // Set the max width
+        maxHeight: 600,    // Set the max height
+      );
+      for (var selectedImage in selectedImages) {
+        // Add the selected image path directly without compression
+        _multipleImage.add(selectedImage);
+        _imagePaths.add(selectedImage.path);
       }
+      update();
     } else if (source == ImageSource.camera) {
-      final pickedImage = await picker.pickImage(source: source);
+      pickedImage = await picker.pickImage(
+        source: source,
+        imageQuality: 50,  // Set the image quality (0-100)
+        maxWidth: 800,     // Set the max width
+        maxHeight: 600,    // Set the max height
+      );
       if (pickedImage != null) {
+        // Add the picked image path directly without compression
         _multipleImage.add(pickedImage);
         _imagePaths.add(pickedImage.path);
-        _imageFiles.add(File(pickedImage.path));  // Convert to File
       }
+      update();
     }
-    update();
+
     return _imagePaths.toString();
   }
 
-  // Convert a File to Base64 String
-  Future<List<String>> convertImagesToBase64() async {
-    List<String> base64Images = [];
 
-    for (var image in _imageFiles) { // _imageFiles is the list of File objects
-      final bytes = await image.readAsBytes();
-      base64Images.add(base64Encode(bytes));
-    }
-
-
-
-    return base64Images;
-  }
-
-  // Setters for tour and school values
-  setSchool(value) {
+  setSchool(value)
+  {
     _schoolValue = value;
-    // update();
+    update();
   }
 
-  setTour(value) {
+  setTour(value){
     _tourValue = value;
-    // update();
+    update();
+
   }
 
-  // Bottom sheet for picking images
+
+
+
   Widget bottomSheet(BuildContext context) {
     String? imagePicked;
+    PickedFile? imageFile;
     final ImagePicker picker = ImagePicker();
+    XFile? image;
     return Container(
       color: AppColors.primary,
       height: 100,
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 20,
+      ),
       child: Column(
         children: <Widget>[
           const Text(
             "Select Image",
             style: TextStyle(fontSize: 20.0, color: Colors.white),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(
+            height: 20,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              // ignore: deprecated_member_use
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
                   imagePicked = await takePhoto(ImageSource.camera);
+
+                  // uploadFile(userdata.read('customerID'));
                   Get.back();
+                  //  update();
                 },
                 child: const Text(
                   'Camera',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
+                  style: TextStyle(
+                      fontSize: 20.0, color: AppColors.primary),
                 ),
               ),
-              const SizedBox(width: 30),
+              const SizedBox(
+                width: 30,
+              ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  imagePicked = await takePhoto(ImageSource.gallery);
+                  imagePicked = await takePhoto(
+                    ImageSource.gallery,
+                  );
+
                   Get.back();
+                  //  update();
                 },
                 child: const Text(
                   'Gallery',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
+                  style: TextStyle(
+                      fontSize: 20.0, color: AppColors.primary),
                 ),
               ),
             ],
@@ -142,7 +158,6 @@ class SchoolEnrolmentController extends GetxController with BaseController {
     );
   }
 
-  // Show image preview
   void showImagePreview(String imagePath, BuildContext context) {
     showDialog(
       context: context,
@@ -170,28 +185,16 @@ class SchoolEnrolmentController extends GetxController with BaseController {
     );
   }
 
-  // Clear fields in the form
+  //Clear fields
   void clearFields() {
-    // Clear the tour and school values
     _tourValue = null;
     _schoolValue = null;
-
-    // Clear the remarks text controller
     remarksController.clear();
-
-    // Clear the list of selected images, image paths, and converted files
     _multipleImage.clear();
     _imagePaths.clear();
-    _imageFiles.clear();
-
-    // Clear the enrolment list if needed
-    _enrolmentList.clear();
-
-    // Notify listeners that the state has changed
     update();
   }
 
-  // Fetch data from local database
   fetchData() async {
     isLoading = true;
 
@@ -199,4 +202,11 @@ class SchoolEnrolmentController extends GetxController with BaseController {
     _enrolmentList = await LocalDbController().fetchLocalEnrolmentRecord();
 
     update();
-  }}
+  }
+
+//
+
+//Update the UI
+
+
+}

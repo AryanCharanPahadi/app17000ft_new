@@ -1,3 +1,4 @@
+
 // To parse this JSON data, do
 //
 //     final enrolmentCollectionModel = enrolmentCollectionModelFromJson(jsonString);
@@ -75,9 +76,9 @@ class InPersonQualitativeRecords{
   String? smcques_6;
   String? smcques_7;
   String? created_at;
-  String? submitted_at;
   String? submitted_by;
   String? unique_id;
+  String? office;
 
 
 
@@ -151,9 +152,9 @@ class InPersonQualitativeRecords{
     required this.smcques_6,
     required this.smcques_7,
     required this.created_at,
-    required this.submitted_at,
     required this.submitted_by,
     required this.unique_id,
+   this.office,
 
 
 
@@ -228,9 +229,9 @@ class InPersonQualitativeRecords{
     smcques_6: json["smcques_6"],
     smcques_7: json["smcques_7"],
     created_at: json["created_at"],
-    submitted_at: json["submitted_at"],
     submitted_by: json["submitted_by"],
     unique_id: json["unique_id"],
+    office: json["office"],
 
 
 
@@ -304,9 +305,9 @@ class InPersonQualitativeRecords{
     "smcques_6": smcques_6,
     "smcques_7": smcques_7,
     "created_at": created_at,
-    "submitted_at": submitted_at,
     "submitted_by": submitted_by,
     "unique_id": unique_id,
+    "office": office,
 
 
 

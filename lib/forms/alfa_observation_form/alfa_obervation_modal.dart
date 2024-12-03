@@ -36,8 +36,8 @@ class AlfaObservationModel{
   String? imgTlm;
   String? classObservation;
   String? createdAt;
-  String? submittedAt;
   String? createdBy;
+  String? office;
 
 
   AlfaObservationModel({
@@ -68,8 +68,8 @@ class AlfaObservationModel{
     required this.imgTlm,
     required this.classObservation,
     required this.createdAt,
-    required this.submittedAt,
     required this.createdBy,
+    required this.office,
 
   });
 
@@ -101,8 +101,8 @@ class AlfaObservationModel{
     imgTlm: json["imgTlm"],
     classObservation: json["classObservation"],
     createdAt: json["createdAt"],
-    submittedAt: json["submittedAt"],
     createdBy: json["createdBy"],
+    office: json["office"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -133,7 +133,7 @@ class AlfaObservationModel{
     "imgTlm": imgTlm,
     "classObservation": classObservation,
     "createdAt": createdAt,
-    "submittedAt": submittedAt,
     "createdBy": createdBy,
+    "office": office,
   };
 }

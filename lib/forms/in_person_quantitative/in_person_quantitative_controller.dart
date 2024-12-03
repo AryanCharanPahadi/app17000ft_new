@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
-
+import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
@@ -7,11 +8,14 @@ import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
 import 'in_person_quantitative.dart';
 import 'in_person_quantitative_modal.dart';
-class InPersonQuantitativeController extends GetxController with BaseController {
+
+class InPersonQuantitativeController extends GetxController
+    with BaseController {
   var counterText = ''.obs;
   String? _tourValue;
   String? get tourValue => _tourValue;
@@ -22,23 +26,45 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   bool isLoading = false;
   final TextEditingController tourIdController = TextEditingController();
   final TextEditingController remarksController = TextEditingController();
-  final TextEditingController noOfEnrolledStudentAsOnDateController = TextEditingController();
-  final TextEditingController remarksOnDigiLabSchedulingController = TextEditingController();
-  final TextEditingController digiLabAdminNameController = TextEditingController();
-  final TextEditingController digiLabAdminPhoneNumberController = TextEditingController();
-  final TextEditingController correctUdiseCodeController = TextEditingController();
-  final TextEditingController instructionProvidedRegardingClassSchedulingController = TextEditingController();
-  final TextEditingController staafAttendedTrainingController = TextEditingController();
+  final TextEditingController noOfEnrolledStudentAsOnDateController =
+      TextEditingController();
+  final TextEditingController remarksOnDigiLabSchedulingController =
+      TextEditingController();
+  final TextEditingController digiLabAdminNameController =
+      TextEditingController();
+  final TextEditingController digiLabAdminPhoneNumberController =
+      TextEditingController();
+  final TextEditingController correctUdiseCodeController =
+      TextEditingController();
+  final TextEditingController
+      instructionProvidedRegardingClassSchedulingController =
+      TextEditingController();
+  final TextEditingController staafAttendedTrainingController =
+      TextEditingController();
   final TextEditingController otherTopicsController = TextEditingController();
-  final TextEditingController reasonForNotGivenpracticalDemoController = TextEditingController();
-  final TextEditingController additionalCommentOnteacherCapacityController = TextEditingController();
-  final TextEditingController howOftenDataBeingSyncedController = TextEditingController();
-  final TextEditingController additionalObservationOnLibraryController = TextEditingController();
+  final TextEditingController reasonForNotGivenpracticalDemoController =
+      TextEditingController();
+  final TextEditingController additionalCommentOnteacherCapacityController =
+      TextEditingController();
+  final TextEditingController howOftenDataBeingSyncedController =
+      TextEditingController();
+  final TextEditingController additionalObservationOnLibraryController =
+      TextEditingController();
   final TextEditingController writeIssueController = TextEditingController();
-  final TextEditingController writeResolutionController = TextEditingController();
-  final TextEditingController participantsNameController = TextEditingController();
+  final TextEditingController writeResolutionController =
+      TextEditingController();
+  final TextEditingController participantsNameController =
+      TextEditingController();
 
+  void clearTrainingInputs() {
+    correctUdiseCodeController.clear();
+    update(); // Update the UI after clearing
+  }
 
+  void clearTrainingInputs2() {
+    correctUdiseCodeController.clear();
+    update(); // Update the UI after clearing
+  }
 
   // Map to store selected values for radio buttons
   final Map<String, String?> _selectedValues = {};
@@ -55,6 +81,12 @@ class InPersonQuantitativeController extends GetxController with BaseController 
     update(); // Update the UI
   }
 
+  // Method to clear the selected value for a given key
+  void clearRadioValue(String key) {
+    _selectedValues[key] = null; // Clear the value
+    update(); // Update the UI
+  }
+
   // Method to validate radio button selection
   bool validateRadioSelection(String key) {
     if (_selectedValues[key] == null) {
@@ -66,14 +98,14 @@ class InPersonQuantitativeController extends GetxController with BaseController 
     update(); // Update the UI
     return true;
   }
-  List<String> splitSchoolLists = [];
 
+  List<String> splitSchoolLists = [];
 
   bool showBasicDetails = true; // For show Basic Details
   bool showDigiLabSchedule = false; // For show and hide DigiLab Schedule
   bool showTeacherCapacity = false; // For show and hide Teacher Capacity
   bool showSchoolRefresherTraining =
-  false; // For show and hide School Refresher training
+      false; // For show and hide School Refresher training
   bool showDigiLabClasses = false; // For show and hide DigiLab Classes
   bool showLibrary = false; // For show and hide Library
 
@@ -116,7 +148,6 @@ class InPersonQuantitativeController extends GetxController with BaseController 
 
   String? isResolved;
 
-
   void updateIsResolved(String? value) {
     isResolved = value;
     update(); // This will call the builder again to reflect changes
@@ -125,9 +156,6 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   final TextEditingController dateController = TextEditingController();
   bool dateFieldError = false;
 
-
-
-
   final FocusNode _tourIdFocusNode = FocusNode();
   FocusNode get tourIdFocusNode => _tourIdFocusNode;
 
@@ -135,92 +163,103 @@ class InPersonQuantitativeController extends GetxController with BaseController 
   FocusNode get schoolFocusNode => _schoolFocusNode;
 
   List<InPersonQuantitativeRecords> _inPersonQuantitativeList = [];
-  List<InPersonQuantitativeRecords> get inPersonQuantitative => _inPersonQuantitativeList;
+  List<InPersonQuantitativeRecords> get inPersonQuantitative =>
+      _inPersonQuantitativeList;
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-
   List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
-  Future<String> takePhoto(ImageSource source) async {
+  final List<XFile> _multipleImage2 = [];
+  List<XFile> get multipleImage2 => _multipleImage2;
+  List<String> _imagePaths2 = [];
+  List<String> get imagePaths2 => _imagePaths2;
+
+  Future<String> takePhoto(ImageSource source, int index) async {
     final ImagePicker picker = ImagePicker();
     List<XFile> selectedImages = [];
+    XFile? pickedImage;
 
-    _imagePaths = [];
-    if (source == ImageSource.gallery) {
-      selectedImages = await picker.pickMultiImage();
-      _multipleImage.addAll(selectedImages);
-      for (var image in _multipleImage) {
-        _imagePaths.add(image.path);
-      }
-    } else if (source == ImageSource.camera) {
-      XFile? pickedImage = await picker.pickImage(source: source);
-      if (pickedImage != null) {
-        _multipleImage.add(pickedImage);
-        _imagePaths.add(pickedImage.path);
-      }
+    // Determine which list to use based on the index parameter
+    List<XFile> multipleImages;
+    List<String> imagePaths;
+
+    switch (index) {
+      case 1:
+        multipleImages = _multipleImage;
+        imagePaths = _imagePaths;
+        break;
+      case 2:
+        multipleImages = _multipleImage2;
+        imagePaths = _imagePaths2;
+        break;
+      default:
+        throw ArgumentError('Invalid index: $index');
     }
-    update();
-    return _imagePaths.toString();
+
+    if (source == ImageSource.gallery) {
+      selectedImages = await picker.pickMultiImage(
+        imageQuality: 50, // Set image quality (0-100, where 0 is lowest)
+        maxWidth: 800, // Set max width to resize
+        maxHeight: 600, // Set max height to resize
+      );
+      for (var selectedImage in selectedImages) {
+        // Add the selected image path directly
+        multipleImages.add(selectedImage);
+        imagePaths.add(selectedImage.path);
+      }
+      update();
+    } else if (source == ImageSource.camera) {
+      pickedImage = await picker.pickImage(
+        source: source,
+        imageQuality: 50, // Set image quality (0-100)
+        maxWidth: 800, // Set max width to resize
+        maxHeight: 600, // Set max height to resize
+      );
+      if (pickedImage != null) {
+        // Add the picked image path directly
+        multipleImages.add(pickedImage);
+        imagePaths.add(pickedImage.path);
+      }
+      update();
+    }
+
+    return imagePaths.toString();
   }
 
   void setSchool(String? value) {
     _schoolValue = value;
-
   }
 
   void setTour(String? value) {
     _tourValue = value;
-
   }
 
-  Widget bottomSheet(BuildContext context) {
+  Widget bottomSheet(BuildContext context, int index) {
     return Container(
       color: AppColors.primary,
       height: 100,
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
         children: <Widget>[
-          const Text(
-            "Select Image",
-            style: TextStyle(fontSize: 20.0, color: Colors.white),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
+          const Text("Select Image",
+              style: TextStyle(fontSize: 20.0, color: Colors.white)),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  await takePhoto(ImageSource.camera);
+                  await takePhoto(ImageSource.camera, index);
                   Get.back();
                 },
-                child: const Text(
-                  'Camera',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
+                child: const Text('Camera',
+                    style: TextStyle(fontSize: 20.0, color: AppColors.primary)),
               ),
-              const SizedBox(
-                width: 30,
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  await takePhoto(ImageSource.gallery);
-                  Get.back();
-                },
-                child: const Text(
-                  'Gallery',
-                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
-                ),
-              ),
+              const SizedBox(width: 30),
             ],
           ),
         ],
@@ -279,9 +318,10 @@ class InPersonQuantitativeController extends GetxController with BaseController 
 
   Future<void> fetchData() async {
     isLoading = true;
-    update();
-    _inPersonQuantitativeList = await LocalDbController().fetchLocalInPersonQuantitativeRecords();
-    isLoading = false;
+    _inPersonQuantitativeList = [];
+    _inPersonQuantitativeList =
+        await LocalDbController().fetchLocalInPersonQuantitativeRecords();
+
     update();
   }
 }

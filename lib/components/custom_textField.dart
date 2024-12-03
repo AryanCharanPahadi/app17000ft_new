@@ -14,13 +14,14 @@ class CustomTextFormField extends StatefulWidget {
   final int? maxlines;
   final TextAlign textAlign;
   final bool showCharacterCount;
-
+  final TextCapitalization textCapitalization;
   final String? Function(String?)? validator;
   final String? Function(String?)? onSaved;
   final FocusNode? focusNode;
   final Function()? onTap;
   final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String>? onChanged;
+  final BorderRadius? borderRadius;
 
   const CustomTextFormField({
     super.key,
@@ -41,6 +42,8 @@ class CustomTextFormField extends StatefulWidget {
     this.inputFormatters,
     this.onChanged,
     this.showCharacterCount = false,
+    this.textCapitalization = TextCapitalization.none,
+    this.borderRadius = const BorderRadius.all(Radius.circular(10)),
   });
 
   @override
@@ -75,42 +78,46 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           validator: widget.validator,
           onSaved: widget.onSaved ?? (value) {},
           inputFormatters: widget.inputFormatters,
+          textCapitalization: widget.textCapitalization,
           decoration: InputDecoration(
             prefixIcon: widget.prefixIcon != null
-                ? Icon(widget.prefixIcon)
+                ? Icon(
+              widget.prefixIcon,
+              color: AppColors.primary, // Set the primary color for the icon
+            )
                 : null,
             suffixIcon: widget.suffixIcon,
-            prefixIconColor: AppColors.outline,
-            suffixIconColor: AppColors.outline,
             label: widget.labelText != null
                 ? Text(
               widget.labelText!,
-              style:
-              AppStyles.captionText(context, AppColors.outline, 12),
+              style: AppStyles.captionText(context, AppColors.outline, 12),
             )
                 : null,
             hintText: widget.hintText ?? '',
             floatingLabelStyle: const TextStyle(color: AppColors.primary),
-            enabledBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              borderSide: BorderSide(
+            enabledBorder: OutlineInputBorder(
+              borderRadius: widget.borderRadius ?? const BorderRadius.all(Radius.circular(10)),
+              borderSide: const BorderSide(
                 width: 1,
                 color: AppColors.onBackground,
               ),
             ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              borderSide: BorderSide(width: 2, color: AppColors.outline),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: widget.borderRadius ?? const BorderRadius.all(Radius.circular(10)),
+              borderSide: const BorderSide(width: 2, color: AppColors.outline),
             ),
-            errorBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              borderSide: BorderSide(width: 1, color: AppColors.error),
+            errorBorder: OutlineInputBorder(
+              borderRadius: widget.borderRadius ?? const BorderRadius.all(Radius.circular(10)),
+              borderSide: const BorderSide(width: 1, color: AppColors.error),
             ),
-            focusedErrorBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              borderSide: BorderSide(width: 2, color: AppColors.error),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: widget.borderRadius ?? const BorderRadius.all(Radius.circular(10)),
+              borderSide: const BorderSide(width: 2, color: AppColors.error),
             ),
           ),
+          onEditingComplete: () {
+            widget.focusNode?.unfocus();  // Removes the focus when editing is complete
+          },
         ),
         if (widget.showCharacterCount)
           Padding(

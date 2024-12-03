@@ -76,6 +76,8 @@ static const surfaceContainerLow = Color(0xfffff0ef);
 static const surfaceContainer = Color(0xfffee9e7);
 static const surfaceContainerHigh = Color(0xfff8e4e2);
 static const surfaceContainerHighest = Color(0xfff2dedc);
+static const Color backgroundGradientEnd = Color(0xFF00BCD4); // Replace with desired color code
+
 
 
 // Highest-level container background color.
@@ -248,6 +250,7 @@ textStyle:    TextStyle(
   }
 
   // App Bar Styles
+
   static TextStyle appBarTitle(BuildContext context,Color textColor) {
     return TextStyle(
       fontSize: responsiveFontSize(context, 20),

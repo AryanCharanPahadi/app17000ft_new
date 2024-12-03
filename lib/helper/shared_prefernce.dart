@@ -4,7 +4,6 @@ import 'dart:convert';
 class SharedPreferencesHelper {
   static const String _userDataKey = 'userData';
   static const String _isLoggedInKey = 'isLoggedIn';
-  String? username;
 
   // Method to store user data
   static Future<void> storeUserData(Map<String, dynamic> userData) async {
@@ -18,7 +17,7 @@ class SharedPreferencesHelper {
   static Future<Map<String, dynamic>?> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userDataJson = prefs.getString(_userDataKey);
-   
+
     if (userDataJson != null) {
       return json.decode(userDataJson);
     }
@@ -30,10 +29,11 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userDataKey);
   }
-static Future<void> logout() async {
-  removeUserData();
-  setLoginState(false);
-   
+
+  // Method to log out
+  static Future<void> logout() async {
+    await removeUserData();
+    await setLoginState(false);
   }
 
   // Method to set login state

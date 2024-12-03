@@ -1,23 +1,19 @@
-
 import 'dart:io';
-
+import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
 import 'cab_meter_tracing_modal.dart';
-class CabMeterTracingController extends GetxController with BaseController{
 
+class CabMeterTracingController extends GetxController with BaseController {
   String? _tourValue;
   String? get tourValue => _tourValue;
 
-  //school Value
   String? _schoolValue;
   String? get schoolValue => _schoolValue;
 
@@ -28,152 +24,111 @@ class CabMeterTracingController extends GetxController with BaseController{
   final TextEditingController meterReadingController = TextEditingController();
   final TextEditingController placeVisitedController = TextEditingController();
   final TextEditingController statusController = TextEditingController();
-  final TextEditingController VehicleNumberController = TextEditingController();
+  final TextEditingController vehicleNumberController = TextEditingController();
 
-
-
-  // Map to store selected values for radio buttons
   final Map<String, String?> _selectedValues = {};
   String? getSelectedValue(String key) => _selectedValues[key];
 
-  // Map to store error states for radio buttons
   final Map<String, bool> _radioFieldErrors = {};
   bool getRadioFieldError(String key) => _radioFieldErrors[key] ?? false;
 
-  // Method to set the selected value and clear any previous error
   void setRadioValue(String key, String? value) {
     _selectedValues[key] = value;
-    _radioFieldErrors[key] = false; // Clear error when a value is selected
-    update(); // Update the UI
+    _radioFieldErrors[key] = false;
+    update();
   }
 
-  // Method to validate radio button selection
   bool validateRadioSelection(String key) {
     if (_selectedValues[key] == null) {
       _radioFieldErrors[key] = true;
-      update(); // Update the UI
+      update();
       return false;
     }
     _radioFieldErrors[key] = false;
-    update(); // Update the UI
     return true;
   }
 
-
-
-
-
-  //Focus nodes
+  // Focus nodes
   final FocusNode _tourIdFocusNode = FocusNode();
-  FocusNode get  tourIdFocusNode => _tourIdFocusNode;
-  final FocusNode _schoolFocusNode = FocusNode();
-  FocusNode get  schoolFocusNode => _schoolFocusNode;
+  FocusNode get tourIdFocusNode => _tourIdFocusNode;
 
-  List<CabMeterTracingRecords> _cabMeterTracingList =[];
+  final FocusNode _schoolFocusNode = FocusNode();
+  FocusNode get schoolFocusNode => _schoolFocusNode;
+
+  List<CabMeterTracingRecords> _cabMeterTracingList = [];
   List<CabMeterTracingRecords> get cabMeterTracingList => _cabMeterTracingList;
 
   List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
+
   List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
-  Future<String> takePhoto(ImageSource source,) async {
+  Future<String> takePhoto(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
-    List<XFile> selectedImages = [];
 
-    _imagePaths = [];
-    XFile? pickedImage;
-    if (source == ImageSource.gallery) {
-      selectedImages = await picker.pickMultiImage();
-      // if (type == 'lib') {
-      _multipleImage.addAll(selectedImages);
-      for (var path in _multipleImage) {
-        _imagePaths.add(path.path);
-      }
-      update();
-      //  return _imagePaths.toString();
-    } else if (source == ImageSource.camera) {
-      pickedImage = await picker.pickImage(source: source);
-      _multipleImage.add(pickedImage!);
-      for (var path in _multipleImage) {
-        _imagePaths.add(path.path);
-      }
-      update();
+    // Use the imageQuality parameter to reduce the quality
+    XFile? pickedImage = await picker.pickImage(
+      source: source,
+      maxWidth: 800, // Set maximum width for the image
+      maxHeight: 600, // Set maximum height for the image
+      imageQuality:
+          50, // Set the image quality (0-100, where 100 is the highest)
+    );
+
+    if (pickedImage != null) {
+      // Clear previous selections
+      _multipleImage.clear();
+      _imagePaths.clear();
+
+      // Add the picked image path to the lists
+      _multipleImage.add(pickedImage);
+      _imagePaths.add(pickedImage.path);
     }
+
     update();
     return _imagePaths.toString();
   }
-  setSchool(value)
-  {
+
+
+  void setSchool(String? value) {
     _schoolValue = value;
     update();
   }
 
-  setTour(value){
+  void setTour(String? value) {
     _tourValue = value;
     update();
-
   }
+
   Widget bottomSheet(BuildContext context) {
-    String? imagePicked;
-    PickedFile? imageFile;
-    final ImagePicker picker = ImagePicker();
-    XFile? image;
     return Container(
       color: AppColors.primary,
       height: 100,
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
         children: <Widget>[
           const Text(
             "Select Image",
             style: TextStyle(fontSize: 20.0, color: Colors.white),
           ),
-          const SizedBox(
-            height: 20,
-          ),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // ignore: deprecated_member_use
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  imagePicked = await takePhoto(ImageSource.camera);
-
-                  // uploadFile(userdata.read('customerID'));
+                  await takePhoto(ImageSource.camera);
                   Get.back();
-                  //  update();
                 },
                 child: const Text(
                   'Camera',
-                  style: TextStyle(
-                      fontSize: 20.0, color: AppColors.primary),
+                  style: TextStyle(fontSize: 20.0, color: AppColors.primary),
                 ),
               ),
-              const SizedBox(
-                width: 30,
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: () async {
-                  imagePicked = await takePhoto(
-                    ImageSource.gallery,
-                  );
-
-                  Get.back();
-                  //  update();
-                },
-                child: const Text(
-                  'Gallery',
-                  style: TextStyle(
-                      fontSize: 20.0, color: AppColors.primary),
-                ),
-              ),
+              const SizedBox(width: 30),
             ],
           )
         ],
@@ -208,32 +163,41 @@ class CabMeterTracingController extends GetxController with BaseController{
     );
   }
 
-  //Clear fields
   void clearFields() {
     placeVisitedController.clear();
-    VehicleNumberController.clear();
+    vehicleNumberController.clear();
     driverNameController.clear();
     meterReadingController.clear();
     remarksController.clear();
     _tourValue = null;
-
-
-
+    _multipleImage.clear();
+    _imagePaths.clear();
     update();
   }
 
-  fetchData() async {
+  Future<void> fetchData() async {
     isLoading = true;
-
-    _cabMeterTracingList = [];
-    _cabMeterTracingList = await LocalDbController().fetchLocalCabMeterTracingRecord();
-
-    update();
+    _cabMeterTracingList =
+        await LocalDbController().fetchLocalCabMeterTracingRecord();
+    isLoading = false;
+    update(); // Refresh the UI
   }
 
-//
+  void removeRecordFromList(int id) {
+    _cabMeterTracingList.removeWhere((record) => record.id == id);
+    update(); // Refresh the UI
+  }
 
-//Update the UI
-
-
+  @override
+  void onClose() {
+    remarksController.dispose();
+    driverNameController.dispose();
+    meterReadingController.dispose();
+    placeVisitedController.dispose();
+    statusController.dispose();
+    vehicleNumberController.dispose();
+    _tourIdFocusNode.dispose();
+    _schoolFocusNode.dispose();
+    super.onClose();
+  }
 }
