@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:app17000ft_new/components/curved_container.dart';
 import 'package:app17000ft_new/components/custom_button.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
@@ -20,6 +19,7 @@ class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
+
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _loginFormkey = GlobalKey<FormState>();
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         CustomButton(
                           onPressedButton: () async {
-                            if (networkManager.connectionType == 0) {
+                            if (networkManager.connectionType.value == 0) {
                               customSnackbar(
                                 'Error',
                                 'No Internet Connection',
@@ -142,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 AppColors.onSecondary,
                                 Icons.error,
                               );
-                            } else {
+                            }
+                            else {
                               if (_loginFormkey.currentState!.validate()) {
                                 // Authenticate user
                                 var myrsp = await loginController.authUser(

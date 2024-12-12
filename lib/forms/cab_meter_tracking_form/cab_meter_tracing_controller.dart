@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
 import 'cab_meter_tracing_modal.dart';
@@ -58,10 +56,10 @@ class CabMeterTracingController extends GetxController with BaseController {
   List<CabMeterTracingRecords> _cabMeterTracingList = [];
   List<CabMeterTracingRecords> get cabMeterTracingList => _cabMeterTracingList;
 
-  List<XFile> _multipleImage = [];
+  final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
 
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
   Future<String> takePhoto(ImageSource source) async {
@@ -89,7 +87,6 @@ class CabMeterTracingController extends GetxController with BaseController {
     update();
     return _imagePaths.toString();
   }
-
 
   void setSchool(String? value) {
     _schoolValue = value;

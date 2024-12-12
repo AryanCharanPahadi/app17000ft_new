@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:math';
 import 'package:path_provider/path_provider.dart';
@@ -19,7 +20,6 @@ import 'package:app17000ft_new/helper/responsive_helper.dart';
 import 'package:app17000ft_new/tourDetails/tour_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -33,7 +33,6 @@ import '../../components/custom_confirmation.dart';
 import '../select_tour_id/select_controller.dart';
 import 'in_person_quantitative_controller.dart';
 import 'in_person_quantitative_modal.dart';
-import 'in_person_quantitative_sync.dart';
 
 class InPersonQuantitative extends StatefulWidget {
   String? userid;
@@ -57,7 +56,9 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
   @override
   void initState() {
     super.initState();
-    print('Office init ${widget.office}');
+    if (kDebugMode) {
+      print('Office init ${widget.office}');
+    }
   }
 
   // For managing issues and resolutions
@@ -129,7 +130,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
       ),
     );
 
-    void _showErrorDialog(String message) {
+    void showErrorDialog(String message) {
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -147,10 +148,10 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                 child: Wrap(
                   children: <Widget>[
                     Container(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       width: double.infinity,
                       color: AppColors.primary, // Use the primary color
-                      child: Column(
+                      child: const Column(
                         children: <Widget>[
                           SizedBox(height: 10),
                           Icon(
@@ -168,18 +169,18 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: <Widget>[
                           Text(
                             message,
-                            style: TextStyle(color: Colors.black, fontSize: 16),
+                            style: const TextStyle(color: Colors.black, fontSize: 16),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       width: double.infinity,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -188,7 +189,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               elevation: 0,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: 12,
                                 horizontal: 24,
                               ),
@@ -196,7 +197,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                             ),
-                            child: Text(
+                            child: const Text(
                               'OK',
                               style: TextStyle(color: Colors.white),
                             ),
@@ -224,7 +225,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
               participants.indexWhere((p) => p.designation == 'DigiLab Admin');
           if (existingIndex >= 0) {
             // Show error dialog if trying to add another "DigiLab Admin"
-            _showErrorDialog(
+            showErrorDialog(
                 'No duplicate designation allowed,except for Teacher and HM,In-Charge cannot have both designations simultaneously');
           } else {
             // Add "DigiLab Admin" if it doesn't exist yet
@@ -260,35 +261,12 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
     });
   }
 
-  void _onNextPressed() {
-    int staffAttended = int.tryParse(inPersonQuantitativeController
-            .staafAttendedTrainingController.text) ??
-        0;
-
-    // Check if staff attended is greater than 0
-    if (staffAttended <= 0) {
-      setState(() {
-        showError = true;
-        errorMessage = 'Please fill a number greater than 0';
-      });
-      return;
-    }
-    // Check if the number of participants matches the number of staff attended
-
-    // Reset error and proceed to the next step if checks are passed
-    setState(() {
-      showError = false;
-      errorMessage = '';
-      inPersonQuantitativeController.showSchoolRefresherTraining = false;
-      inPersonQuantitativeController.showDigiLabClasses = true;
-    });
-  }
 
 // make this code that if user fill 0 in the staff attendend in the training then show error
-  bool _isImageUploaded = false;
+  final bool _isImageUploaded = false;
   bool validateRegister = false;
 
-  bool _isImageUploaded2 = false;
+  final bool _isImageUploaded2 = false;
   bool validateRegister2 = false;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -334,11 +312,11 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
           return shouldExit ?? false;
         },
         child: Scaffold(
-          appBar: CustomAppbar(
+          appBar: const CustomAppbar(
             title: 'In-Person Quantitative',
           ),
           body: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
               controller: _scrollController,
               child: Column(
@@ -469,7 +447,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                         items: inPersonQuantitativeController
                                             .splitSchoolLists, // Show schools based on selected or locked tour ID
                                         dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
+                                            const DropDownDecoratorProps(
                                           dropdownSearchDecoration:
                                               InputDecoration(
                                             labelText: "Select School",
@@ -514,7 +492,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'udiCode', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -544,13 +522,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     .clearTrainingInputs();
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('udiCode'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -628,15 +606,15 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                         ),
                                         child: ListTile(
                                             title: _isImageUploaded == false
-                                                ? Text(
+                                                ? const Text(
                                                     'Click or Upload Image',
                                                   )
-                                                : Text(
+                                                : const Text(
                                                     'Click or Upload Image',
                                                     style: TextStyle(
                                                         color: AppColors.error),
                                                   ),
-                                            trailing: Icon(Icons.camera_alt,
+                                            trailing: const Icon(Icons.camera_alt,
                                                 color: AppColors.onBackground),
                                             onTap: () {
                                               showModalBottomSheet(
@@ -679,7 +657,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               child:
                                                   inPersonQuantitativeController
                                                           .multipleImage.isEmpty
-                                                      ? Center(
+                                                      ? const Center(
                                                           child: Text(
                                                               'No images selected.'),
                                                         )
@@ -699,7 +677,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                                 children: [
                                                                   Padding(
                                                                     padding:
-                                                                        EdgeInsets.all(
+                                                                        const EdgeInsets.all(
                                                                             8.0),
                                                                     child:
                                                                         GestureDetector(
@@ -732,7 +710,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                                             .removeAt(index);
                                                                       });
                                                                     },
-                                                                    child: Icon(
+                                                                    child: const Icon(
                                                                       Icons
                                                                           .delete,
                                                                       color: Colors
@@ -745,7 +723,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           },
                                                         ),
                                             )
-                                          : SizedBox(),
+                                          : const SizedBox(),
                                       CustomSizedBox(
                                         value: 20,
                                         side: 'height',
@@ -815,7 +793,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                                 _scrollController.animateTo(
                                                   0.0, // Scroll to the top
-                                                  duration: Duration(milliseconds: 300),
+                                                  duration: const Duration(milliseconds: 300),
                                                   curve: Curves.easeInOut,
                                                 );
                                               });
@@ -864,7 +842,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -898,14 +876,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'digiLabSchedule'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -948,7 +926,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           'class2Hours', value);
                                                 },
                                               ),
-                                              Text('Yes'),
+                                              const Text('Yes'),
                                             ],
                                           ),
                                         ),
@@ -976,13 +954,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           'class2Hours', value);
                                                 },
                                               ),
-                                              Text('No'),
+                                              const Text('No'),
                                             ],
                                           ),
                                         ),
                                         if (inPersonQuantitativeController
                                             .getRadioFieldError('class2Hours'))
-                                          Padding(
+                                          const Padding(
                                             padding:
                                                 EdgeInsets.only(left: 16.0),
                                             child: Align(
@@ -1046,13 +1024,12 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       false;
                                                 });
                                               }),
-                                          Spacer(),
+                                          const Spacer(),
                                           CustomButton(
                                             title: 'Next',
                                             onPressedButton: () {
                                               // Get the value of the 'digiLabSchedule' radio button
-                                              final digiLabScheduleValue =
-                                                  inPersonQuantitativeController
+                                              inPersonQuantitativeController
                                                       .validateRadioSelection(
                                                           'digiLabSchedule');
 
@@ -1073,8 +1050,6 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               // Validate form and radio button conditions
                                               if (_formKey.currentState!
                                                       .validate() &&
-                                                  digiLabScheduleValue !=
-                                                      null &&
                                                   isRadioValid3) {
                                                 setState(() {
                                                   inPersonQuantitativeController
@@ -1086,7 +1061,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     _scrollController.animateTo(
                                                       0.0, // Scroll to the top
-                                                      duration: Duration(milliseconds: 300),
+                                                      duration: const Duration(milliseconds: 300),
                                                       curve: Curves.easeInOut,
                                                     );
                                                   });
@@ -1137,7 +1112,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -1177,14 +1152,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'isDigiLabAdminAppointed'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -1228,7 +1203,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           value);
                                                 },
                                               ),
-                                              Text('Yes'),
+                                              const Text('Yes'),
                                             ],
                                           ),
                                         ),
@@ -1257,14 +1232,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           value);
                                                 },
                                               ),
-                                              Text('No'),
+                                              const Text('No'),
                                             ],
                                           ),
                                         ),
                                         if (inPersonQuantitativeController
                                             .getRadioFieldError(
                                                 'isDigiLabAdminTrained'))
-                                          Padding(
+                                          const Padding(
                                             padding:
                                                 EdgeInsets.only(left: 16.0),
                                             child: Align(
@@ -1370,7 +1345,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -1399,14 +1374,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'areAllTeacherTrained'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -1447,7 +1422,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     () {}); // Triggers UI update
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -1479,14 +1454,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'idHasBeenCreated'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -1531,7 +1506,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       () {}); // Triggers UI update
                                                 },
                                               ),
-                                              Text('Yes'),
+                                              const Text('Yes'),
                                             ],
                                           ),
                                         ),
@@ -1560,14 +1535,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       () {}); // Triggers UI update
                                                 },
                                               ),
-                                              Text('No'),
+                                              const Text('No'),
                                             ],
                                           ),
                                         ),
                                         if (inPersonQuantitativeController
                                             .getRadioFieldError(
                                                 'teacherUsingTablet'))
-                                          Padding(
+                                          const Padding(
                                             padding:
                                                 EdgeInsets.only(left: 16.0),
                                             child: Align(
@@ -1603,7 +1578,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               });
                                             },
                                           ),
-                                          Spacer(),
+                                          const Spacer(),
                                           CustomButton(
                                             title: 'Next',
                                             onPressedButton: () {
@@ -1667,7 +1642,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     _scrollController.animateTo(
                                                       0.0, // Scroll to the top
-                                                      duration: Duration(milliseconds: 300),
+                                                      duration: const Duration(milliseconds: 300),
                                                       curve: Curves.easeInOut,
                                                     );
                                                   });
@@ -1716,7 +1691,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     () {}); // Triggers UI update
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -1745,14 +1720,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     () {}); // Triggers UI update
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'ableToConductRefresherTraining'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -1824,9 +1799,9 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               CustomSizedBox(
                                                   value: 10, side: 'width'),
                                               IconButton(
-                                                icon: Icon(Icons.add),
+                                                icon: const Icon(Icons.add),
                                                 iconSize: 40,
-                                                color: Color.fromARGB(
+                                                color: const Color.fromARGB(
                                                     255, 141, 13, 21),
                                                 onPressed:
                                                     _addParticipants, // Trigger add participants function
@@ -1836,13 +1811,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                           CustomSizedBox(
                                               value: 20, side: 'height'),
                                           participants.isEmpty
-                                              ? Center(
+                                              ? const Center(
                                                   child: Text('No records'))
                                               : ListView.builder(
                                                   shrinkWrap:
                                                       true, // Use space efficiently
                                                   physics:
-                                                      NeverScrollableScrollPhysics(), // Disable scrolling
+                                                      const NeverScrollableScrollPhysics(), // Disable scrolling
                                                   itemCount:
                                                       participants.length,
                                                   itemBuilder:
@@ -1853,7 +1828,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       ),
                                                       trailing: IconButton(
                                                         icon:
-                                                            Icon(Icons.delete),
+                                                            const Icon(Icons.delete),
                                                         color: Colors
                                                             .red, // Set the icon color to red
                                                         onPressed: () =>
@@ -1902,7 +1877,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         : AppColors.error,
                                               ),
                                             ),
-                                            trailing: Icon(Icons.camera_alt,
+                                            trailing: const Icon(Icons.camera_alt,
                                                 color: AppColors.onBackground),
                                             onTap: () {
                                               showModalBottomSheet(
@@ -1962,7 +1937,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         children: [
                                                           Padding(
                                                             padding:
-                                                                EdgeInsets.all(
+                                                                const EdgeInsets.all(
                                                                     8.0),
                                                             child:
                                                                 GestureDetector(
@@ -1997,7 +1972,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                                         index);
                                                               });
                                                             },
-                                                            child: Icon(
+                                                            child: const Icon(
                                                               Icons.delete,
                                                               color: Colors.red,
                                                             ),
@@ -2008,7 +1983,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   },
                                                 ),
                                               )
-                                            : SizedBox(),
+                                            : const SizedBox(),
                                         CustomSizedBox(
                                           value: 20,
                                           side: 'height',
@@ -2027,7 +2002,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue1 = value!;
                                             });
                                           },
-                                          title: Text('Operating DigiLab'),
+                                          title: const Text('Operating DigiLab'),
                                           activeColor: Colors.green,
                                         ),
                                         CheckboxListTile(
@@ -2039,7 +2014,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue2 = value!;
                                             });
                                           },
-                                          title: Text('Operating tablets'),
+                                          title: const Text('Operating tablets'),
                                           activeColor: Colors.green,
                                         ),
                                         CheckboxListTile(
@@ -2051,7 +2026,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue3 = value!;
                                             });
                                           },
-                                          title: Text('Creating students IDs'),
+                                          title: const Text('Creating students IDs'),
                                           activeColor: Colors.green,
                                         ),
                                         CheckboxListTile(
@@ -2063,7 +2038,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue4 = value!;
                                             });
                                           },
-                                          title: Text(
+                                          title: const Text(
                                               'Grade Wise DigiLab subjects & Chapters'),
                                           activeColor: Colors.green,
                                         ),
@@ -2076,7 +2051,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue5 = value!;
                                             });
                                           },
-                                          title: Text(
+                                          title: const Text(
                                               'Importance of completing post test'),
                                           activeColor: Colors.green,
                                         ),
@@ -2089,7 +2064,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue6 = value!;
                                             });
                                           },
-                                          title: Text(
+                                          title: const Text(
                                               'Saving and submitting data(Send Report)'),
                                           activeColor: Colors.green,
                                         ),
@@ -2102,7 +2077,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   .checkboxValue7 = value!;
                                             });
                                           },
-                                          title: Text('Syncing data with Pi'),
+                                          title: const Text('Syncing data with Pi'),
                                           activeColor: Colors.green,
                                         ),
                                         CheckboxListTile(
@@ -2121,7 +2096,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               }
                                             });
                                           },
-                                          title: Text('Any other'),
+                                          title: const Text('Any other'),
                                           activeColor: Colors.green,
                                         ),
                                         // if (inPersonQuantitativeController
@@ -2202,7 +2177,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'practicalDemo', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2233,13 +2208,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('practicalDemo'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2302,10 +2277,10 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                               value: 10, side: 'width'),
                                           // IconButton with responsive size
                                           IconButton(
-                                            icon: Icon(Icons.add),
+                                            icon: const Icon(Icons.add),
                                             iconSize:
                                                 40, // Adjust size as needed
-                                            color: Color.fromARGB(
+                                            color: const Color.fromARGB(
                                                 255, 141, 13, 21),
                                             onPressed:
                                                 _addIssue, // Trigger add participants function
@@ -2319,18 +2294,18 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                       ),
 
                                       issues.isEmpty
-                                          ? Center(child: Text('No records'))
+                                          ? const Center(child: Text('No records'))
                                           : ListView.builder(
                                               shrinkWrap: true,
                                               physics:
-                                                  NeverScrollableScrollPhysics(),
+                                                  const NeverScrollableScrollPhysics(),
                                               itemCount: issues.length,
                                               itemBuilder: (context, index) {
                                                 return ListTile(
                                                   title: Text(
                                                       '${index + 1}. Issue: ${issues[index].issue}\n    Resolution: ${issues[index].resolution}'),
                                                   trailing: IconButton(
-                                                    icon: Icon(
+                                                    icon: const Icon(
                                                       Icons.delete,
                                                       color: Colors
                                                           .red, // Set the icon color to red
@@ -2379,7 +2354,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       false;
                                                 });
                                               }),
-                                          Spacer(),
+                                          const Spacer(),
                                           CustomButton(
                                             title: 'Next',
                                             onPressedButton: () {
@@ -2463,7 +2438,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     _scrollController.animateTo(
                                                       0.0, // Scroll to the top
-                                                      duration: Duration(milliseconds: 300),
+                                                      duration: const Duration(milliseconds: 300),
                                                       curve: Curves.easeInOut,
                                                     );
                                                   });
@@ -2516,7 +2491,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2543,14 +2518,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'childrenComfortable'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2588,7 +2563,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2615,14 +2590,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError(
                                               'childrenContent'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2659,7 +2634,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'postTeacher', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2685,13 +2660,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'postTeacher', value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('postTeacher'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2728,7 +2703,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'teacherHelp', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2754,13 +2729,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'teacherHelp', value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('teacherHelp'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2797,7 +2772,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'digiLabLog', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2828,13 +2803,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('digiLabLog'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -2874,7 +2849,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           'logFilled', value);
                                                 },
                                               ),
-                                              Text('Yes'),
+                                              const Text('Yes'),
                                             ],
                                           ),
                                         ),
@@ -2900,13 +2875,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           'logFilled', value);
                                                 },
                                               ),
-                                              Text('No'),
+                                              const Text('No'),
                                             ],
                                           ),
                                         ),
                                         if (inPersonQuantitativeController
                                             .getRadioFieldError('logFilled'))
-                                          Padding(
+                                          const Padding(
                                             padding:
                                                 EdgeInsets.only(left: 16.0),
                                             child: Align(
@@ -2949,7 +2924,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'sendReport', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -2975,13 +2950,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'sendReport', value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('sendReport'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -3022,7 +2997,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'facilatorApp', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -3056,13 +3031,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('facilatorApp'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -3140,7 +3115,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     ? 'Date is required'
                                                     : null,
                                             suffixIcon: IconButton(
-                                              icon: Icon(Icons.calendar_today),
+                                              icon: const Icon(Icons.calendar_today),
                                               onPressed: () {
                                                 _selectDate(context);
                                               },
@@ -3169,7 +3144,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       false;
                                                 });
                                               }),
-                                          Spacer(),
+                                          const Spacer(),
                                           CustomButton(
                                             title: 'Next',
                                             onPressedButton: () {
@@ -3218,12 +3193,12 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           'facilatorApp');
 
                                               // Conditionally validate the date field if 'facilatorApp' is 'Yes'
-                                              bool _dateFieldError = false;
+                                              bool dateFieldError = false;
                                               if (inPersonQuantitativeController
                                                       .getSelectedValue(
                                                           'facilatorApp') ==
                                                   'Yes') {
-                                                _dateFieldError =
+                                                dateFieldError =
                                                     inPersonQuantitativeController
                                                         .dateController
                                                         .text
@@ -3235,7 +3210,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 this
                                                         .inPersonQuantitativeController
                                                         .dateFieldError =
-                                                    _dateFieldError;
+                                                    dateFieldError;
                                               });
 
                                               // Validate form and all conditions
@@ -3249,7 +3224,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   isRadioValid15 &&
                                                   isRadioValid16 &&
                                                   isRadioValid17 &&
-                                                  !_dateFieldError) {
+                                                  !dateFieldError) {
                                                 setState(() {
                                                   inPersonQuantitativeController
                                                           .showDigiLabClasses =
@@ -3259,7 +3234,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                   WidgetsBinding.instance.addPostFrameCallback((_) {
                                                     _scrollController.animateTo(
                                                       0.0, // Scroll to the top
-                                                      duration: Duration(milliseconds: 300),
+                                                      duration: const Duration(milliseconds: 300),
                                                       curve: Curves.easeInOut,
                                                     );
                                                   });
@@ -3308,7 +3283,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         'libTmeTable', value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -3339,13 +3314,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                 }
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('libTmeTable'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -3387,7 +3362,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           value);
                                                 },
                                               ),
-                                              Text('Yes'),
+                                              const Text('Yes'),
                                             ],
                                           ),
                                         ),
@@ -3414,14 +3389,14 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                           value);
                                                 },
                                               ),
-                                              Text('No'),
+                                              const Text('No'),
                                             ],
                                           ),
                                         ),
                                         if (inPersonQuantitativeController
                                             .getRadioFieldError(
                                                 'followedTimeTable'))
-                                          Padding(
+                                          const Padding(
                                             padding:
                                                 EdgeInsets.only(left: 16.0),
                                             child: Align(
@@ -3461,7 +3436,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('Yes'),
+                                            const Text('Yes'),
                                           ],
                                         ),
                                       ),
@@ -3488,13 +3463,13 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         value);
                                               },
                                             ),
-                                            Text('No'),
+                                            const Text('No'),
                                           ],
                                         ),
                                       ),
                                       if (inPersonQuantitativeController
                                           .getRadioFieldError('updatedLibrary'))
-                                        Padding(
+                                        const Padding(
                                           padding: EdgeInsets.only(left: 16.0),
                                           child: Align(
                                             alignment: Alignment.centerLeft,
@@ -3542,7 +3517,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       .showLibrary = false;
                                                 });
                                               }),
-                                          Spacer(),
+                                          const Spacer(),
                                           CustomButton(
                                               title: 'Submit',
                                               onPressedButton: () async {
@@ -3653,8 +3628,10 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                               : "No",
                                                     };
                                                   }).toList());
-                                                  print(
+                                                  if (kDebugMode) {
+                                                    print(
                                                       'Office on pressed ${widget.office} ');
+                                                  }
 
                                                   DateTime now = DateTime.now();
                                                   String formattedDate =
@@ -3663,15 +3640,15 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
 
                                                   String generateUniqueId(
                                                       int length) {
-                                                    const _chars =
+                                                    const chars =
                                                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                    Random _rnd = Random();
+                                                    Random rnd = Random();
                                                     return String.fromCharCodes(
                                                         Iterable.generate(
                                                             length,
-                                                            (_) => _chars
-                                                                .codeUnitAt(_rnd
-                                                                    .nextInt(_chars
+                                                            (_) => chars
+                                                                .codeUnitAt(rnd
+                                                                    .nextInt(chars
                                                                         .length))));
                                                   }
 
@@ -3683,19 +3660,23 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         imagePath)); // Convert image path to File
                                                   }
 
-                                                  List<File> training_picFiles =
+                                                  List<File> trainingPicfiles =
                                                       [];
                                                   for (var imagePath2
                                                       in inPersonQuantitativeController
                                                           .imagePaths2) {
-                                                    training_picFiles.add(File(
+                                                    trainingPicfiles.add(File(
                                                         imagePath2)); // Convert image path to File
                                                   }
 
-                                                  print(
+                                                  if (kDebugMode) {
+                                                    print(
                                                       'Image Paths: ${imgPathFiles.map((file) => file.path).toList()}');
-                                                  print(
-                                                      'Training Image Paths: ${training_picFiles.map((file) => file.path).toList()}');
+                                                  }
+                                                  if (kDebugMode) {
+                                                    print(
+                                                      'Training Image Paths: ${trainingPicfiles.map((file) => file.path).toList()}');
+                                                  }
 
                                                   String imgPathFilesPaths =
                                                       imgPathFiles
@@ -3703,8 +3684,8 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                               file.path)
                                                           .join(',');
                                                   String
-                                                      training_picFilesPaths =
-                                                      training_picFiles
+                                                      trainingPicfilespaths =
+                                                      trainingPicfiles
                                                           .map((file) =>
                                                               file.path)
                                                           .join(',');
@@ -3801,7 +3782,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                             .staafAttendedTrainingController
                                                             .text,
                                                     training_pic:
-                                                        training_picFilesPaths,
+                                                        trainingPicfilespaths,
                                                     specifyOtherTopics:
                                                         inPersonQuantitativeController
                                                             .otherTopicsController
@@ -3905,15 +3886,19 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                     office: widget.office ??
                                                         'Default Office',
                                                   );
-                                                  print(
-                                                      'Office value: ${widget.office}'); // Debugging line
+                                                  if (kDebugMode) {
+                                                    print(
+                                                      'Office value: ${widget.office}');
+                                                  } // Debugging line
 
                                                   // Save data to local database
                                                   int result = await LocalDbController()
                                                       .addData(
                                                           inPersonQuantitativeRecords:
                                                               enrolmentCollectionObj);
-                                                  print(result);
+                                                  if (kDebugMode) {
+                                                    print(result);
+                                                  }
                                                   if (result > 0) {
                                                     inPersonQuantitativeController
                                                         .clearFields();
@@ -3932,7 +3917,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                         jsonData1,
                                                         uniqueId,
                                                         imgPathFiles,
-                                                        training_picFiles,
+                                                        trainingPicfiles,
                                                       );
                                                       // Notify user of success
                                                       customSnackbar(
@@ -3964,7 +3949,7 @@ class _InPersonQuantitativeState extends State<InPersonQuantitative> {
                                                       context,
                                                       MaterialPageRoute(
                                                           builder: (context) =>
-                                                              HomeScreen()),
+                                                              const HomeScreen()),
                                                     );
                                                   } else {
                                                     customSnackbar(
@@ -4024,7 +4009,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -4078,7 +4063,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
                     side: 'height',
                   ),
                   Container(
-                    margin: EdgeInsets.only(right: 80),
+                    margin: const EdgeInsets.only(right: 80),
                     child: Column(
                       children: [
                         LabelText(
@@ -4086,7 +4071,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
                           astrick: true,
                         ),
                         ListTile(
-                          title: Text('Yes'),
+                          title: const Text('Yes'),
                           leading: Radio<String>(
                             value: 'Yes',
                             groupValue: isResolved,
@@ -4100,7 +4085,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
                           ),
                         ),
                         ListTile(
-                          title: Text('No'),
+                          title: const Text('No'),
                           leading: Radio<String>(
                             value: 'No',
                             groupValue: isResolved,
@@ -4114,7 +4099,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
                           ),
                         ),
                         if (showRadioError) // Show error only after submission attempt
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.only(top: 8.0),
                             child: Text(
                               'Please select if the issue is resolved or not',
@@ -4135,7 +4120,7 @@ class _AddIssueBottomSheetState extends State<AddIssueBottomSheet> {
                       Navigator.of(context).pop();
                     },
                   ),
-                  Spacer(),
+                  const Spacer(),
                   CustomButton(
                     title: 'Add',
                     onPressedButton: () {
@@ -4218,7 +4203,7 @@ class _AddParticipantsBottomSheetState
     return Form(
       key: _formKey,
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -4238,12 +4223,12 @@ class _AddParticipantsBottomSheetState
               ),
               CustomSizedBox(value: 20, side: 'height'),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Participants Designation',
                   border: OutlineInputBorder(),
                 ),
                 value: _selectedDesignation,
-                items: [
+                items: const [
                   DropdownMenuItem(
                     value: 'Teacher',
                     child: Text('Teacher'),

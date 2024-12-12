@@ -5,16 +5,18 @@ import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controlle
 import 'package:app17000ft_new/forms/school_facilities_&_mapping_form/school_facilities_controller.dart';
 import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_controller.dart';
 import 'package:app17000ft_new/forms/select_tour_id/select_controller.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart'; // For checking network status
 import 'dart:convert'; // For jsonDecode
 import 'package:http/http.dart' as http; // For HTTP requests
 import '../../components/custom_appBar.dart';
+import '../../components/custom_sizedBox.dart';
+
+
 import '../../components/custom_button.dart';
 import '../../components/custom_labeltext.dart';
-import '../../components/custom_sizedBox.dart';
 import '../../helper/database_helper.dart';
 import '../../home/home_screen.dart';
 import '../cab_meter_tracking_form/cab_meter_tracing_controller.dart';
@@ -102,7 +104,9 @@ class _SelectFormState extends State<SelectForm> {
       final dbHelper = SqfliteDatabaseHelper();
       await dbHelper.insertFormData(tourId, school, formData);
     } catch (e) {
-      print("Error saving data to SQLite: $e");
+      if (kDebugMode) {
+        print("Error saving data to SQLite: $e");
+      }
     }
   }
 
@@ -137,7 +141,7 @@ class _SelectFormState extends State<SelectForm> {
 
                         // Display "You are offline" message when offline
                         if (!isConnected)
-                          Center(
+                          const Center(
                             child: Text(
                               'You are offline',
                               style: TextStyle(
@@ -200,7 +204,7 @@ class _SelectFormState extends State<SelectForm> {
                                     // Navigate to the HomeScreen after data is fetched and saved
                                     Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(
-                                          builder: (context) => HomeScreen()),
+                                          builder: (context) => const HomeScreen()),
                                     );
                                   } else {
                                     // Handle the case where no tour ID is selected

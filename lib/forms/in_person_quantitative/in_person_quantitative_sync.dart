@@ -1,17 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 import 'in_person_quantitative_controller.dart';
@@ -303,50 +301,52 @@ Future insertInPersonQuantitativeRecords(
   int? id,
   Function(double) updateProgress, // Progress callback
 ) async {
-  print('This is In person quantitative Data');
-  print('Tour ID: $tourId');
-  print('School: $school');
-  print('UDICE Value: $udicevalue');
-  print('Correct UDICE: $correct_udice');
-  print('No Enrolled: $no_enrolled');
-  print('Image Path: $imgpath');
-  print('Timetable Available: $timetable_available');
-  print('Class Scheduled: $class_scheduled');
-  print('Remarks Scheduling: $remarks_scheduling');
-  print('Admin Appointed: $admin_appointed');
-  print('Admin Trained: $admin_trained');
-  print('Admin Name: $admin_name');
-  print('Admin Phone: $admin_phone');
-  print('Sub Teacher Trained: $sub_teacher_trained');
-  print('Teacher IDs: $teacher_ids');
-  print('No Staff: $no_staff');
-  print('Training Pic: $training_pic');
-  print('Specify Other Topics: $specifyOtherTopics');
-  print('Practical Demo: $practical_demo');
-  print('Reason for Demo: $reason_demo');
-  print('Comments on Capacity: $comments_capacity');
-  print('Children Comfortable: $children_comfortable');
-  print('Children Understand: $children_understand');
-  print('Post Test: $post_test');
-  print('Resolved Doubts: $resolved_doubts');
-  print('Logs Filled: $logs_filled');
-  print('Filled Correctly: $filled_correctly');
-  print('Send Report: $send_report');
-  print('App Installed: $app_installed');
-  print('Data Synced: $data_synced');
-  print('Last Synced Date: $last_syncedDate');
-  print('Library Timetable: $lib_timetable');
-  print('Timetable Followed: $timetable_followed');
-  print('Registered Updated: $registered_updated');
-  print('Observation Comment: $observation_comment');
-  print('Topics Covered in Training: $topicsCoveredInTraining');
-  print('is_refresher_conduct: $is_refresher_conduct');
-  print('Participant Name: $participant_name');
-  print('Major Issue: $major_issue');
-  print('Created At: $created_at');
-  print('Submitted By: $submitted_by');
-  print('Unique ID: $unique_id');
-  print('office Sync: $office');
+  if (kDebugMode) {
+    print('This is In person quantitative Data');
+  }
+  // print('Tour ID: $tourId');
+  // print('School: $school');
+  // print('UDICE Value: $udicevalue');
+  // print('Correct UDICE: $correct_udice');
+  // print('No Enrolled: $no_enrolled');
+  // print('Image Path: $imgpath');
+  // print('Timetable Available: $timetable_available');
+  // print('Class Scheduled: $class_scheduled');
+  // print('Remarks Scheduling: $remarks_scheduling');
+  // print('Admin Appointed: $admin_appointed');
+  // print('Admin Trained: $admin_trained');
+  // print('Admin Name: $admin_name');
+  // print('Admin Phone: $admin_phone');
+  // print('Sub Teacher Trained: $sub_teacher_trained');
+  // print('Teacher IDs: $teacher_ids');
+  // print('No Staff: $no_staff');
+  // print('Training Pic: $training_pic');
+  // print('Specify Other Topics: $specifyOtherTopics');
+  // print('Practical Demo: $practical_demo');
+  // print('Reason for Demo: $reason_demo');
+  // print('Comments on Capacity: $comments_capacity');
+  // print('Children Comfortable: $children_comfortable');
+  // print('Children Understand: $children_understand');
+  // print('Post Test: $post_test');
+  // print('Resolved Doubts: $resolved_doubts');
+  // print('Logs Filled: $logs_filled');
+  // print('Filled Correctly: $filled_correctly');
+  // print('Send Report: $send_report');
+  // print('App Installed: $app_installed');
+  // print('Data Synced: $data_synced');
+  // print('Last Synced Date: $last_syncedDate');
+  // print('Library Timetable: $lib_timetable');
+  // print('Timetable Followed: $timetable_followed');
+  // print('Registered Updated: $registered_updated');
+  // print('Observation Comment: $observation_comment');
+  // print('Topics Covered in Training: $topicsCoveredInTraining');
+  // print('is_refresher_conduct: $is_refresher_conduct');
+  // print('Participant Name: $participant_name');
+  // print('Major Issue: $major_issue');
+  // print('Created At: $created_at');
+  // print('Submitted By: $submitted_by');
+  // print('Unique ID: $unique_id');
+  // print('office Sync: $office');
 
   var request = http.MultipartRequest(
     'POST',
@@ -412,14 +412,20 @@ Future insertInPersonQuantitativeRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
 // Convert Base64 back to file and add it to the request for training_pic
@@ -437,21 +443,29 @@ Future insertInPersonQuantitativeRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   // Send the request to the server
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
 
-  print('Server Response Body: $responseBody');
+  if (kDebugMode) {
+    print('Server Response Body: $responseBody');
+  }
 
   if (response.statusCode == 200) {
     try {
@@ -463,7 +477,9 @@ Future insertInPersonQuantitativeRecords(
           table: 'inPerson_quantitative',
           field: 'id',
         );
-        print("Record with id $id deleted from local database.");
+        if (kDebugMode) {
+          print("Record with id $id deleted from local database.");
+        }
 
         // Refresh data
         await Get.find<InPersonQuantitativeController>().fetchData();
@@ -479,7 +495,9 @@ Future insertInPersonQuantitativeRecords(
 
         return parsedResponse;
       } else {
-        print('Error: ${parsedResponse['message']}');
+        if (kDebugMode) {
+          print('Error: ${parsedResponse['message']}');
+        }
         customSnackbar(
           "Error",
           "${parsedResponse['message']}",
@@ -493,11 +511,15 @@ Future insertInPersonQuantitativeRecords(
         };
       }
     } catch (e) {
-      print('Error parsing response: $e');
+      if (kDebugMode) {
+        print('Error parsing response: $e');
+      }
       return {"status": 0, "message": "Invalid response format"};
     }
   } else {
-    print('Server error: ${response.statusCode}');
+    if (kDebugMode) {
+      print('Server error: ${response.statusCode}');
+    }
     return {"status": 0, "message": "Server returned error $responseBody"};
   }
 }

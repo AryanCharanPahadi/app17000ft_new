@@ -6,11 +6,10 @@ List<CabMeterTracingRecords> cabMeterTracingRecordsFromJson(String str) =>
     json.decode(str) == null
         ? []
         : List<CabMeterTracingRecords>.from(
-        json.decode(str).map((x) => CabMeterTracingRecords.fromJson(x)));
+            json.decode(str).map((x) => CabMeterTracingRecords.fromJson(x)));
 
 String cabMeterTracingRecordsToJson(List<CabMeterTracingRecords> data) =>
-    json.encode(
-        List<dynamic>.from(data.map((x) => x.toJson())));
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class CabMeterTracingRecords {
   CabMeterTracingRecords({
@@ -63,19 +62,19 @@ class CabMeterTracingRecords {
       );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "status": status,
-    "place_visit": place_visit,
-    "remarks": remarks,
-    "vehicle_num": vehicle_num,
-    "driver_name": driver_name,
-    "meter_reading": meter_reading,
-    "image": image,
-    "user_id": user_id,
-    "created_at": created_at,
-    "office": office,
-    "version": version,
-    "uniqueId": uniqueId,
-    "tour_id": tour_id,
-  };
+        "id": id,
+        "status": status,
+        "place_visit": place_visit,
+        "remarks": remarks,
+        "vehicle_num": vehicle_num,
+        "driver_name": driver_name,
+        "meter_reading": meter_reading,
+        "image": image,
+        "user_id": user_id,
+        "created_at": created_at,
+        "office": office,
+        "version": version,
+        "uniqueId": uniqueId,
+        "tour_id": tour_id,
+      };
 }

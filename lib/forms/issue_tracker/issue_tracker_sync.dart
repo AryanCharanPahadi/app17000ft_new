@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
@@ -9,10 +10,7 @@ import 'package:app17000ft_new/forms/issue_tracker/issue_tracker_controller.dart
 import 'package:app17000ft_new/forms/issue_tracker/playground_issue.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'alexa_issue.dart';
@@ -40,7 +38,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
   filterUnique() {
     finalList = [];
     finalList = _issueTrackerController.issueTrackerList;
-    print('length of ${finalList.length}');
+    if (kDebugMode) {
+      print('length of ${finalList.length}');
+    }
     setState(() {});
   }
 
@@ -51,7 +51,6 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
   List<FurnitureIssue>? furnitureIssueList;
   List<AlexaIssue>? alexaIssueList;
 
-  int? _selectedIndex; // To keep track of the single selected index
 
   @override
   void initState() {
@@ -121,12 +120,13 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                 children: [
                                                   const SizedBox(height: 10),
                                                   Text(
-                                                    "TourId:${finalList[index].tourId}" ??
-                                                        '',
+                                                    "TourId:${finalList[index].tourId ?? 'N/A'}",
                                                     style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16),
+                                                      color: Colors.black,
+                                                      fontSize: 16,
+                                                    ),
                                                   ),
+
                                                   const SizedBox(height: 10),
                                                   Text(
                                                     "School: ${finalList[index].school.toString()}",
@@ -198,10 +198,14 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             0;
                                                                         i < filterdByUniqueId!.length;
                                                                         i++) {
-                                                                      print(
+                                                                      if (kDebugMode) {
+                                                                        print(
                                                                           '$i no of row inserted');
-                                                                      print(
+                                                                      }
+                                                                      if (kDebugMode) {
+                                                                        print(
                                                                           'TABLE 1 BASIC RECORDS ');
+                                                                      }
 
                                                                       var rsp = await insertBasicRecords(
                                                                           filterdByUniqueId![i]
@@ -227,8 +231,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                               null &&
                                                                           rsp['status'] ==
                                                                               1) {
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'TABLE of Library ${libIssueList?.length ?? 0}');
+                                                                        }
 
                                                                         if (libIssueList !=
                                                                                 null &&
@@ -236,7 +242,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           for (int i = 0;
                                                                               i < libIssueList!.length;
                                                                               i++) {
-                                                                            print('library records of num row $i');
+                                                                            if (kDebugMode) {
+                                                                              print('library records of num row $i');
+                                                                            }
 
                                                                             var rsplib =
                                                                                 await insertIssueRecords(
@@ -254,7 +262,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             );
 
                                                                             // Debug print statements to track the value of rsplib
-                                                                            print('rsplib response: $rsplib');
+                                                                            if (kDebugMode) {
+                                                                              print('rsplib response: $rsplib');
+                                                                            }
 
                                                                             if (rsplib != null &&
                                                                                 rsplib.containsKey('status') &&
@@ -278,8 +288,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           }
                                                                         }
 
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'TABLE of Playground ${playgroundIssueList?.length ?? 0}');
+                                                                        }
 
                                                                         if (playgroundIssueList !=
                                                                                 null &&
@@ -287,7 +299,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           for (int i = 0;
                                                                               i < playgroundIssueList!.length;
                                                                               i++) {
-                                                                            print('Playground records of num row $i');
+                                                                            if (kDebugMode) {
+                                                                              print('Playground records of num row $i');
+                                                                            }
 
                                                                             var rspPlay =
                                                                                 await insertPlayRecords(
@@ -305,7 +319,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             );
 
                                                                             // Debug print statements to track the value of rsplib
-                                                                            print('rspPlay response: $rspPlay');
+                                                                            if (kDebugMode) {
+                                                                              print('rspPlay response: $rspPlay');
+                                                                            }
 
                                                                             if (rspPlay != null &&
                                                                                 rspPlay.containsKey('status') &&
@@ -329,8 +345,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           }
                                                                         }
 
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'TABLE of Furniture ${furnitureIssueList?.length ?? 0}');
+                                                                        }
 
                                                                         if (furnitureIssueList !=
                                                                                 null &&
@@ -338,7 +356,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           for (int i = 0;
                                                                               i < furnitureIssueList!.length;
                                                                               i++) {
-                                                                            print('Furniture records of num row $i');
+                                                                            if (kDebugMode) {
+                                                                              print('Furniture records of num row $i');
+                                                                            }
 
                                                                             var rspFurn =
                                                                                 await insertFurnRecords(
@@ -356,7 +376,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             );
 
                                                                             // Debug print statements to track the value of rsplib
-                                                                            print('rspFurn response: $rspFurn');
+                                                                            if (kDebugMode) {
+                                                                              print('rspFurn response: $rspFurn');
+                                                                            }
 
                                                                             if (rspFurn != null &&
                                                                                 rspFurn.containsKey('status') &&
@@ -380,8 +402,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           }
                                                                         }
 
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'TABLE of DigiLab ${digiLabIssueList?.length ?? 0}');
+                                                                        }
 
                                                                         if (digiLabIssueList !=
                                                                                 null &&
@@ -389,7 +413,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           for (int i = 0;
                                                                               i < digiLabIssueList!.length;
                                                                               i++) {
-                                                                            print('DigiLab records of num row $i');
+                                                                            if (kDebugMode) {
+                                                                              print('DigiLab records of num row $i');
+                                                                            }
 
                                                                             var rspDig =
                                                                                 await insertDigRecords(
@@ -408,7 +434,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             );
 
                                                                             // Debug print statements to track the value of rsplib
-                                                                            print('rspDig response: $rspDig');
+                                                                            if (kDebugMode) {
+                                                                              print('rspDig response: $rspDig');
+                                                                            }
 
                                                                             if (rspDig != null &&
                                                                                 rspDig.containsKey('status') &&
@@ -432,8 +460,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           }
                                                                         }
 
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'TABLE of Alexa ${alexaIssueList?.length ?? 0}');
+                                                                        }
 
                                                                         if (alexaIssueList !=
                                                                                 null &&
@@ -441,7 +471,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           for (int i = 0;
                                                                               i < alexaIssueList!.length;
                                                                               i++) {
-                                                                            print('Alexa records of num row $i');
+                                                                            if (kDebugMode) {
+                                                                              print('Alexa records of num row $i');
+                                                                            }
 
                                                                             var rspAlexa =
                                                                                 await insertAlexaRecords(
@@ -464,7 +496,9 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                             );
 
                                                                             // Debug print statements to track the value of rsplib
-                                                                            print('rspAlexa response: $rspAlexa');
+                                                                            if (kDebugMode) {
+                                                                              print('rspAlexa response: $rspAlexa');
+                                                                            }
 
                                                                             if (rspAlexa != null &&
                                                                                 rspAlexa.containsKey('status') &&
@@ -522,8 +556,10 @@ class _FinalIssueTrackerSyncState extends State<FinalIssueTrackerSync> {
                                                                           );
                                                                         }
 
-                                                                        print(
+                                                                        if (kDebugMode) {
+                                                                          print(
                                                                             'ALL data is removed from tables');
+                                                                        }
 
                                                                         issueTrackerController
                                                                             .libIssueList
@@ -618,21 +654,26 @@ Future insertIssueRecords(
   int? id,
 ) async {
   if (uniqueId == null || issueExist == null) {
-    print('Missing critical data: uniqueId or issueExist is null.');
+    if (kDebugMode) {
+      print('Missing critical data: uniqueId or issueExist is null.');
+    }
     return null;
   }
 
-  print('Insert Library issue records called');
-  print('uniqueId: $uniqueId');
-  print('issueExist: $issueExist');
-  print('issueValue: $issueValue');
-  print('lib_issue_img: $lib_issue_img');
-  print('issueDescription: $issueDescription');
-  print('reportedOn: $reportedOn');
-  print('reportedBy: $reportedBy');
-  print('resolvedOn: $resolvedOn');
-  print('resolvedBy: $resolvedBy');
-  print('issueStatus: $issueStatus');
+  if (kDebugMode) {
+    print('Insert Library issue records called');
+    print('uniqueId: $uniqueId');
+    print('issueExist: $issueExist');
+    print('issueValue: $issueValue');
+    print('lib_issue_img: $lib_issue_img');
+    print('issueDescription: $issueDescription');
+    print('reportedOn: $reportedOn');
+    print('reportedBy: $reportedBy');
+    print('resolvedOn: $resolvedOn');
+    print('resolvedBy: $resolvedBy');
+    print('issueStatus: $issueStatus');
+  }
+
 
   var request = http.MultipartRequest(
     'POST',
@@ -641,7 +682,7 @@ Future insertIssueRecords(
   request.headers["Accept"] = "Application/json";
 
   request.fields.addAll({
-    'unique_id': uniqueId ?? '',
+    'unique_id': uniqueId,
     'lib_issue': issueExist.toString(),
     'lib_issue_value': issueValue.toString(),
     'lib_desc': issueDescription.toString(),
@@ -652,7 +693,9 @@ Future insertIssueRecords(
     'resolved_by': resolvedBy.toString(),
   });
 
-  print('Stage 1: Text fields added to the request');
+  if (kDebugMode) {
+    print('Stage 1: Text fields added to the request');
+  }
 
   if (lib_issue_img != null && lib_issue_img.isNotEmpty) {
     List<String> imagePaths = lib_issue_img.split(',');
@@ -667,14 +710,20 @@ Future insertIssueRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   try {
@@ -682,8 +731,12 @@ Future insertIssueRecords(
     var responseBody = await response.stream.bytesToString();
     var parsedResponse = json.decode(responseBody);
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+    }
+    if (kDebugMode) {
+      print('Response body: $responseBody');
+    }
 
     if (response.statusCode == 200 && parsedResponse['status'] == 1) {
       await SqfliteDatabaseHelper().queryDelete(
@@ -692,13 +745,19 @@ Future insertIssueRecords(
         field: 'unique_id',
       );
       await Get.find<IssueTrackerController>().fetchData();
-      print('Issue records uploaded successfully.');
+      if (kDebugMode) {
+        print('Issue records uploaded successfully.');
+      }
     } else {
-      print('Failed to upload issue records. Response: $parsedResponse');
+      if (kDebugMode) {
+        print('Failed to upload issue records. Response: $parsedResponse');
+      }
     }
     return parsedResponse;
   } catch (error) {
-    print('Error uploading issue records: $error');
+    if (kDebugMode) {
+      print('Error uploading issue records: $error');
+    }
     return null;
   }
 }
@@ -722,17 +781,18 @@ Future insertBasicRecords(
   request.headers["Accept"] = "Application/json";
 
   // Print the data being sent for debugging purposes
-  print('Syncing data:');
-  print('tourId: $tourId');
-  print('school: $school');
-  print('udiseCode: $udiseCode');
-  print('correctUdise: $correctUdise');
-  print('uniqueId: $uniqueId');
-  print('office: $office');
-  print('createdAt: $createdAt');
-  print('created_by: $created_by');
-  print('id: $id');
-
+  if(kDebugMode) {
+    print('Syncing data:');
+    print('tourId: $tourId');
+    print('school: $school');
+    print('udiseCode: $udiseCode');
+    print('correctUdise: $correctUdise');
+    print('uniqueId: $uniqueId');
+    print('office: $office');
+    print('createdAt: $createdAt');
+    print('created_by: $created_by');
+    print('id: $id');
+  }
   // Add text fields safely to avoid null values
   request.fields.addAll({
     if (tourId != null) 'tourId': tourId,
@@ -745,12 +805,16 @@ Future insertBasicRecords(
     if (office != null) 'office': office,
   });
 
-  print('Request: $request'); // Print the entire request object
+  if (kDebugMode) {
+    print('Request: $request');
+  } // Print the entire request object
 
   try {
     var response = await request.send();
     var responseBody = await response.stream.bytesToString();
-    print('Response Body: $responseBody'); // Print raw response body
+    if (kDebugMode) {
+      print('Response Body: $responseBody');
+    } // Print raw response body
 
     var parsedResponse;
 
@@ -759,7 +823,9 @@ Future insertBasicRecords(
       if (response.headers['content-type']?.contains('application/json') ??
           false) {
         parsedResponse = json.decode(responseBody);
-        print('Parsed Response: $parsedResponse'); // Print parsed response
+        if (kDebugMode) {
+          print('Parsed Response: $parsedResponse');
+        } // Print parsed response
 
         if (parsedResponse['status'] == 1) {
           // If status is 1, delete the local record and show success snack bar
@@ -776,7 +842,9 @@ Future insertBasicRecords(
             Colors.white,
             Icons.check,
           );
-          print('Data synced for ${school.toString()}');
+          if (kDebugMode) {
+            print('Data synced for ${school.toString()}');
+          }
         } else if (parsedResponse['status'] == 0) {
           // If status is 0, show error snackbar
           customSnackbar(
@@ -789,20 +857,32 @@ Future insertBasicRecords(
         }
       } else {
         // Handle non-JSON response
-        print('Unexpected content type: ${response.headers['content-type']}');
-        print('Response body: $responseBody');
+        if (kDebugMode) {
+          print('Unexpected content type: ${response.headers['content-type']}');
+        }
+        if (kDebugMode) {
+          print('Response body: $responseBody');
+        }
       }
     } else {
       // Handle non-200 responses
-      print('Request failed with status: ${response.statusCode}');
-      print('Response body: $responseBody');
+      if (kDebugMode) {
+        print('Request failed with status: ${response.statusCode}');
+      }
+      if (kDebugMode) {
+        print('Response body: $responseBody');
+      }
     }
 
     return parsedResponse;
   } catch (error) {
     // Catch and log any errors that occur
-    print('Error catch');
-    print(error);
+    if (kDebugMode) {
+      print('Error catch');
+    }
+    if (kDebugMode) {
+      print(error);
+    }
   }
 }
 
@@ -820,10 +900,12 @@ Future insertPlayRecords(
   int? id,
 ) async {
   if (uniqueId == null || issueExist == null) {
-    print('Missing critical data: uniqueId or issueExist is null.');
+    if (kDebugMode) {
+      print('Missing critical data: uniqueId or issueExist is null.');
+    }
     return null;
   }
-
+if(kDebugMode) {
   print('Insert Playground issue records called');
   print('uniqueId: $uniqueId');
   print('issueExist: $issueExist');
@@ -835,7 +917,7 @@ Future insertPlayRecords(
   print('resolvedOn: $resolvedOn');
   print('resolvedBy: $resolvedBy');
   print('issueStatus: $issueStatus');
-
+}
   var request = http.MultipartRequest(
     'POST',
     Uri.parse('${baseurl}IssueTracker/issueTrackerSave_new.php'),
@@ -843,7 +925,7 @@ Future insertPlayRecords(
   request.headers["Accept"] = "Application/json";
 
   request.fields.addAll({
-    'unique_id': uniqueId ?? '',
+    'unique_id': uniqueId,
     'play_issue': issueExist.toString(),
     'play_issue_value': issueValue.toString(),
     'play_desc': issueDescription.toString(),
@@ -854,7 +936,9 @@ Future insertPlayRecords(
     'play_resolved_by': resolvedBy.toString(),
   });
 
-  print('Stage 1: Text fields added to the request');
+  if (kDebugMode) {
+    print('Stage 1: Text fields added to the request');
+  }
 
   if (play_issue_img != null && play_issue_img.isNotEmpty) {
     List<String> imagePaths = play_issue_img.split(',');
@@ -869,14 +953,20 @@ Future insertPlayRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   try {
@@ -884,8 +974,12 @@ Future insertPlayRecords(
     var responseBody = await response.stream.bytesToString();
     var parsedResponse = json.decode(responseBody);
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+    }
+    if (kDebugMode) {
+      print('Response body: $responseBody');
+    }
 
     if (response.statusCode == 200 && parsedResponse['status'] == 1) {
       await SqfliteDatabaseHelper().queryDelete(
@@ -894,13 +988,19 @@ Future insertPlayRecords(
         field: 'unique_id',
       );
       await Get.find<IssueTrackerController>().fetchData();
-      print('Issue records uploaded successfully.');
+      if (kDebugMode) {
+        print('Issue records uploaded successfully.');
+      }
     } else {
-      print('Failed to upload issue records. Response: $parsedResponse');
+      if (kDebugMode) {
+        print('Failed to upload issue records. Response: $parsedResponse');
+      }
     }
     return parsedResponse;
   } catch (error) {
-    print('Error uploading issue records: $error');
+    if (kDebugMode) {
+      print('Error uploading issue records: $error');
+    }
     return null;
   }
 }
@@ -919,10 +1019,12 @@ Future insertFurnRecords(
   int? id,
 ) async {
   if (uniqueId == null || issueExist == null) {
-    print('Missing critical data: uniqueId or issueExist is null.');
+    if (kDebugMode) {
+      print('Missing critical data: uniqueId or issueExist is null.');
+    }
     return null;
   }
-
+if(kDebugMode) {
   print('Insert Furniture issue records called');
   print('uniqueId: $uniqueId');
   print('issueExist: $issueExist');
@@ -934,7 +1036,7 @@ Future insertFurnRecords(
   print('resolvedOn: $resolvedOn');
   print('resolvedBy: $resolvedBy');
   print('issueStatus: $issueStatus');
-
+}
   var request = http.MultipartRequest(
     'POST',
     Uri.parse('${baseurl}IssueTracker/issueTrackerSave_new.php'),
@@ -942,7 +1044,8 @@ Future insertFurnRecords(
   request.headers["Accept"] = "Application/json";
 
   request.fields.addAll({
-    'unique_id': uniqueId ?? '',
+    'unique_id': uniqueId,
+
     'furn_issue': issueExist.toString(),
     'furn_issue_value': issueValue.toString(),
     'furn_desc': issueDescription.toString(),
@@ -953,7 +1056,9 @@ Future insertFurnRecords(
     'furn_resolved_by': resolvedBy.toString(),
   });
 
-  print('Stage 1: Text fields added to the request');
+  if (kDebugMode) {
+    print('Stage 1: Text fields added to the request');
+  }
 
   if (furn_issue_img != null && furn_issue_img.isNotEmpty) {
     List<String> imagePaths = furn_issue_img.split(',');
@@ -968,14 +1073,20 @@ Future insertFurnRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   try {
@@ -983,8 +1094,12 @@ Future insertFurnRecords(
     var responseBody = await response.stream.bytesToString();
     var parsedResponse = json.decode(responseBody);
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+    }
+    if (kDebugMode) {
+      print('Response body: $responseBody');
+    }
 
     if (response.statusCode == 200 && parsedResponse['status'] == 1) {
       await SqfliteDatabaseHelper().queryDelete(
@@ -993,13 +1108,19 @@ Future insertFurnRecords(
         field: 'unique_id',
       );
       await Get.find<IssueTrackerController>().fetchData();
-      print('Issue records uploaded successfully.');
+      if (kDebugMode) {
+        print('Issue records uploaded successfully.');
+      }
     } else {
-      print('Failed to upload issue records. Response: $parsedResponse');
+      if (kDebugMode) {
+        print('Failed to upload issue records. Response: $parsedResponse');
+      }
     }
     return parsedResponse;
   } catch (error) {
-    print('Error uploading issue records: $error');
+    if (kDebugMode) {
+      print('Error uploading issue records: $error');
+    }
     return null;
   }
 }
@@ -1020,10 +1141,12 @@ Future insertDigRecords(
 ) async {
   // Validate mandatory fields
   if (uniqueId == null || issueExist == null) {
-    print('Missing critical data: uniqueId or issueExist is null.');
+    if (kDebugMode) {
+      print('Missing critical data: uniqueId or issueExist is null.');
+    }
     return null;
   }
-
+if(kDebugMode) {
   print('Insert DigiLab issue records called');
   print('uniqueId: $uniqueId');
   print('issueExist: $issueExist');
@@ -1036,7 +1159,7 @@ Future insertDigRecords(
   print('resolvedBy: $resolvedBy');
   print('issueStatus: $issueStatus');
   print('tabletNumber: $tabletNumber');
-
+}
   // Create the multipart request
   var request = http.MultipartRequest(
     'POST',
@@ -1046,7 +1169,7 @@ Future insertDigRecords(
 
   // Add the fields to the request
   request.fields.addAll({
-    'unique_id': uniqueId ?? '',
+    'unique_id': uniqueId,
     'digi_issue': issueExist.toString(),
     'digi_issue_value': issueValue.toString(),
     'digi_desc': issueDescription.toString(),
@@ -1058,7 +1181,9 @@ Future insertDigRecords(
     'tablet_number': tabletNumber.toString(),
   });
 
-  print('Stage 1: Text fields added to the request');
+  if (kDebugMode) {
+    print('Stage 1: Text fields added to the request');
+  }
 
   // Add image file if provided
   if (dig_issue_img != null && dig_issue_img.isNotEmpty) {
@@ -1074,14 +1199,20 @@ Future insertDigRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   try {
@@ -1092,8 +1223,12 @@ Future insertDigRecords(
     var responseBody = await response.stream.bytesToString();
 
     // Log the raw response body for debugging
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+    }
+    if (kDebugMode) {
+      print('Response body: $responseBody');
+    }
 
     // Try parsing the response as JSON
     try {
@@ -1110,23 +1245,33 @@ Future insertDigRecords(
 
         // Fetch updated data after successful deletion
         await Get.find<IssueTrackerController>().fetchData();
-        print('Issue records uploaded successfully.');
+        if (kDebugMode) {
+          print('Issue records uploaded successfully.');
+        }
       } else {
         // Log failure message with parsed response details
-        print('Failed to upload issue records. Response: $parsedResponse');
+        if (kDebugMode) {
+          print('Failed to upload issue records. Response: $parsedResponse');
+        }
       }
 
       // Return the parsed response
       return parsedResponse;
     } catch (jsonError) {
       // If response is not valid JSON, log the error and raw response
-      print('Failed to parse JSON response. Error: $jsonError');
-      print('Response body: $responseBody');
+      if (kDebugMode) {
+        print('Failed to parse JSON response. Error: $jsonError');
+      }
+      if (kDebugMode) {
+        print('Response body: $responseBody');
+      }
       return null;
     }
   } catch (error) {
     // Log any other errors that occurred during the request
-    print('Error uploading issue records: $error');
+    if (kDebugMode) {
+      print('Error uploading issue records: $error');
+    }
     return null;
   }
 }
@@ -1151,26 +1296,31 @@ Future insertAlexaRecords(
   int? id,
 ) async {
   if (uniqueId == null || issueExist == null) {
-    print('Missing critical data: uniqueId or issueExist is null.');
+    if (kDebugMode) {
+      print('Missing critical data: uniqueId or issueExist is null.');
+    }
     return null;
   }
 
-  print('Insert Alexa issue records called');
-  print('uniqueId: $uniqueId');
-  print('issueExist: $issueExist');
-  print('issueValue: $issueValue');
-  print('alexa_issue_img: $alexa_issue_img');
-  print('issueDescription: $issueDescription');
-  print('reportedOn: $reportedOn');
-  print('reportedBy: $reportedBy');
-  print('resolvedOn: $resolvedOn');
-  print('resolvedBy: $resolvedBy');
-  print('issueStatus: $issueStatus');
-  print('other: $other');
-  print('missing: $missing');
-  print('notConfigured: $notConfigured');
-  print('notConnecting: $notConnecting');
-  print('notCharging: $notCharging');
+
+  if (kDebugMode) {
+    print('Insert Alexa issue records called');
+    print('uniqueId: $uniqueId');
+    print('issueExist: $issueExist');
+    print('issueValue: $issueValue');
+    print('alexa_issue_img: $alexa_issue_img');
+    print('issueDescription: $issueDescription');
+    print('reportedOn: $reportedOn');
+    print('reportedBy: $reportedBy');
+    print('resolvedOn: $resolvedOn');
+    print('resolvedBy: $resolvedBy');
+    print('issueStatus: $issueStatus');
+    print('other: $other');
+    print('missing: $missing');
+    print('notConfigured: $notConfigured');
+    print('notConnecting: $notConnecting');
+    print('notCharging: $notCharging');
+  }
 
   var request = http.MultipartRequest(
     'POST',
@@ -1179,7 +1329,7 @@ Future insertAlexaRecords(
   request.headers["Accept"] = "Application/json";
 
   request.fields.addAll({
-    'unique_id': uniqueId ?? '',
+    'unique_id': uniqueId,
     'alexa_issue': issueExist.toString(),
     'alexa_issue_value': issueValue.toString(),
     'alexa_desc': issueDescription.toString(),
@@ -1195,7 +1345,9 @@ Future insertAlexaRecords(
     'not_charging': notCharging.toString(),
   });
 
-  print('Stage 1: Text fields added to the request');
+  if (kDebugMode) {
+    print('Stage 1: Text fields added to the request');
+  }
 
   if (alexa_issue_img != null && alexa_issue_img.isNotEmpty) {
     List<String> imagePaths = alexa_issue_img.split(',');
@@ -1210,14 +1362,20 @@ Future insertAlexaRecords(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   try {
@@ -1225,8 +1383,12 @@ Future insertAlexaRecords(
     var responseBody = await response.stream.bytesToString();
     var parsedResponse = json.decode(responseBody);
 
-    print('Response status: ${response.statusCode}');
-    print('Response body: $responseBody');
+    if (kDebugMode) {
+      print('Response status: ${response.statusCode}');
+    }
+    if (kDebugMode) {
+      print('Response body: $responseBody');
+    }
 
     if (response.statusCode == 200 && parsedResponse['status'] == 1) {
       await SqfliteDatabaseHelper().queryDelete(
@@ -1241,13 +1403,19 @@ Future insertAlexaRecords(
       );
 
       await Get.find<IssueTrackerController>().fetchData();
-      print('Issue records uploaded successfully.');
+      if (kDebugMode) {
+        print('Issue records uploaded successfully.');
+      }
     } else {
-      print('Failed to upload issue records. Response: $parsedResponse');
+      if (kDebugMode) {
+        print('Failed to upload issue records. Response: $parsedResponse');
+      }
     }
     return parsedResponse;
   } catch (error) {
-    print('Error uploading issue records: $error');
+    if (kDebugMode) {
+      print('Error uploading issue records: $error');
+    }
     return null;
   }
 }

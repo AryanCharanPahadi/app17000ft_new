@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../base_client/baseClient_controller.dart';
-import '../../home/home_controller.dart';
-import 'edit_modal.dart';
 
 class EditController extends GetxController with BaseController {
   var counterText = ''.obs;

@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_controller.dart';
 import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_modals.dart';
-import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_sync.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -55,8 +55,12 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
   @override
   void initState() {
     super.initState();
-    print('Office init ${widget.office}');
-    print('UserId init ${widget.userid}');
+    if (kDebugMode) {
+      print('Office init ${widget.office}');
+    }
+    if (kDebugMode) {
+      print('UserId init ${widget.userid}');
+    }
     // Ensure the controller is registered
     if (!Get.isRegistered<SchoolStaffVecController>()) {
       Get.put(SchoolStaffVecController());
@@ -68,8 +72,12 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
     // Check if this is in edit mode (i.e., if an existing record is provided)
     if (widget.existingRecord != null) {
       final existingRecord = widget.existingRecord!;
-      print("This is edit mode: ${existingRecord.tourId.toString()}");
-      print(jsonEncode(existingRecord));
+      if (kDebugMode) {
+        print("This is edit mode: ${existingRecord.tourId.toString()}");
+      }
+      if (kDebugMode) {
+        print(jsonEncode(existingRecord));
+      }
 
       // Populate the controllers with existing data
       schoolStaffVecController.correctUdiseCodeController.text =
@@ -135,7 +143,6 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    final responsive = Responsive(context);
     return WillPopScope(
       onWillPop: () async {
         IconData icon = Icons.check_circle;
@@ -341,7 +348,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                   setState(() {
                                                     schoolStaffVecController
                                                             .selectedValue =
-                                                        value as String?;
+                                                        value;
                                                   });
                                                   if (value == 'Yes') {
                                                     schoolStaffVecController
@@ -373,7 +380,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                   setState(() {
                                                     schoolStaffVecController
                                                             .selectedValue =
-                                                        value as String?;
+                                                        value;
                                                   });
                                                 },
                                               ),
@@ -445,7 +452,9 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                         CustomButton(
                                           title: 'Next',
                                           onPressedButton: () {
-                                            print('submit Basic Details');
+                                            if (kDebugMode) {
+                                              print('submit Basic Details');
+                                            }
                                             setState(() {
                                               schoolStaffVecController
                                                       .radioFieldError =
@@ -534,7 +543,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                         setState(() {
                                                           schoolStaffVecController
                                                                   .selectedValue2 =
-                                                              value as String?;
+                                                              value;
                                                           schoolStaffVecController
                                                                   .radioFieldError2 =
                                                               false; // Reset error state
@@ -558,7 +567,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                         setState(() {
                                                           schoolStaffVecController
                                                                   .selectedValue2 =
-                                                              value as String?;
+                                                              value;
                                                           schoolStaffVecController
                                                                   .radioFieldError2 =
                                                               false; // Reset error state
@@ -674,13 +683,13 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                         CustomSizedBox(
                                             value: 20, side: 'height'),
                                         DropdownButtonFormField<String>(
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             labelText: 'Select a designation',
                                             border: OutlineInputBorder(),
                                           ),
                                           value: schoolStaffVecController
                                               .selectedDesignation,
-                                          items: [
+                                          items: const [
                                             DropdownMenuItem(
                                                 value:
                                                     'HeadMaster/ HeadMistress',
@@ -798,7 +807,9 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                             CustomButton(
                                               title: 'Next',
                                               onPressedButton: () {
-                                                print('submit staff details');
+                                                if (kDebugMode) {
+                                                  print('submit staff details');
+                                                }
                                                 setState(() {
                                                   schoolStaffVecController
                                                           .radioFieldError2 =
@@ -824,7 +835,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                     WidgetsBinding.instance.addPostFrameCallback((_) {
                                                       _scrollController.animateTo(
                                                         0.0, // Scroll to the top
-                                                        duration: Duration(milliseconds: 300),
+                                                        duration: const Duration(milliseconds: 300),
                                                         curve: Curves.easeInOut,
                                                       );
                                                     });
@@ -896,7 +907,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                         setState(() {
                                                           schoolStaffVecController
                                                                   .selectedValue3 =
-                                                              value as String?;
+                                                              value;
                                                           schoolStaffVecController
                                                                   .radioFieldError3 =
                                                               false; // Reset error state
@@ -920,7 +931,7 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                         setState(() {
                                                           schoolStaffVecController
                                                                   .selectedValue3 =
-                                                              value as String?;
+                                                              value;
                                                           schoolStaffVecController
                                                                   .radioFieldError3 =
                                                               false; // Reset error state
@@ -937,10 +948,10 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
 
                                         if (schoolStaffVecController
                                             .radioFieldError3)
-                                          Padding(
+                                          const Padding(
                                             padding:
-                                                const EdgeInsets.only(top: 8.0),
-                                            child: const Text(
+                                                EdgeInsets.only(top: 8.0),
+                                            child: Text(
                                               'Please select an option',
                                               style:
                                                   TextStyle(color: Colors.red),
@@ -1040,13 +1051,13 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                         CustomSizedBox(
                                             value: 20, side: 'height'),
                                         DropdownButtonFormField<String>(
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             labelText: 'Select qualification',
                                             border: OutlineInputBorder(),
                                           ),
                                           value: schoolStaffVecController
                                               .selected2Designation,
-                                          items: [
+                                          items: const [
                                             DropdownMenuItem(
                                                 value: 'Non Graduate',
                                                 child: Text('Non Graduate')),
@@ -1137,13 +1148,13 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                         CustomSizedBox(
                                             value: 20, side: 'height'),
                                         DropdownButtonFormField<String>(
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             labelText: 'Select frequency',
                                             border: OutlineInputBorder(),
                                           ),
                                           value: schoolStaffVecController
                                               .selected3Designation,
-                                          items: [
+                                          items: const [
                                             DropdownMenuItem(
                                                 value: 'Once a month',
                                                 child: Text('Once a month')),
@@ -1236,22 +1247,26 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                           .validate() &&
                                                       !schoolStaffVecController
                                                           .radioFieldError3) {
-                                                    print('Submit Vec Details');
-                                                    print(
+                                                    if (kDebugMode) {
+                                                      print('Submit Vec Details');
+                                                    }
+                                                    if (kDebugMode) {
+                                                      print(
                                                         'Office on pressed ${widget.office} ');
+                                                    }
 
                                                     String generateUniqueId(
                                                         int length) {
-                                                      const _chars =
+                                                      const chars =
                                                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                      Random _rnd = Random();
+                                                      Random rnd = Random();
                                                       return String.fromCharCodes(
                                                           Iterable.generate(
                                                               length,
-                                                              (_) => _chars
-                                                                  .codeUnitAt(_rnd
+                                                              (_) => chars
+                                                                  .codeUnitAt(rnd
                                                                       .nextInt(
-                                                                          _chars
+                                                                          chars
                                                                               .length))));
                                                     }
 
@@ -1319,8 +1334,10 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                         createdAt: formattedDate.toString(),
                                                         office: widget.office ?? 'Default Office',
                                                         createdBy: widget.userid.toString());
-                                                    print(
-                                                        'Office value: ${widget.office}'); // Debugging line
+                                                    if (kDebugMode) {
+                                                      print(
+                                                        'Office value: ${widget.office}');
+                                                    } // Debugging line
 
                                                     int result =
                                                         await LocalDbController()
@@ -1411,7 +1428,9 @@ class _SchoolStaffVecFormState extends State<SchoolStaffVecForm> {
                                                           AppColors.onPrimary,
                                                           Icons.error,
                                                         );
-                                                        print(e);
+                                                        if (kDebugMode) {
+                                                          print(e);
+                                                        }
                                                       }
 
                                                       customSnackbar(
@@ -1475,7 +1494,6 @@ class JsonFileDownloader {
       // Prepare file path to save the JSON
       String filePath =
           '${downloadsDirectory.path}/school_vec_form_$uniqueId.txt';
-      File file = File(filePath);
 
       // Return the file path for further use if needed
       return filePath;

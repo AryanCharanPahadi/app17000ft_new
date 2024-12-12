@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:app17000ft_new/forms/fln_observation_form/fln_observation_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class FlnObservationSync extends StatefulWidget {
   const FlnObservationSync({super.key});
@@ -253,10 +251,18 @@ Future<Map<String, dynamic>> insertFlnObservation(
     int? id,
     Function(double) updateProgress,
     ) async {
-  print('Inserting FLN Observation Data');
-  print('tourId: $tourId');
-  print('school: $school');
-  print('No. of Staff Trained: $noStaffTrained');
+  if (kDebugMode) {
+    print('Inserting FLN Observation Data');
+  }
+  if (kDebugMode) {
+    print('tourId: $tourId');
+  }
+  if (kDebugMode) {
+    print('school: $school');
+  }
+  if (kDebugMode) {
+    print('No. of Staff Trained: $noStaffTrained');
+  }
 
   var request = http.MultipartRequest('POST', Uri.parse(baseurl));
   request.headers["Accept"] = "application/json";
@@ -286,11 +292,13 @@ Future<Map<String, dynamic>> insertFlnObservation(
   });
 
 // Function to handle image uploads
-  Future<void> _attachImages(String? imagePaths, String fieldName) async {
+  Future<void> attachImages(String? imagePaths, String fieldName) async {
     if (imagePaths != null && imagePaths.isNotEmpty) {
       List<String> images = imagePaths.split(',');
       for (String path in images) {
-        print('Processing image for field $fieldName: $path'); // Debug log
+        if (kDebugMode) {
+          print('Processing image for field $fieldName: $path');
+        } // Debug log
 
         File imageFile = File(path.trim());
         if (imageFile.existsSync()) {
@@ -301,30 +309,38 @@ Future<Map<String, dynamic>> insertFlnObservation(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully for $fieldName.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully for $fieldName.");
+          }
         } else {
-          print('Image file does not exist at the path: $path for $fieldName');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path for $fieldName');
+          }
           throw Exception("Image file not found at $path for $fieldName.");
         }
       }
     } else {
-      print('No image file path provided for $fieldName');
+      if (kDebugMode) {
+        print('No image file path provided for $fieldName');
+      }
     }
   }
 
 // Attach all image files and handle missing ones
   try {
-    await _attachImages(imgNurTimeTable, 'imgNurTimeTable');
-    await _attachImages(imgLKGTimeTable, 'imgLKGTimeTable');
-    await _attachImages(imgUKGTimeTable, 'imgUKGTimeTable');
-    await _attachImages(imgActivity, 'imgActivity');
-    await _attachImages(imgTLM, 'imgTLM');
-    await _attachImages(imgFLN, 'imgFLN');
-    await _attachImages(imgTraining, 'imgTraining');
-    await _attachImages(imgLib, 'imgLib');
-    await _attachImages(imgClass, 'imgClass');
+    await attachImages(imgNurTimeTable, 'imgNurTimeTable');
+    await attachImages(imgLKGTimeTable, 'imgLKGTimeTable');
+    await attachImages(imgUKGTimeTable, 'imgUKGTimeTable');
+    await attachImages(imgActivity, 'imgActivity');
+    await attachImages(imgTLM, 'imgTLM');
+    await attachImages(imgFLN, 'imgFLN');
+    await attachImages(imgTraining, 'imgTraining');
+    await attachImages(imgLib, 'imgLib');
+    await attachImages(imgClass, 'imgClass');
   } catch (e) {
-    print('Error attaching images: $e');
+    if (kDebugMode) {
+      print('Error attaching images: $e');
+    }
     return {"status": 0, "message": e.toString()};
   }
 
@@ -333,7 +349,9 @@ Future<Map<String, dynamic>> insertFlnObservation(
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
 
-  print('Server Response Body: $responseBody');
+  if (kDebugMode) {
+    print('Server Response Body: $responseBody');
+  }
 
   if (response.statusCode == 200) {
     try {
@@ -345,7 +363,9 @@ Future<Map<String, dynamic>> insertFlnObservation(
           table: 'flnObservation',
           field: 'id',
         );
-        print("Record with id $id deleted from local database.");
+        if (kDebugMode) {
+          print("Record with id $id deleted from local database.");
+        }
 
         // Refresh data
         await Get.find<FlnObservationController>().fetchData();
@@ -361,7 +381,9 @@ Future<Map<String, dynamic>> insertFlnObservation(
 
         return parsedResponse;
       } else {
-        print('Error: ${parsedResponse['message']}');
+        if (kDebugMode) {
+          print('Error: ${parsedResponse['message']}');
+        }
         customSnackbar(
           "Error",
           "${parsedResponse['message']}",
@@ -372,11 +394,15 @@ Future<Map<String, dynamic>> insertFlnObservation(
         return {"status": 0, "message": parsedResponse['message'] ?? 'Failed to insert data'};
       }
     } catch (e) {
-      print('Error parsing response: $e');
+      if (kDebugMode) {
+        print('Error parsing response: $e');
+      }
       return {"status": 0, "message": "Invalid response format"};
     }
   } else {
-    print('Server error: ${response.statusCode}');
+    if (kDebugMode) {
+      print('Server error: ${response.statusCode}');
+    }
     return {"status": 0, "message": "Server returned error $responseBody"};
   }
 }

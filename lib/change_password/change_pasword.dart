@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
@@ -13,7 +14,11 @@ import '../home/home_controller.dart';
 
 class ChangePassword extends StatefulWidget {
   final String? userid;
-  ChangePassword({
+
+
+
+
+  const ChangePassword({
     super.key,
     this.userid,
   });
@@ -39,7 +44,9 @@ class _ChangePasswordState extends State<ChangePassword> {
     super.initState();
     // Ensure that userid is handled properly if it's null
     if (widget.userid != null) {
-      print("UserId on init: ${widget.userid}");
+      if (kDebugMode) {
+        print("UserId on init: ${widget.userid}");
+      }
     }
     _userNameController.text = _userController.username.value.toUpperCase();
   }
@@ -132,7 +139,7 @@ class _ChangePasswordState extends State<ChangePassword> {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: Container(
-          decoration: BoxDecoration(),
+          decoration: const BoxDecoration(),
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
               horizontal: screenWidth * 0.05,

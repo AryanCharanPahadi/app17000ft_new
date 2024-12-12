@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:app17000ft_new/components/custom_labeltext.dart';
 import 'package:app17000ft_new/home/home_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +22,6 @@ import '../school_staff_vec_form/school_vec_modals.dart';
 import 'edit controller.dart';
 import 'package:connectivity_plus/connectivity_plus.dart'; // For checking network status
 import 'package:dropdown_search/dropdown_search.dart';
-import '../../helper/responsive_helper.dart';
 import '../school_enrolment/school_enrolment_model.dart';
 
 class EditFormPage extends StatefulWidget {
@@ -147,7 +147,9 @@ class _EditFormPageState extends State<EditFormPage> {
     try {
       await dbHelper.insertFormData(tourId, school, formData);
     } catch (e) {
-      print("Error saving data to SQLite: $e");
+      if (kDebugMode) {
+        print("Error saving data to SQLite: $e");
+      }
     }
   }
 
@@ -261,7 +263,7 @@ class _EditFormPageState extends State<EditFormPage> {
                             popupProps: PopupProps.menu(
                               showSelectedItems: true,
                               showSearchBox: true,
-                              scrollbarProps: ScrollbarProps(
+                              scrollbarProps: const ScrollbarProps(
                                 thickness: 2,
                                 radius: Radius.circular(10),
                                 thumbColor: Colors.black87,
@@ -351,7 +353,7 @@ class _EditFormPageState extends State<EditFormPage> {
                 if (formData.isNotEmpty)
                   Card(
                     elevation: 8,
-                    margin: EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -380,8 +382,8 @@ class _EditFormPageState extends State<EditFormPage> {
 
                                     // Add headers row
                                     classRows.add(
-                                      Row(
-                                        children: const [
+                                      const Row(
+                                        children: [
                                           Expanded(
                                             child: Text(
                                               'Class',
@@ -561,7 +563,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                         ...vecData.map((vecEntry) {
                                           return Card(
                                             elevation: 8,
-                                            margin: EdgeInsets.symmetric(
+                                            margin: const EdgeInsets.symmetric(
                                                 vertical: 10),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -593,7 +595,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Correct UDISE: ${vecEntry['correctUdise'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Head Information',
+                                                  const Text('Head Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -608,7 +610,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Designation: ${vecEntry['headDesignation'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Staff Information',
+                                                  const Text('Staff Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -619,7 +621,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Total Staff: ${vecEntry['totalStaff'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('VEC Information',
+                                                  const Text('VEC Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -638,7 +640,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Meeting Duration: ${vecEntry['meetingDuration'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Other Information',
+                                                  const Text('Other Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -752,7 +754,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                               ),
                                             ),
                                           );
-                                        }).toList(),
+                                        }),
                                       ],
                                     );
                                   } else {
@@ -793,7 +795,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                         ...facilitiesData.map((facilityEntry) {
                                           return Card(
                                             elevation: 8,
-                                            margin: EdgeInsets.symmetric(
+                                            margin: const EdgeInsets.symmetric(
                                                 vertical: 10),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -825,7 +827,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Correct UDISE: ${facilityEntry['correctUdise'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Facilities Information',
+                                                  const Text('Facilities Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -842,14 +844,14 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Functional Classrooms: ${facilityEntry['numFunctionalClass'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Playground',
+                                                  const Text('Playground',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
                                                   Text(
                                                       'Playground Available: ${facilityEntry['playgroundValue'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Library',
+                                                  const Text('Library',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -864,7 +866,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Library Register Available: ${facilityEntry['libRegisterValue'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Images',
+                                                  const Text('Images',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -873,7 +875,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                                   Text(
                                                       'Library Register Images: ${facilityEntry['imgRegister'] ?? 'N/A'}'),
                                                   const SizedBox(height: 8),
-                                                  Text('Other Information',
+                                                  const Text('Other Information',
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -978,7 +980,7 @@ class _EditFormPageState extends State<EditFormPage> {
                                               ),
                                             ),
                                           );
-                                        }).toList(),
+                                        }),
                                       ],
                                     );
                                   } else {
@@ -1009,16 +1011,16 @@ class _EditFormPageState extends State<EditFormPage> {
                                 break;
 
                               default:
-                                return SizedBox.shrink(); // No data to show
+                                return const SizedBox.shrink(); // No data to show
                             }
-                            return SizedBox.shrink(); // No data to show
-                          }).toList(),
+                            return const SizedBox.shrink(); // No data to show
+                          }),
                         ],
                       ),
                     ),
                   )
                 else
-                  Text(''),
+                  const Text(''),
               ],
             ),
           ),

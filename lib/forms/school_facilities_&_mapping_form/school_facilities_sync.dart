@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:app17000ft_new/forms/school_facilities_&_mapping_form/school_facilities_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class SchoolFacilitiesSync extends StatefulWidget {
@@ -259,30 +257,31 @@ Future insertSchoolFacilities(
   int? id,
   Function(double) updateProgress, // Progress callback
 ) async {
-  print('This is enrollment data');
-  print('Tour ID: $tourId');
-  print('School: $school');
-  print(' udiseCode: $udiseCode');
-  print('Correct UDISE: $correctUdise');
-  print('Residential Value: $residentialValue');
-  print('Electricity Value: $electricityValue');
-  print('Internet Value: $internetValue');
-  print('Projector Value: $projectorValue');
-  print('Smart Class Value: $smartClassValue');
-  print('Number of Functional Classrooms: $numFunctionalClass');
-  print('Playground Value: $playgroundValue');
-  print('Play Image: $playImg');
-  print('Library Value: $libValue');
-  print('Library Location: $libLocation');
-  print('Librarian Name: $librarianName');
-  print('Librarian Training: $librarianTraining');
-  print('Library Register Value: $libRegisterValue');
-  print('Image Register: $imgRegister');
-  print('Created By: $created_by');
-  print('Created At: $created_at');
-  print('office sync: $office');
-  print(id);
-
+  if(kDebugMode) {
+    print('This is enrollment data');
+    print('Tour ID: $tourId');
+    print('School: $school');
+    print(' udiseCode: $udiseCode');
+    print('Correct UDISE: $correctUdise');
+    print('Residential Value: $residentialValue');
+    print('Electricity Value: $electricityValue');
+    print('Internet Value: $internetValue');
+    print('Projector Value: $projectorValue');
+    print('Smart Class Value: $smartClassValue');
+    print('Number of Functional Classrooms: $numFunctionalClass');
+    print('Playground Value: $playgroundValue');
+    print('Play Image: $playImg');
+    print('Library Value: $libValue');
+    print('Library Location: $libLocation');
+    print('Librarian Name: $librarianName');
+    print('Librarian Training: $librarianTraining');
+    print('Library Register Value: $libRegisterValue');
+    print('Image Register: $imgRegister');
+    print('Created By: $created_by');
+    print('Created At: $created_at');
+    print('office sync: $office');
+    print(id);
+  }
   var request = http.MultipartRequest(
     'POST',
     Uri.parse(baseurl),
@@ -325,14 +324,20 @@ Future insertSchoolFacilities(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   if (imgRegister != null && imgRegister.isNotEmpty) {
@@ -348,21 +353,29 @@ Future insertSchoolFacilities(
             contentType: MediaType('image', 'jpeg'),
           ),
         );
-        print("Image file $path attached successfully.");
+        if (kDebugMode) {
+          print("Image file $path attached successfully.");
+        }
       } else {
-        print('Image file does not exist at the path: $path');
+        if (kDebugMode) {
+          print('Image file does not exist at the path: $path');
+        }
         return {"status": 0, "message": "Image file not found at $path."};
       }
     }
   } else {
-    print('No image file path provided.');
+    if (kDebugMode) {
+      print('No image file path provided.');
+    }
   }
 
   // Send the request to the server
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
 
-  print('Server Response Body: $responseBody');
+  if (kDebugMode) {
+    print('Server Response Body: $responseBody');
+  }
 
   if (response.statusCode == 200) {
     try {
@@ -374,7 +387,9 @@ Future insertSchoolFacilities(
           table: 'schoolFacilities',
           field: 'id',
         );
-        print("Record with id $id deleted from local database.");
+        if (kDebugMode) {
+          print("Record with id $id deleted from local database.");
+        }
 
         // Refresh data
         await Get.find<SchoolFacilitiesController>().fetchData();
@@ -390,7 +405,9 @@ Future insertSchoolFacilities(
 
         return parsedResponse;
       } else {
-        print('Error: ${parsedResponse['message']}');
+        if (kDebugMode) {
+          print('Error: ${parsedResponse['message']}');
+        }
         customSnackbar(
           "Error",
           "${parsedResponse['message']}",
@@ -404,11 +421,15 @@ Future insertSchoolFacilities(
         };
       }
     } catch (e) {
-      print('Error parsing response: $e');
+      if (kDebugMode) {
+        print('Error parsing response: $e');
+      }
       return {"status": 0, "message": "Invalid response format"};
     }
   } else {
-    print('Server error: ${response.statusCode}');
+    if (kDebugMode) {
+      print('Server error: ${response.statusCode}');
+    }
     return {"status": 0, "message": "Server returned error $responseBody"};
   }
 }

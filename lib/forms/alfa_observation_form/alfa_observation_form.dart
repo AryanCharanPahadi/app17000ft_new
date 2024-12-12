@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,15 +18,12 @@ import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/helper/responsive_helper.dart';
 import 'package:app17000ft_new/tourDetails/tour_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:app17000ft_new/base_client/base_client.dart';
 import 'package:app17000ft_new/components/custom_dropdown.dart';
 import 'package:app17000ft_new/components/custom_labeltext.dart';
 import 'package:app17000ft_new/components/custom_sizedBox.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/home/home_screen.dart';
 
 import '../../components/custom_confirmation.dart';
@@ -148,8 +146,10 @@ class _AlfaObservationFormState extends State<AlfaObservationForm> {
   void initState() {
     super.initState();
 widget.office.toString();
-print(widget.office.toString()
+if (kDebugMode) {
+  print(widget.office.toString()
 );
+}
     // Initialize controllers and notifiers for Staff Details
     for (int i = 0; i < staffRoles.length; i++) {
       final teachingStaffController = TextEditingController(text: '0');
@@ -285,7 +285,7 @@ print(widget.office.toString()
           child: Center(
             child: Text(
               classname,
-              style:  TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style:  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -294,7 +294,7 @@ print(widget.office.toString()
 
           child: TextFormField(
             controller: boyController,
-            decoration:  InputDecoration(border: InputBorder.none),
+            decoration:  const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             inputFormatters: <TextInputFormatter>[
@@ -308,7 +308,7 @@ print(widget.office.toString()
 
           child: TextFormField(
             controller: girlController,
-            decoration:  InputDecoration(border: InputBorder.none),
+            decoration:  const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             inputFormatters: <TextInputFormatter>[
@@ -326,7 +326,7 @@ print(widget.office.toString()
               return Center(
                 child: Text(
                   total.toString(),
-                  style:  TextStyle(
+                  style:  const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               );
@@ -349,7 +349,7 @@ print(widget.office.toString()
 
           child: Center(
               child: Text(roleName,
-                  style:  TextStyle(
+                  style:  const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold))),
         ),
         TableCell(
@@ -362,7 +362,7 @@ print(widget.office.toString()
               FilteringTextInputFormatter.digitsOnly, // Allow only digits
               LengthLimitingTextInputFormatter(3), // Limit to 3 digits
             ],
-            decoration:  InputDecoration(border: InputBorder.none),
+            decoration:  const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
           ),
         ),
@@ -376,7 +376,7 @@ print(widget.office.toString()
               FilteringTextInputFormatter.digitsOnly, // Allow only digits
               LengthLimitingTextInputFormatter(3), // Limit to 3 digits
             ],
-            decoration:  InputDecoration(border: InputBorder.none),
+            decoration:  const InputDecoration(border: InputBorder.none),
             textAlign: TextAlign.center,
           ),
         ),
@@ -388,7 +388,7 @@ print(widget.office.toString()
             builder: (context, total, child) {
               return Center(
                   child: Text(total.toString(),
-                      style:  TextStyle(
+                      style:  const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)));
             },
           ),
@@ -423,11 +423,11 @@ print(widget.office.toString()
           return shouldExit ?? false;
         },
         child: Scaffold(
-            appBar:  CustomAppbar(
+            appBar:  const CustomAppbar(
               title: 'ALFA Observation Form',
             ),
             body: Padding(
-                padding:  EdgeInsets.all(16.0),
+                padding:  const EdgeInsets.all(16.0),
                 child: SingleChildScrollView(
                     controller: _scrollController,
                     child: Column(children: [
@@ -550,7 +550,7 @@ print(widget.office.toString()
                                                 items:
                                                splitSchoolLists, // Show schools based on selected or locked tour ID
                                                 dropdownDecoratorProps:
-                                                 DropDownDecoratorProps(
+                                                 const DropDownDecoratorProps(
                                                   dropdownSearchDecoration:
                                                   InputDecoration(
                                                     labelText: "Select School",
@@ -598,7 +598,7 @@ print(widget.office.toString()
                                                     }
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -624,13 +624,13 @@ print(widget.office.toString()
                                                             'udiCode', value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError('udiCode'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -749,16 +749,16 @@ print(widget.office.toString()
                                                 title:
                                                     _isImageUploadedNursery ==
                                                             false
-                                                        ?  Text(
+                                                        ?  const Text(
                                                             'Click or Upload Image',
                                                           )
-                                                        :  Text(
+                                                        :  const Text(
                                                             'Click or Upload Image',
                                                             style: TextStyle(
                                                                 color: AppColors
                                                                     .error),
                                                           ),
-                                                trailing:  Icon(
+                                                trailing:  const Icon(
                                                     Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
@@ -806,7 +806,7 @@ print(widget.office.toString()
                                                       alfaObservationController
                                                               .multipleImage
                                                               .isEmpty
-                                                          ?  Center(
+                                                          ?  const Center(
                                                               child: Text(
                                                                   'No images selected.'),
                                                             )
@@ -826,7 +826,7 @@ print(widget.office.toString()
                                                                   child: Column(
                                                                     children: [
                                                                       Padding(
-                                                                        padding:  EdgeInsets
+                                                                        padding:  const EdgeInsets
                                                                             .all(
                                                                             8.0),
                                                                         child:
@@ -857,7 +857,7 @@ print(widget.office.toString()
                                                                           });
                                                                         },
                                                                         child:
-                                                                             Icon(
+                                                                             const Icon(
                                                                           Icons
                                                                               .delete,
                                                                           color:
@@ -870,7 +870,7 @@ print(widget.office.toString()
                                                               },
                                                             ),
                                                 )
-                                              :  SizedBox(),
+                                              :  const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -904,7 +904,7 @@ print(widget.office.toString()
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                               onTap: () {
                                                 showModalBottomSheet(
                                                   backgroundColor: AppColors.primary,
@@ -948,7 +948,7 @@ print(widget.office.toString()
                                                   child: Column(
                                                     children: [
                                                       Padding(
-                                                        padding:  EdgeInsets.all(8.0),
+                                                        padding:  const EdgeInsets.all(8.0),
                                                         child: GestureDetector(
                                                           onTap: () {
                                                             CustomImagePreview.showImagePreview(
@@ -970,7 +970,7 @@ print(widget.office.toString()
                                                             alfaObservationController.multipleImage2.removeAt(index);
                                                           });
                                                         },
-                                                        child:  Icon(
+                                                        child:  const Icon(
                                                           Icons.delete,
                                                           color: Colors.red,
                                                         ),
@@ -981,7 +981,7 @@ print(widget.office.toString()
                                               },
                                             ),
                                           )
-                                              :  SizedBox(),
+                                              :  const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1015,7 +1015,7 @@ print(widget.office.toString()
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                               onTap: () {
                                                 showModalBottomSheet(
                                                   backgroundColor: AppColors.primary,
@@ -1059,7 +1059,7 @@ print(widget.office.toString()
                                                   child: Column(
                                                     children: [
                                                       Padding(
-                                                        padding:  EdgeInsets.all(8.0),
+                                                        padding:  const EdgeInsets.all(8.0),
                                                         child: GestureDetector(
                                                           onTap: () {
                                                             CustomImagePreview.showImagePreview(
@@ -1081,7 +1081,7 @@ print(widget.office.toString()
                                                             alfaObservationController.multipleImage3.removeAt(index);
                                                           });
                                                         },
-                                                        child:  Icon(
+                                                        child:  const Icon(
                                                           Icons.delete,
                                                           color: Colors.red,
                                                         ),
@@ -1092,7 +1092,7 @@ print(widget.office.toString()
                                               },
                                             ),
                                           )
-                                              :  SizedBox(),
+                                              :  const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1120,7 +1120,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1147,14 +1147,14 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'alfaEnglishBooklet'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -1238,7 +1238,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1265,14 +1265,14 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'alfaNumeracy'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -1355,7 +1355,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1382,14 +1382,14 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'childrenPairs'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -1493,7 +1493,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1520,14 +1520,14 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'alfaModuleActivities'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -1552,7 +1552,7 @@ print(widget.office.toString()
                                                 Table(
                                                   border: TableBorder.all(),
                                                   children: [
-                                                     TableRow(
+                                                     const TableRow(
                                                       children: [
                                                         TableCell(
                                                             verticalAlignment:
@@ -1615,7 +1615,7 @@ print(widget.office.toString()
                                                       ),
                                                     TableRow(
                                                       children: [
-                                                         TableCell(
+                                                         const TableCell(
                                                             verticalAlignment:
                                                             TableCellVerticalAlignment
                                                                 .middle, // Align vertically to middle
@@ -1642,7 +1642,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -1665,7 +1665,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -1688,7 +1688,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -1712,7 +1712,7 @@ print(widget.office.toString()
                                               value: 40,
                                               side: 'height',
                                             ),
-                                             Divider(),
+                                             const Divider(),
                                             CustomSizedBox(
                                                 side: 'height', value: 10),
                                           ],
@@ -1745,7 +1745,7 @@ print(widget.office.toString()
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                               onTap: () {
                                                 showModalBottomSheet(
                                                   backgroundColor: AppColors.primary,
@@ -1789,7 +1789,7 @@ print(widget.office.toString()
                                                   child: Column(
                                                     children: [
                                                       Padding(
-                                                        padding:  EdgeInsets.all(8.0),
+                                                        padding:  const EdgeInsets.all(8.0),
                                                         child: GestureDetector(
                                                           onTap: () {
                                                             CustomImagePreview.showImagePreview(
@@ -1811,7 +1811,7 @@ print(widget.office.toString()
                                                             alfaObservationController.multipleImage4.removeAt(index);
                                                           });
                                                         },
-                                                        child:  Icon(
+                                                        child:  const Icon(
                                                           Icons.delete,
                                                           color: Colors.red,
                                                         ),
@@ -1822,7 +1822,7 @@ print(widget.office.toString()
                                               },
                                             ),
                                           )
-                                              :  SizedBox(),
+                                              :  const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1838,7 +1838,7 @@ print(widget.office.toString()
                                                           false;
                                                     });
                                                   }),
-                                               Spacer(),
+                                               const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -1925,7 +1925,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1960,14 +1960,14 @@ print(widget.office.toString()
                                                     }
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'refresherTrainingOnALFA'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -2048,7 +2048,7 @@ print(widget.office.toString()
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                                trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                                 onTap: () {
                                                   showModalBottomSheet(
                                                     backgroundColor: AppColors.primary,
@@ -2092,7 +2092,7 @@ print(widget.office.toString()
                                                     child: Column(
                                                       children: [
                                                         Padding(
-                                                          padding:  EdgeInsets.all(8.0),
+                                                          padding:  const EdgeInsets.all(8.0),
                                                           child: GestureDetector(
                                                             onTap: () {
                                                               CustomImagePreview.showImagePreview(
@@ -2114,7 +2114,7 @@ print(widget.office.toString()
                                                               alfaObservationController.multipleImage5.removeAt(index);
                                                             });
                                                           },
-                                                          child:  Icon(
+                                                          child:  const Icon(
                                                             Icons.delete,
                                                             color: Colors.red,
                                                           ),
@@ -2125,7 +2125,7 @@ print(widget.office.toString()
                                                 },
                                               ),
                                             )
-                                                :  SizedBox(),
+                                                :  const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -2144,7 +2144,7 @@ print(widget.office.toString()
                                                           false;
                                                     });
                                                   }),
-                                               Spacer(),
+                                               const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -2225,7 +2225,7 @@ print(widget.office.toString()
                                                             value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -2257,14 +2257,14 @@ print(widget.office.toString()
                                                     }
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError(
                                                   'readingActivities'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -2292,7 +2292,7 @@ print(widget.office.toString()
                                                 Table(
                                                   border: TableBorder.all(),
                                                   children: [
-                                                     TableRow(
+                                                     const TableRow(
                                                       children: [
                                                         TableCell(
                                                             verticalAlignment:
@@ -2357,7 +2357,7 @@ print(widget.office.toString()
                                                       ),
                                                     TableRow(
                                                       children: [
-                                                         TableCell(
+                                                         const TableCell(
                                                             verticalAlignment:
                                                             TableCellVerticalAlignment
                                                                 .middle, // Align vertically to middle
@@ -2384,7 +2384,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -2407,7 +2407,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -2430,7 +2430,7 @@ print(widget.office.toString()
                                                                   child: Text(
                                                                       total
                                                                           .toString(),
-                                                                      style:  TextStyle(
+                                                                      style:  const TextStyle(
                                                                           fontSize:
                                                                               18,
                                                                           fontWeight:
@@ -2482,7 +2482,7 @@ print(widget.office.toString()
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                                trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                                 onTap: () {
                                                   showModalBottomSheet(
                                                     backgroundColor: AppColors.primary,
@@ -2526,7 +2526,7 @@ print(widget.office.toString()
                                                     child: Column(
                                                       children: [
                                                         Padding(
-                                                          padding:  EdgeInsets.all(8.0),
+                                                          padding:  const EdgeInsets.all(8.0),
                                                           child: GestureDetector(
                                                             onTap: () {
                                                               CustomImagePreview.showImagePreview(
@@ -2548,7 +2548,7 @@ print(widget.office.toString()
                                                               alfaObservationController.multipleImage6.removeAt(index);
                                                             });
                                                           },
-                                                          child:  Icon(
+                                                          child:  const Icon(
                                                             Icons.delete,
                                                             color: Colors.red,
                                                           ),
@@ -2559,7 +2559,7 @@ print(widget.office.toString()
                                                 },
                                               ),
                                             )
-                                                :  SizedBox(),
+                                                :  const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -2578,7 +2578,7 @@ print(widget.office.toString()
                                                           false;
                                                     });
                                                   }),
-                                               Spacer(),
+                                               const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -2675,7 +2675,7 @@ print(widget.office.toString()
                                                             'tlmKit', value);
                                                   },
                                                 ),
-                                                 Text('Yes'),
+                                                 const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -2701,13 +2701,13 @@ print(widget.office.toString()
                                                             'tlmKit', value);
                                                   },
                                                 ),
-                                                 Text('No'),
+                                                 const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (alfaObservationController
                                               .getRadioFieldError('tlmKit'))
-                                             Padding(
+                                             const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -2752,7 +2752,7 @@ print(widget.office.toString()
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing:  Icon(Icons.camera_alt, color: AppColors.onBackground),
+                                              trailing:  const Icon(Icons.camera_alt, color: AppColors.onBackground),
                                               onTap: () {
                                                 showModalBottomSheet(
                                                   backgroundColor: AppColors.primary,
@@ -2796,7 +2796,7 @@ print(widget.office.toString()
                                                   child: Column(
                                                     children: [
                                                       Padding(
-                                                        padding:  EdgeInsets.all(8.0),
+                                                        padding:  const EdgeInsets.all(8.0),
                                                         child: GestureDetector(
                                                           onTap: () {
                                                             CustomImagePreview.showImagePreview(
@@ -2818,7 +2818,7 @@ print(widget.office.toString()
                                                             alfaObservationController.multipleImage7.removeAt(index);
                                                           });
                                                         },
-                                                        child:  Icon(
+                                                        child:  const Icon(
                                                           Icons.delete,
                                                           color: Colors.red,
                                                         ),
@@ -2829,7 +2829,7 @@ print(widget.office.toString()
                                               },
                                             ),
                                           )
-                                              :  SizedBox(),
+                                              :  const SizedBox(),
 
                                           CustomSizedBox(
                                             value: 20,
@@ -2879,7 +2879,7 @@ print(widget.office.toString()
                                                           false;
                                                     });
                                                   }),
-                                               Spacer(),
+                                               const Spacer(),
                                               CustomButton(
                                                   title: 'Submit',
                                                   onPressedButton: () async {
@@ -3035,16 +3035,16 @@ print(widget.office.toString()
 
                                                       String generateUniqueId(
                                                           int length) {
-                                                          const _chars =
+                                                          const chars =
                                                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                        Random _rnd = Random();
+                                                        Random rnd = Random();
                                                         return String.fromCharCodes(
                                                             Iterable.generate(
                                                                 length,
-                                                                    (_) => _chars
-                                                                    .codeUnitAt(_rnd
+                                                                    (_) => chars
+                                                                    .codeUnitAt(rnd
                                                                     .nextInt(
-                                                                    _chars
+                                                                    chars
                                                                         .length))));
                                                       }
                                                       String uniqueId =
@@ -3107,7 +3107,9 @@ print(widget.office.toString()
                                                               office: widget.office ?? 'Default Office',
 
                                                               createdBy: widget.userid.toString());
-                                                      print('Office value: ${widget.office}'); // Debugging line
+                                                      if (kDebugMode) {
+                                                        print('Office value: ${widget.office}');
+                                                      } // Debugging line
 
 
 
@@ -3176,7 +3178,7 @@ print(widget.office.toString()
                                                           context,
                                                           MaterialPageRoute(
                                                               builder: (context) =>
-                                                                   HomeScreen()),
+                                                                   const HomeScreen()),
                                                         );
                                                       } else {
                                                         customSnackbar(

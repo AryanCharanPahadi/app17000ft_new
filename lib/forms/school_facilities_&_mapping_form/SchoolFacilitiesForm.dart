@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:path_provider/path_provider.dart';
@@ -24,12 +25,10 @@ import 'package:app17000ft_new/components/custom_labeltext.dart';
 import 'package:app17000ft_new/components/custom_sizedBox.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
-import '../../base_client/base_client.dart';
 import '../../components/custom_confirmation.dart';
 import '../../components/custom_snackbar.dart';
 import '../../helper/database_helper.dart';
 import '../../home/home_screen.dart';
-import '../edit_form/edit controller.dart';
 import '../select_tour_id/select_controller.dart';
 
 class SchoolFacilitiesForm extends StatefulWidget {
@@ -61,8 +60,12 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
   void initState() {
     super.initState();
     widget.office.toString();
-    print('Office init ${widget.office}');
-    print('UserId init ${widget.userid}');
+    if (kDebugMode) {
+      print('Office init ${widget.office}');
+    }
+    if (kDebugMode) {
+      print('UserId init ${widget.userid}');
+    }
     if (!Get.isRegistered<SchoolFacilitiesController>()) {
       Get.put(SchoolFacilitiesController());
     }
@@ -130,7 +133,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
           if (shouldExit == true) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) =>  HomeScreen()),
+              MaterialPageRoute(builder: (context) =>  const HomeScreen()),
             );
           }
 
@@ -138,11 +141,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
           return false;
         },
         child: Scaffold(
-            appBar:  CustomAppbar(
+            appBar:  const CustomAppbar(
               title: 'School Facilities & Mapping Form',
             ),
             body: Padding(
-                padding:  EdgeInsets.all(16.0),
+                padding:  const EdgeInsets.all(16.0),
                 child: SingleChildScrollView(
                     controller: _scrollController,
                     child: Column(children: [
@@ -277,7 +280,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                               items: schoolFacilitiesController
                                                   .splitSchoolLists, // Show schools based on selected or locked tour ID
                                               dropdownDecoratorProps:
-                                                   DropDownDecoratorProps(
+                                                   const DropDownDecoratorProps(
                                                 dropdownSearchDecoration:
                                                     InputDecoration(
                                                   labelText: "Select School",
@@ -318,7 +321,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue =
-                                                            value as String?;
+                                                            value;
                                                         if (value == 'Yes') {
                                                           schoolFacilitiesController
                                                               .correctUdiseCodeController
@@ -327,7 +330,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -350,17 +353,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -481,11 +484,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue2 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -508,17 +511,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue2 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError2)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -553,11 +556,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue3 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -580,17 +583,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue3 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError3)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -625,11 +628,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue4 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -652,17 +655,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue4 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError4)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -697,11 +700,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue5 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -724,17 +727,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue5 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError5)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -769,11 +772,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue6 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -796,17 +799,17 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue6 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError6)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -882,11 +885,11 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue7 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -909,7 +912,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue7 =
-                                                            value as String?;
+                                                            value;
                                                       });
                                                       if (value == 'No') {
                                                         schoolFacilitiesController
@@ -918,13 +921,13 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       }
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError7)
-                                               Padding(
+                                               const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -971,16 +974,16 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                     title: schoolFacilitiesController
                                                                 .isImageUploaded ==
                                                             false
-                                                        ?  Text(
+                                                        ?  const Text(
                                                             'Click or Upload Image',
                                                           )
-                                                        :  Text(
+                                                        :  const Text(
                                                             'Click or Upload Image',
                                                             style: TextStyle(
                                                                 color: AppColors
                                                                     .error),
                                                           ),
-                                                    trailing:  Icon(
+                                                    trailing:  const Icon(
                                                         Icons.camera_alt,
                                                         color: AppColors
                                                             .onBackground),
@@ -1031,7 +1034,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                           schoolFacilitiesController
                                                                   .multipleImage
                                                                   .isEmpty
-                                                              ?  Center(
+                                                              ?  const Center(
                                                                   child: Text(
                                                                       'No images selected.'),
                                                                 )
@@ -1056,7 +1059,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                         children: [
                                                                           Padding(
                                                                             padding:
-                                                                                 EdgeInsets.all(8.0),
+                                                                                 const EdgeInsets.all(8.0),
                                                                             child:
                                                                                 GestureDetector(
                                                                               onTap: () {
@@ -1078,7 +1081,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                               });
                                                                             },
                                                                             child:
-                                                                                 Icon(
+                                                                                 const Icon(
                                                                               Icons.delete,
                                                                               color: Colors.red,
                                                                             ),
@@ -1089,7 +1092,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                   },
                                                                 ),
                                                     )
-                                                  :  SizedBox(),
+                                                  :  const SizedBox(),
                                               CustomSizedBox(
                                                 value: 40,
                                                 side: 'height',
@@ -1109,7 +1112,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                             false;
                                                       });
                                                     }),
-                                                 Spacer(),
+                                                 const Spacer(),
                                                 CustomButton(
                                                   title: 'Next',
                                                   onPressedButton: () {
@@ -1239,14 +1242,14 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue8 =
-                                                            value as String?;
+                                                            value;
                                                         schoolFacilitiesController
                                                                 .radioFieldError8 =
                                                             false; // Reset error state
                                                       });
                                                     },
                                                   ),
-                                                   Text('Yes'),
+                                                   const Text('Yes'),
                                                 ],
                                               ),
                                             ),
@@ -1268,7 +1271,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .selectedValue8 =
-                                                            value as String?;
+                                                            value;
                                                         schoolFacilitiesController
                                                                 .radioFieldError8 =
                                                             false; // Reset error state
@@ -1292,13 +1295,13 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                       }
                                                     },
                                                   ),
-                                                   Text('No'),
+                                                   const Text('No'),
                                                 ],
                                               ),
                                             ),
                                             if (schoolFacilitiesController
                                                 .radioFieldError8)
-                                              Padding(
+                                              const Padding(
                                                 padding:  EdgeInsets.only(
                                                     left: 16.0),
                                                 child: Align(
@@ -1326,14 +1329,14 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                               CustomSizedBox(
                                                   value: 20, side: 'height'),
                                               DropdownButtonFormField<String>(
-                                                decoration: InputDecoration(
+                                                decoration: const InputDecoration(
                                                   labelText: 'Select an option',
                                                   border: OutlineInputBorder(),
                                                 ),
                                                 value:
                                                     schoolFacilitiesController
                                                         .selectedDesignation,
-                                                items: [
+                                                items:  const [
                                                   DropdownMenuItem(
                                                       value: 'Corridor',
                                                       child: Text('Corridor')),
@@ -1412,14 +1415,14 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                         setState(() {
                                                           schoolFacilitiesController
                                                                   .selectedValue9 =
-                                                              value as String?;
+                                                              value;
                                                           schoolFacilitiesController
                                                                   .radioFieldError9 =
                                                               false; // Reset error state
                                                         });
                                                       },
                                                     ),
-                                                     Text('Yes'),
+                                                     const Text('Yes'),
                                                   ],
                                                 ),
                                               ),
@@ -1441,20 +1444,20 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                         setState(() {
                                                           schoolFacilitiesController
                                                                   .selectedValue9 =
-                                                              value as String?;
+                                                              value;
                                                           schoolFacilitiesController
                                                                   .radioFieldError9 =
                                                               false; // Reset error state
                                                         });
                                                       },
                                                     ),
-                                                     Text('No'),
+                                                     const Text('No'),
                                                   ],
                                                 ),
                                               ),
                                               if (schoolFacilitiesController
                                                   .radioFieldError9)
-                                                Padding(
+                                                const Padding(
                                                   padding:
                                                        EdgeInsets.only(
                                                           left: 16.0),
@@ -1493,14 +1496,14 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                         setState(() {
                                                           schoolFacilitiesController
                                                                   .selectedValue10 =
-                                                              value as String?;
+                                                              value;
                                                           schoolFacilitiesController
                                                                   .radioFieldError10 =
                                                               false; // Reset error state
                                                         });
                                                       },
                                                     ),
-                                                     Text('Yes'),
+                                                     const Text('Yes'),
                                                   ],
                                                 ),
                                               ),
@@ -1522,20 +1525,20 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                         setState(() {
                                                           schoolFacilitiesController
                                                                   .selectedValue10 =
-                                                              value as String?;
+                                                              value;
                                                           schoolFacilitiesController
                                                                   .radioFieldError10 =
                                                               false; // Reset error state
                                                         });
                                                       },
                                                     ),
-                                                     Text('No'),
+                                                     const Text('No'),
                                                   ],
                                                 ),
                                               ),
                                               if (schoolFacilitiesController
                                                   .radioFieldError10)
-                                                Padding(
+                                                const Padding(
                                                   padding:
                                                        EdgeInsets.only(
                                                           left: 16.0),
@@ -1591,7 +1594,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                             : AppColors.error,
                                                       ),
                                                     ),
-                                                    trailing:  Icon(
+                                                    trailing:  const Icon(
                                                         Icons.camera_alt,
                                                         color: AppColors
                                                             .onBackground),
@@ -1659,7 +1662,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                 children: [
                                                                   Padding(
                                                                     padding:
-                                                                         EdgeInsets
+                                                                         const EdgeInsets
                                                                             .all(
                                                                             8.0),
                                                                     child:
@@ -1698,7 +1701,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                       });
                                                                     },
                                                                     child:
-                                                                         Icon(
+                                                                         const Icon(
                                                                       Icons
                                                                           .delete,
                                                                       color: Colors
@@ -1711,7 +1714,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                           },
                                                         ),
                                                       )
-                                                    :  SizedBox(),
+                                                    :  const SizedBox(),
                                                 CustomSizedBox(
                                                   value: 40,
                                                   side: 'height',
@@ -1732,16 +1735,24 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                             false;
                                                       });
                                                     }),
-                                                 Spacer(),
+                                                 const Spacer(),
                                                 CustomButton(
                                                     title: 'Submit',
                                                     onPressedButton: () async {
-                                                      print(
+                                                      if (kDebugMode) {
+                                                        print(
                                                           'office on pressed');
-                                                      print(widget.office);
+                                                      }
+                                                      if (kDebugMode) {
+                                                        print(widget.office);
+                                                      }
 
-                                                      print('userid');
-                                                      print(widget.userid);
+                                                      if (kDebugMode) {
+                                                        print('userid');
+                                                      }
+                                                      if (kDebugMode) {
+                                                        print(widget.userid);
+                                                      }
                                                       setState(() {
                                                         schoolFacilitiesController
                                                                 .radioFieldError8 =
@@ -1798,7 +1809,9 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                               .radioFieldError10 &&
                                                           !schoolFacilitiesController
                                                               .validateRegister2) {
-                                                        print('Inserted');
+                                                        if (kDebugMode) {
+                                                          print('Inserted');
+                                                        }
 
                                                         List<File>
                                                             imgPlayFiles = [];
@@ -1810,12 +1823,12 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                         }
 
                                                         List<File>
-                                                            register_picFiles =
+                                                            registerPicfiles =
                                                             [];
                                                         for (var imagePath2
                                                             in schoolFacilitiesController
                                                                 .imagePaths2) {
-                                                          register_picFiles.add(
+                                                          registerPicfiles.add(
                                                               File(
                                                                   imagePath2)); // Convert image path to File
                                                         }
@@ -1828,16 +1841,16 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
 
                                                         String generateUniqueId(
                                                             int length) {
-                                                            const _chars =
+                                                            const chars =
                                                               'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                          Random _rnd =
+                                                          Random rnd =
                                                               Random();
                                                           return String.fromCharCodes(
                                                               Iterable.generate(
                                                                   length,
-                                                                  (_) => _chars.codeUnitAt(
-                                                                      _rnd.nextInt(
-                                                                          _chars
+                                                                  (_) => chars.codeUnitAt(
+                                                                      rnd.nextInt(
+                                                                          chars
                                                                               .length))));
                                                         }
 
@@ -1851,8 +1864,8 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                     file.path)
                                                                 .join(',');
                                                         String
-                                                            register_picFilesPaths =
-                                                            register_picFiles
+                                                            registerPicfilespaths =
+                                                            registerPicfiles
                                                                 .map((file) =>
                                                                     file.path)
                                                                 .join(',');
@@ -1893,7 +1906,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                   .nameOfLibrarianController
                                                                   .text,
                                                           imgRegister:
-                                                              register_picFilesPaths,
+                                                              registerPicfilespaths,
                                                           udiseCode:
                                                               schoolFacilitiesController
                                                                       .selectedValue ??
@@ -1938,8 +1951,10 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                                   .office ??
                                                               'Default Office',
                                                         );
-                                                        print(
-                                                            'Office value: ${widget.office}'); // Debugging line
+                                                        if (kDebugMode) {
+                                                          print(
+                                                            'Office value: ${widget.office}');
+                                                        } // Debugging line
 
                                                         int result =
                                                             await LocalDbController()
@@ -2013,7 +2028,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                               jsonData1,
                                                               uniqueId,
                                                               imgPlayFiles,
-                                                              register_picFiles,
+                                                              registerPicfiles,
                                                             );
                                                             // Notify user of success
                                                             customSnackbar(
@@ -2051,7 +2066,7 @@ class _SchoolFacilitiesFormState extends State<SchoolFacilitiesForm> {
                                                             MaterialPageRoute(
                                                                 builder:
                                                                     (context) =>
-                                                                         HomeScreen()),
+                                                                         const HomeScreen()),
                                                           );
                                                         } else {
                                                           customSnackbar(

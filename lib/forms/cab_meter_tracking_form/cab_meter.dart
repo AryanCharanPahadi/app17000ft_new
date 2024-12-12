@@ -2,15 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:app17000ft_new/home/home_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Import the plugin
-
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_button.dart';
 import 'package:app17000ft_new/components/custom_imagepreview.dart';
@@ -23,18 +22,18 @@ import 'package:app17000ft_new/tourDetails/tour_controller.dart';
 import 'package:app17000ft_new/components/custom_dropdown.dart';
 import 'package:app17000ft_new/components/custom_labeltext.dart';
 import 'package:app17000ft_new/components/custom_sizedBox.dart';
-
 import '../../components/custom_snackbar.dart';
 import '../../helper/database_helper.dart';
 import '../select_tour_id/select_controller.dart';
 import 'cab_meter_tracing_modal.dart';
-import 'cab_meter_tracing_sync.dart';
 
 class CabMeterTracingForm extends StatefulWidget {
-  String? userid;
-  String? office;
-  String? version;
-  CabMeterTracingForm({super.key, this.userid, this.office,this.version});
+  final String? userid;
+  final String? office;
+  final String? version;
+
+  const CabMeterTracingForm(
+      {super.key, this.userid, this.office, this.version});
 
   @override
   State<CabMeterTracingForm> createState() => _CabMeterTracingFormState();
@@ -69,86 +68,76 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                 builder: (cabMeterController) {
                   return Form(
                     key: _formKey,
-                    child:GetBuilder<TourController>(
+                    child: GetBuilder<TourController>(
                       init: TourController(),
                       builder: (tourController) {
                         // Fetch tour details
                         tourController.fetchTourDetails();
 
                         // Get locked tour ID from SelectController
-                        final selectController =
-                        Get.put(SelectController());
-                        String? lockedTourId =
-                            selectController.lockedTourId;
+                        final selectController = Get.put(SelectController());
+                        String? lockedTourId = selectController.lockedTourId;
 
                         // Consider the lockedTourId as the selected tour ID if it's not null
-                        String? selectedTourId = lockedTourId ??
-                            cabMeterController.tourValue;
+                        String? selectedTourId =
+                            lockedTourId ?? cabMeterController.tourValue;
 
                         // Fetch the corresponding schools if lockedTourId or selectedTourId is present
                         if (selectedTourId != null) {
-                          splitSchoolLists = tourController
-                              .getLocalTourList
+                          splitSchoolLists = tourController.getLocalTourList
                               .where((e) => e.tourId == selectedTourId)
                               .map((e) => e.allSchool!
-                              .split(',')
-                              .map((s) => s.trim())
-                              .toList())
+                                  .split(',')
+                                  .map((s) => s.trim())
+                                  .toList())
                               .expand((x) => x)
                               .toList();
                         }
 
-                        return Column(
-                            children: [
-                              LabelText(
-                                label: 'Tour ID',
-                                astrick: true,
-                              ),
-                              CustomSizedBox(
-                                value: 20,
-                                side: 'height',
-                              ),
-                              CustomDropdownFormField(
-                                focusNode: cabMeterController
-                                    .tourIdFocusNode,
-                                // Show the locked tour ID directly, and disable dropdown interaction if locked
-                                options: lockedTourId != null
-                                    ? [
-                                  lockedTourId
-                                ] // Show only the locked tour ID
-                                    : tourController.getLocalTourList
+                        return Column(children: [
+                          LabelText(
+                            label: 'Tour ID',
+                            astrick: true,
+                          ),
+                          CustomSizedBox(
+                            value: 20,
+                            side: 'height',
+                          ),
+                          CustomDropdownFormField(
+                            focusNode: cabMeterController.tourIdFocusNode,
+                            // Show the locked tour ID directly, and disable dropdown interaction if locked
+                            options: lockedTourId != null
+                                ? [lockedTourId] // Show only the locked tour ID
+                                : tourController.getLocalTourList
                                     .map((e) => e
-                                    .tourId!) // Ensure tourId is non-nullable
+                                        .tourId!) // Ensure tourId is non-nullable
                                     .toList(),
-                                selectedOption: selectedTourId,
-                                onChanged: lockedTourId ==
+                            selectedOption: selectedTourId,
+                            onChanged: lockedTourId ==
                                     null // Disable changing when tour ID is locked
-                                    ? (value) {
-                                  // Fetch and set the schools for the selected tour
-                                  splitSchoolLists = tourController
-                                      .getLocalTourList
-                                      .where(
-                                          (e) => e.tourId == value)
-                                      .map((e) => e.allSchool!
-                                      .split(',')
-                                      .map((s) => s.trim())
-                                      .toList())
-                                      .expand((x) => x)
-                                      .toList();
+                                ? (value) {
+                                    // Fetch and set the schools for the selected tour
+                                    splitSchoolLists = tourController
+                                        .getLocalTourList
+                                        .where((e) => e.tourId == value)
+                                        .map((e) => e.allSchool!
+                                            .split(',')
+                                            .map((s) => s.trim())
+                                            .toList())
+                                        .expand((x) => x)
+                                        .toList();
 
-                                  // Single setState call for efficiency
-                                  setState(() {
-                                    cabMeterController
-                                        .setSchool(null);
-                                    cabMeterController
-                                        .setTour(value);
-                                  });
-                                }
-                                    : null, // Disable dropdown if lockedTourId is present
-                                labelText: "Select Tour ID",
-                              ),
+                                    // Single setState call for efficiency
+                                    setState(() {
+                                      cabMeterController.setSchool(null);
+                                      cabMeterController.setTour(value);
+                                    });
+                                  }
+                                : null, // Disable dropdown if lockedTourId is present
+                            labelText: "Select Tour ID",
+                          ),
 
-                              CustomSizedBox(
+                          CustomSizedBox(
                             value: 20,
                             side: 'height',
                           ),
@@ -416,51 +405,58 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                             value: 20,
                             side: 'height',
                           ),
-                              Padding(
-                                padding: EdgeInsets.only(right: screenWidth * 0.1), // Responsive padding
-                                child: Row(
-                                  children: [
-                                    Radio(
-                                      value: 'Start',
-                                      groupValue: cabMeterController.getSelectedValue('meter'),
-                                      onChanged: (value) {
-                                        cabMeterController.setRadioValue('meter', value);
-                                      },
-                                    ),
-                                    const Text('Start'),
-                                  ],
+                          Padding(
+                            padding: EdgeInsets.only(
+                                right: screenWidth * 0.1), // Responsive padding
+                            child: Row(
+                              children: [
+                                Radio(
+                                  value: 'Start',
+                                  groupValue: cabMeterController
+                                      .getSelectedValue('meter'),
+                                  onChanged: (value) {
+                                    cabMeterController.setRadioValue(
+                                        'meter', value);
+                                  },
+                                ),
+                                const Text('Start'),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: screenWidth *
+                                0.4, // Adjust width of CustomSizedBox
+                          ),
+                          // Make it so the user can also edit the tourId and school
+                          Padding(
+                            padding: EdgeInsets.only(
+                                right: screenWidth * 0.1), // Responsive padding
+                            child: Row(
+                              children: [
+                                Radio(
+                                  value: 'End',
+                                  groupValue: cabMeterController
+                                      .getSelectedValue('meter'),
+                                  onChanged: (value) {
+                                    cabMeterController.setRadioValue(
+                                        'meter', value);
+                                  },
+                                ),
+                                const Text('End'),
+                              ],
+                            ),
+                          ),
+                          if (cabMeterController.getRadioFieldError('meter'))
+                            const Padding(
+                              padding: EdgeInsets.only(left: 16.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Please select an option',
+                                  style: TextStyle(color: Colors.red),
                                 ),
                               ),
-                              SizedBox(
-                                width: screenWidth * 0.4, // Adjust width of CustomSizedBox
-                              ),
-                              // Make it so the user can also edit the tourId and school
-                              Padding(
-                                padding: EdgeInsets.only(right: screenWidth * 0.1), // Responsive padding
-                                child: Row(
-                                  children: [
-                                    Radio(
-                                      value: 'End',
-                                      groupValue: cabMeterController.getSelectedValue('meter'),
-                                      onChanged: (value) {
-                                        cabMeterController.setRadioValue('meter', value);
-                                      },
-                                    ),
-                                    const Text('End'),
-                                  ],
-                                ),
-                              ),
-                              if (cabMeterController.getRadioFieldError('meter'))
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Please select an option',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ),
+                            ),
                           CustomSizedBox(
                             value: 20,
                             side: 'height',
@@ -477,7 +473,6 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                 cabMeterController.remarksController,
                             labelText: 'Remarks Here',
                             maxlines: 2,
-
                           ),
                           CustomSizedBox(
                             value: 20,
@@ -503,25 +498,23 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                       imagePath)); // Convert image path to File
                                 }
                                 final selectController =
-                                Get.put(SelectController());
+                                    Get.put(SelectController());
                                 String? lockedTourId =
                                     selectController.lockedTourId;
 
                                 // Use lockedTourId if it is available, otherwise use the selected tour ID from schoolEnrolmentController
-                                String tourIdToInsert =
-                                    lockedTourId ??
-                                        cabMeterController
-                                            .tourValue ??
-                                        '';
+                                String tourIdToInsert = lockedTourId ??
+                                    cabMeterController.tourValue ??
+                                    '';
                                 // Generate a unique ID
                                 String generateUniqueId(int length) {
-                                  const _chars =
+                                  const chars =
                                       'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                  Random _rnd = Random();
+                                  Random rnd = Random();
                                   return String.fromCharCodes(Iterable.generate(
                                       length,
-                                      (_) => _chars.codeUnitAt(
-                                          _rnd.nextInt(_chars.length))));
+                                      (_) => chars.codeUnitAt(
+                                          rnd.nextInt(chars.length))));
                                 }
 
                                 String uniqueId = generateUniqueId(6);
@@ -557,7 +550,9 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                   created_at: formattedDate,
                                   uniqueId: uniqueId,
                                 );
-                                print("Office: ${widget.office ?? 'N/A'}");
+                                if (kDebugMode) {
+                                  print("Office: ${widget.office ?? 'N/A'}");
+                                }
 
                                 // Save data to local database
                                 int result = await LocalDbController().addData(
@@ -601,12 +596,16 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                     );
                                   }
 
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const HomeScreen(),
-                                    ),
-                                  );
+                                  if (context.mounted) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const HomeScreen(),
+                                      ),
+                                    );
+                                  }
+
                                   customSnackbar(
                                     'Submitted Successfully',
                                     'submitted',
@@ -624,7 +623,10 @@ class _CabMeterTracingFormState extends State<CabMeterTracingForm> {
                                   );
                                 }
                               }
-                              FocusScope.of(context).requestFocus(FocusNode());
+                              if (context.mounted) {
+                                FocusScope.of(context)
+                                    .requestFocus(FocusNode());
+                              }
                             },
                           )
                         ]);
@@ -651,12 +653,12 @@ class UpperCaseTextFormatter extends TextInputFormatter {
     );
   }
 }
+
 class JsonFileDownloader {
   // Method to download JSON data to the Downloads directory
   Future<String?> downloadJsonFile(
       String jsonData, String uniqueId, List<File> imageFiles) async {
     // Request storage permission
-
 
     Directory? downloadsDirectory;
 
@@ -695,8 +697,6 @@ class JsonFileDownloader {
       throw Exception('Could not find the download directory');
     }
   }
-
-
 
   // Method to get the correct directory for Android based on version
   Future<Directory?> _getAndroidDirectory() async {

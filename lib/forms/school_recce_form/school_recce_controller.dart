@@ -1,15 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 
 import 'package:app17000ft_new/forms/school_recce_form/school_recce_modal.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
 
@@ -187,67 +183,67 @@ class SchoolRecceController extends GetxController with BaseController {
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
   final List<XFile> _multipleImage2 = [];
   List<XFile> get multipleImage2 => _multipleImage2;
 
-  List<String> _imagePaths2 = [];
+  final List<String> _imagePaths2 = [];
   List<String> get imagePaths2 => _imagePaths2;
 
   final List<XFile> _multipleImage3 = [];
   List<XFile> get multipleImage3 => _multipleImage3;
 
-  List<String> _imagePaths3 = [];
+  final List<String> _imagePaths3 = [];
   List<String> get imagePaths3 => _imagePaths3;
 
   final List<XFile> _multipleImage4 = [];
   List<XFile> get multipleImage4 => _multipleImage4;
 
-  List<String> _imagePaths4 = [];
+  final List<String> _imagePaths4 = [];
   List<String> get imagePaths4 => _imagePaths4;
 
   final List<XFile> _multipleImage5 = [];
   List<XFile> get multipleImage5 => _multipleImage5;
 
-  List<String> _imagePaths5 = [];
+  final List<String> _imagePaths5 = [];
   List<String> get imagePaths5 => _imagePaths5;
 
   final List<XFile> _multipleImage6 = [];
   List<XFile> get multipleImage6 => _multipleImage6;
 
-  List<String> _imagePaths6 = [];
+  final List<String> _imagePaths6 = [];
   List<String> get imagePaths6 => _imagePaths6;
 
   final List<XFile> _multipleImage7 = [];
   List<XFile> get multipleImage7 => _multipleImage7;
 
-  List<String> _imagePaths7 = [];
+  final List<String> _imagePaths7 = [];
   List<String> get imagePaths7 => _imagePaths7;
 
   final List<XFile> _multipleImage8 = [];
   List<XFile> get multipleImage8 => _multipleImage8;
 
-  List<String> _imagePaths8 = [];
+  final List<String> _imagePaths8 = [];
   List<String> get imagePaths8 => _imagePaths8;
 
   final List<XFile> _multipleImage9 = [];
   List<XFile> get multipleImage9 => _multipleImage9;
 
-  List<String> _imagePaths9 = [];
+  final List<String> _imagePaths9 = [];
   List<String> get imagePaths9 => _imagePaths9;
 
   final List<XFile> _multipleImage10 = [];
   List<XFile> get multipleImage10 => _multipleImage10;
 
-  List<String> _imagePaths10 = [];
+  final List<String> _imagePaths10 = [];
   List<String> get imagePaths10 => _imagePaths10;
 
   final List<XFile> _multipleImage11 = [];
   List<XFile> get multipleImage11 => _multipleImage11;
 
-  List<String> _imagePaths11 = [];
+  final List<String> _imagePaths11 = [];
   List<String> get imagePaths11 => _imagePaths11;
 
   Future<String> takePhoto(ImageSource source, int index) async {

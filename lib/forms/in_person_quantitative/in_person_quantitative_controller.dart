@@ -1,17 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_sync.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
-import 'in_person_quantitative.dart';
 import 'in_person_quantitative_modal.dart';
 
 class InPersonQuantitativeController extends GetxController
@@ -168,12 +162,12 @@ class InPersonQuantitativeController extends GetxController
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
   final List<XFile> _multipleImage2 = [];
   List<XFile> get multipleImage2 => _multipleImage2;
-  List<String> _imagePaths2 = [];
+  final List<String> _imagePaths2 = [];
   List<String> get imagePaths2 => _imagePaths2;
 
   Future<String> takePhoto(ImageSource source, int index) async {

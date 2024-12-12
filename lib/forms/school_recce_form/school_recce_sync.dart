@@ -7,13 +7,11 @@ import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class SchoolRecceSync extends StatefulWidget {
   const SchoolRecceSync({super.key});
@@ -427,14 +425,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (buildingImg != null && buildingImg.isNotEmpty) {
@@ -450,14 +454,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (registerImg != null && registerImg.isNotEmpty) {
@@ -473,14 +483,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (smartClassImg != null && smartClassImg.isNotEmpty) {
@@ -496,14 +512,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (projectorImg != null && projectorImg.isNotEmpty) {
@@ -519,14 +541,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (computerImg != null && computerImg.isNotEmpty) {
@@ -542,14 +570,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (libImg != null && libImg.isNotEmpty) {
@@ -565,14 +599,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (spaceImg != null && spaceImg.isNotEmpty) {
@@ -588,14 +628,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (enrollmentImg != null && enrollmentImg.isNotEmpty) {
@@ -611,14 +657,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (DigiLabRoomImg != null && DigiLabRoomImg.isNotEmpty) {
@@ -634,14 +686,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
     if (libRoomImg != null && libRoomImg.isNotEmpty) {
@@ -657,14 +715,20 @@ Future insertSchoolRecce(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully.");
+          }
         } else {
-          print('Image file does not exist at the path: $path');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path');
+          }
           return {"status": 0, "message": "Image file not found at $path."};
         }
       }
     } else {
-      print('No image file path provided.');
+      if (kDebugMode) {
+        print('No image file path provided.');
+      }
     }
 
 
@@ -672,7 +736,9 @@ Future insertSchoolRecce(
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
 
-  print('Server Response Body: $responseBody');
+  if (kDebugMode) {
+    print('Server Response Body: $responseBody');
+  }
 
   if (response.statusCode == 200) {
     try {
@@ -684,7 +750,9 @@ Future insertSchoolRecce(
           table: 'schoolRecce',
           field: 'id',
         );
-        print("Record with id $id deleted from local database.");
+        if (kDebugMode) {
+          print("Record with id $id deleted from local database.");
+        }
 
         // Refresh data
         await Get.find<SchoolRecceController>().fetchData();
@@ -700,7 +768,9 @@ Future insertSchoolRecce(
 
         return parsedResponse;
       } else {
-        print('Error: ${parsedResponse['message']}');
+        if (kDebugMode) {
+          print('Error: ${parsedResponse['message']}');
+        }
         customSnackbar(
           "Error",
           "${parsedResponse['message']}",
@@ -711,11 +781,15 @@ Future insertSchoolRecce(
         return {"status": 0, "message": parsedResponse['message'] ?? 'Failed to insert data'};
       }
     } catch (e) {
-      print('Error parsing response: $e');
+      if (kDebugMode) {
+        print('Error parsing response: $e');
+      }
       return {"status": 0, "message": "Invalid response format"};
     }
   } else {
-    print('Server error: ${response.statusCode}');
+    if (kDebugMode) {
+      print('Server error: ${response.statusCode}');
+    }
     return {"status": 0, "message": "Server returned error $responseBody"};
   }
 }

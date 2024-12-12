@@ -17,7 +17,6 @@ import 'package:app17000ft_new/forms/school_recce_form/school_recce_modal.dart';
 import 'package:app17000ft_new/helper/responsive_helper.dart';
 import 'package:app17000ft_new/tourDetails/tour_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -101,7 +100,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.close),
+                            icon: const Icon(Icons.close),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],
@@ -109,7 +108,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                       if (!submittedData
                           .containsKey('Previous academic year')) ...[
                         CheckboxListTile(
-                          title: Text('Previous academic Year'),
+                          title: const Text('Previous academic Year'),
                           activeColor: Colors.green,
                           value: _previousAcademicYear,
                           onChanged: (bool? value) {
@@ -189,7 +188,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                         nonTeachingStaffControllers[index],
                                         staffTotalNotifiers[index],
                                       );
-                                    }).toList(),
+                                    }),
 
                                     // Grand Total Row
                                     TableRow(
@@ -273,7 +272,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                       if (!submittedData
                           .containsKey('Two years previously')) ...[
                         CheckboxListTile(
-                          title: Text('Two years previously'),
+                          title: const Text('Two years previously'),
                           activeColor: Colors.green,
                           value: _twoYearsPreviously,
                           onChanged: (bool? value) {
@@ -353,7 +352,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                         girlsControllers2[index],
                                         totalNotifiers2[index],
                                       );
-                                    }).toList(),
+                                    }),
 
                                     // Grand Total Row
                                     TableRow(
@@ -435,7 +434,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                       if (!submittedData
                           .containsKey('Three years previously')) ...[
                         CheckboxListTile(
-                          title: Text('Three years previously'),
+                          title: const Text('Three years previously'),
                           activeColor: Colors.green,
                           value: _threeYearsPreviously,
                           onChanged: (bool? value) {
@@ -515,7 +514,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                         girlsControllers3[index],
                                         totalNotifiers3[index],
                                       );
-                                    }).toList(),
+                                    }),
 
                                     // Grand Total Row
                                     TableRow(
@@ -1160,11 +1159,11 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
           return shouldExit ?? false;
         },
         child: Scaffold(
-            appBar: CustomAppbar(
+            appBar: const CustomAppbar(
               title: 'School Recce Form',
             ),
             body: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: SingleChildScrollView(
                     controller: _scrollController,
                     child: Column(children: [
@@ -1296,7 +1295,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                             items: schoolRecceController
                                                 .splitSchoolLists, // Show schools based on selected or locked tour ID
                                             dropdownDecoratorProps:
-                                                DropDownDecoratorProps(
+                                                const DropDownDecoratorProps(
                                               dropdownSearchDecoration:
                                                   InputDecoration(
                                                 labelText: "Select School",
@@ -1344,7 +1343,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     }
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -1370,13 +1369,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             'udiCode', value);
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError('udiCode'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -1463,16 +1462,16 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                 title: schoolRecceController
                                                             .isImageUploadedSchoolBoard ==
                                                         false
-                                                    ? Text(
+                                                    ? const Text(
                                                         'Click or Upload Image',
                                                       )
-                                                    : Text(
+                                                    : const Text(
                                                         'Click or Upload Image',
                                                         style: TextStyle(
                                                             color: AppColors
                                                                 .error),
                                                       ),
-                                                trailing: Icon(Icons.camera_alt,
+                                                trailing: const Icon(Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
                                                 onTap: () {
@@ -1520,7 +1519,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       schoolRecceController
                                                               .multipleImage
                                                               .isEmpty
-                                                          ? Center(
+                                                          ? const Center(
                                                               child: Text(
                                                                   'No images selected.'),
                                                             )
@@ -1541,7 +1540,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                     children: [
                                                                       Padding(
                                                                         padding:
-                                                                            EdgeInsets.all(8.0),
+                                                                            const EdgeInsets.all(8.0),
                                                                         child:
                                                                             GestureDetector(
                                                                           onTap:
@@ -1570,7 +1569,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           });
                                                                         },
                                                                         child:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           Icons
                                                                               .delete,
                                                                           color:
@@ -1583,7 +1582,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               },
                                                             ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1622,7 +1621,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -1685,7 +1684,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -1721,7 +1720,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -1733,7 +1732,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -1875,7 +1874,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           (_) {
                                                     _scrollController.animateTo(
                                                       0.0, // Scroll to the top
-                                                      duration: Duration(
+                                                      duration: const Duration(
                                                           milliseconds: 300),
                                                       curve: Curves.easeInOut,
                                                     );
@@ -1935,13 +1934,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                             side: 'height',
                                           ),
                                           DropdownButtonFormField<String>(
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               labelText: 'Select an option',
                                               border: OutlineInputBorder(),
                                             ),
                                             value: schoolRecceController
                                                 .selectedDesignation,
-                                            items: [
+                                            items: const [
                                               DropdownMenuItem(
                                                   value:
                                                       'HeadMaster/HeadMistress',
@@ -2055,7 +2054,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                           DropdownButtonFormField<String>(
                                             value: schoolRecceController
                                                 .selectedYear,
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               labelText: 'Select an option',
                                               border: OutlineInputBorder(),
                                             ),
@@ -2193,7 +2192,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -2256,7 +2255,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -2292,7 +2291,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -2304,7 +2303,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -2323,7 +2322,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           false;
                                                     });
                                                   }),
-                                              Spacer(),
+                                              const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -2350,7 +2349,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         _scrollController
                                                             .animateTo(
                                                           0.0, // Scroll to the top
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   300),
                                                           curve:
@@ -2451,13 +2450,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                             side: 'height',
                                           ),
                                           DropdownButtonFormField<String>(
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               labelText: 'Select an option',
                                               border: OutlineInputBorder(),
                                             ),
                                             value: schoolRecceController
                                                 .selectedQualification,
-                                            items: [
+                                            items: const [
                                               DropdownMenuItem(
                                                 value: 'Non Graduate',
                                                 child: Text('Non Graduate'),
@@ -2554,13 +2553,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                             side: 'height',
                                           ),
                                           DropdownButtonFormField<String>(
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               labelText: 'Select an option',
                                               border: OutlineInputBorder(),
                                             ),
                                             value: schoolRecceController
                                                 .selectedMeetings,
-                                            items: [
+                                            items: const [
                                               DropdownMenuItem(
                                                   value: 'Once a month',
                                                   child: Text('Once a month')),
@@ -2667,7 +2666,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           false;
                                                     });
                                                   }),
-                                              Spacer(),
+                                              const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -2686,7 +2685,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         _scrollController
                                                             .animateTo(
                                                           0.0, // Scroll to the top
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   300),
                                                           curve:
@@ -2777,7 +2776,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               value);
                                                     },
                                                   ),
-                                                  Text('Continuous'),
+                                                  const Text('Continuous'),
                                                 ],
                                               ),
                                               Row(
@@ -2795,10 +2794,10 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               value);
                                                     },
                                                   ),
-                                                  Text('Intermittent'),
+                                                  const Text('Intermittent'),
                                                 ],
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                   width:
                                                       16), // Adjust spacing between rows
                                               Row(
@@ -2816,13 +2815,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               value);
                                                     },
                                                   ),
-                                                  Text('No'),
+                                                  const Text('No'),
                                                 ],
                                               ),
                                               if (schoolRecceController
                                                   .getRadioFieldError(
                                                       'electricity'))
-                                                Padding(
+                                                const Padding(
                                                   padding: EdgeInsets.only(
                                                       left: 16.0),
                                                   child: Align(
@@ -2865,7 +2864,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             value);
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -2905,14 +2904,14 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     }
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError(
                                                   'networkConnectivity'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -2949,7 +2948,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       .checkboxValue16 = value!;
                                                 });
                                               },
-                                              title: Text('2G'),
+                                              title: const Text('2G'),
                                               activeColor: Colors.green,
                                             ),
                                             CheckboxListTile(
@@ -2961,7 +2960,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       .checkboxValue17 = value!;
                                                 });
                                               },
-                                              title: Text('3G'),
+                                              title: const Text('3G'),
                                               activeColor: Colors.green,
                                             ),
                                             CheckboxListTile(
@@ -2973,7 +2972,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       .checkboxValue18 = value!;
                                                 });
                                               },
-                                              title: Text('4G'),
+                                              title: const Text('4G'),
                                               activeColor: Colors.green,
                                             ),
                                             CheckboxListTile(
@@ -2985,12 +2984,12 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       .checkboxValue19 = value!;
                                                 });
                                               },
-                                              title: Text('5G'),
+                                              title: const Text('5G'),
                                               activeColor: Colors.green,
                                             ),
                                             if (schoolRecceController
                                                 .checkBoxError2)
-                                              Padding(
+                                              const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -3035,7 +3034,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             value);
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -3082,14 +3081,14 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     }
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError(
                                                   'learningFacility'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -3135,7 +3134,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                   }
                                                 });
                                               },
-                                              title: Text('Smart Class'),
+                                              title: const Text('Smart Class'),
                                               activeColor: Colors.green,
                                             ),
                                             CheckboxListTile(
@@ -3155,7 +3154,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                   }
                                                 });
                                               },
-                                              title: Text('Projector'),
+                                              title: const Text('Projector'),
                                               activeColor: Colors.green,
                                             ),
                                             CheckboxListTile(
@@ -3173,12 +3172,12 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                   }
                                                 });
                                               },
-                                              title: Text('Computer'),
+                                              title: const Text('Computer'),
                                               activeColor: Colors.green,
                                             ),
                                             if (schoolRecceController
                                                 .checkBoxError3)
-                                              Padding(
+                                              const Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 16.0),
                                                 child: Align(
@@ -3232,7 +3231,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing: Icon(Icons.camera_alt,
+                                                trailing: const Icon(Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
                                                 onTap: () {
@@ -3295,7 +3294,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             children: [
                                                               Padding(
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             8.0),
                                                                 child:
@@ -3332,7 +3331,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                             index);
                                                                   });
                                                                 },
-                                                                child: Icon(
+                                                                child: const Icon(
                                                                   Icons.delete,
                                                                   color: Colors
                                                                       .red,
@@ -3344,7 +3343,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       },
                                                     ),
                                                   )
-                                                : SizedBox(),
+                                                : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -3386,7 +3385,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing: Icon(Icons.camera_alt,
+                                                trailing: const Icon(Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
                                                 onTap: () {
@@ -3449,7 +3448,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             children: [
                                                               Padding(
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             8.0),
                                                                 child:
@@ -3486,7 +3485,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                             index);
                                                                   });
                                                                 },
-                                                                child: Icon(
+                                                                child: const Icon(
                                                                   Icons.delete,
                                                                   color: Colors
                                                                       .red,
@@ -3498,7 +3497,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       },
                                                     ),
                                                   )
-                                                : SizedBox(),
+                                                : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -3539,7 +3538,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing: Icon(Icons.camera_alt,
+                                                trailing: const Icon(Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
                                                 onTap: () {
@@ -3602,7 +3601,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             children: [
                                                               Padding(
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             8.0),
                                                                 child:
@@ -3639,7 +3638,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                             index);
                                                                   });
                                                                 },
-                                                                child: Icon(
+                                                                child: const Icon(
                                                                   Icons.delete,
                                                                   color: Colors
                                                                       .red,
@@ -3651,7 +3650,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       },
                                                     ),
                                                   )
-                                                : SizedBox(),
+                                                : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -3683,7 +3682,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             value);
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -3715,14 +3714,14 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     }
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError(
                                                   'existingLibrary'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -3775,7 +3774,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         : AppColors.error,
                                                   ),
                                                 ),
-                                                trailing: Icon(Icons.camera_alt,
+                                                trailing: const Icon(Icons.camera_alt,
                                                     color:
                                                         AppColors.onBackground),
                                                 onTap: () {
@@ -3838,7 +3837,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             children: [
                                                               Padding(
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             8.0),
                                                                 child:
@@ -3875,7 +3874,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                             index);
                                                                   });
                                                                 },
-                                                                child: Icon(
+                                                                child: const Icon(
                                                                   Icons.delete,
                                                                   color: Colors
                                                                       .red,
@@ -3887,7 +3886,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       },
                                                     ),
                                                   )
-                                                : SizedBox(),
+                                                : const SizedBox(),
                                             CustomSizedBox(
                                               value: 20,
                                               side: 'height',
@@ -3930,14 +3929,14 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                 value: 8,
                                                 side: 'width',
                                               ),
-                                              Text(
+                                              const Text(
                                                 'X',
                                                 style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(width: 8),
+                                              const SizedBox(width: 8),
                                               Expanded(
                                                 child: CustomTextFormField(
                                                   textController:
@@ -3963,7 +3962,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                 value: 8,
                                                 side: 'width',
                                               ),
-                                              Text(
+                                              const Text(
                                                 'feet',
                                                 style: TextStyle(
                                                     fontSize: 16,
@@ -4010,7 +4009,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -4073,7 +4072,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -4109,7 +4108,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -4121,7 +4120,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -4140,7 +4139,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           false;
                                                     });
                                                   }),
-                                              Spacer(),
+                                              const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -4304,7 +4303,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         _scrollController
                                                             .animateTo(
                                                           0.0, // Scroll to the top
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   300),
                                                           curve:
@@ -4428,7 +4427,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         girlsControllers[index],
                                                         totalNotifiers[index],
                                                       );
-                                                    }).toList(),
+                                                    }),
 
                                                     // Grand Total Row
                                                     TableRow(
@@ -4597,7 +4596,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -4660,7 +4659,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -4696,7 +4695,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -4708,7 +4707,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -4722,24 +4721,24 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                               CustomSizedBox(
                                                   value: 10, side: 'width'),
                                               IconButton(
-                                                icon: Icon(Icons.add),
+                                                icon: const Icon(Icons.add),
                                                 onPressed: () {
                                                   _showBottomSheet();
                                                 },
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: 16),
+                                          const SizedBox(height: 16),
                                           // Container to show the totals
 
-                                          SizedBox(height: 16),
+                                          const SizedBox(height: 16),
                                           // ListTile to show filled academic years
                                           Column(
                                             children: submittedData.isNotEmpty
                                                 ? submittedData.keys
                                                     .map((year) {
                                                     return Padding(
-                                                      padding: EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                           bottom: 12.0),
                                                       child: ListTile(
                                                         shape:
@@ -4751,17 +4750,17 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         ),
                                                         tileColor: Colors.white,
                                                         contentPadding:
-                                                            EdgeInsets
+                                                            const EdgeInsets
                                                                 .symmetric(
                                                                     horizontal:
                                                                         16.0),
-                                                        leading: Icon(
+                                                        leading: const Icon(
                                                           Icons.school,
                                                           color: Colors.green,
                                                         ),
                                                         title: Text(
                                                           '$year: Boys: ${submittedData[year]!['boys']}, Girls: ${submittedData[year]!['girls']}, Total: ${submittedData[year]!['total']}',
-                                                          style: TextStyle(
+                                                          style: const TextStyle(
                                                             fontSize:
                                                                 20.0, // Default font size (no MediaQuery)
                                                             fontWeight:
@@ -4769,7 +4768,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           ),
                                                         ),
                                                         trailing: IconButton(
-                                                          icon: Icon(
+                                                          icon: const Icon(
                                                               Icons.delete,
                                                               color:
                                                                   Colors.red),
@@ -4782,7 +4781,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     );
                                                   }).toList()
                                                 : [
-                                                    Padding(
+                                                    const Padding(
                                                       padding:
                                                           EdgeInsets.symmetric(
                                                               vertical: 16.0),
@@ -4838,7 +4837,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -4901,7 +4900,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -4937,7 +4936,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -4949,7 +4948,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -4988,7 +4987,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                       : AppColors.error,
                                                 ),
                                               ),
-                                              trailing: Icon(Icons.camera_alt,
+                                              trailing: const Icon(Icons.camera_alt,
                                                   color:
                                                       AppColors.onBackground),
                                               onTap: () {
@@ -5051,7 +5050,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           children: [
                                                             Padding(
                                                               padding:
-                                                                  EdgeInsets
+                                                                  const EdgeInsets
                                                                       .all(8.0),
                                                               child:
                                                                   GestureDetector(
@@ -5087,7 +5086,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                                           index);
                                                                 });
                                                               },
-                                                              child: Icon(
+                                                              child: const Icon(
                                                                 Icons.delete,
                                                                 color:
                                                                     Colors.red,
@@ -5099,7 +5098,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     },
                                                   ),
                                                 )
-                                              : SizedBox(),
+                                              : const SizedBox(),
                                           CustomSizedBox(
                                             value: 20,
                                             side: 'height',
@@ -5118,7 +5117,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           false;
                                                     });
                                                   }),
-                                              Spacer(),
+                                              const Spacer(),
                                               CustomButton(
                                                 title: 'Next',
                                                 onPressedButton: () {
@@ -5188,7 +5187,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           _scrollController
                                                               .animateTo(
                                                             0.0, // Scroll to the top
-                                                            duration: Duration(
+                                                            duration: const Duration(
                                                                 milliseconds:
                                                                     300),
                                                             curve: Curves
@@ -5241,7 +5240,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               'remote', value);
                                                     },
                                                   ),
-                                                  Text('Not Remote'),
+                                                  const Text('Not Remote'),
                                                 ],
                                               ),
                                               Row(
@@ -5258,7 +5257,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               'remote', value);
                                                     },
                                                   ),
-                                                  Text('Somewhat Remote'),
+                                                  const Text('Somewhat Remote'),
                                                 ],
                                               ),
                                               Row(
@@ -5275,7 +5274,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               'remote', value);
                                                     },
                                                   ),
-                                                  Text('Remote'),
+                                                  const Text('Remote'),
                                                 ],
                                               ),
                                               Row(
@@ -5292,10 +5291,10 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               'remote', value);
                                                     },
                                                   ),
-                                                  Text('Very Remote'),
+                                                  const Text('Very Remote'),
                                                 ],
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                   width:
                                                       16), // Adjust spacing between rows
                                               Row(
@@ -5312,12 +5311,12 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                               'remote', value);
                                                     },
                                                   ),
-                                                  Text('Extremely Remote'),
+                                                  const Text('Extremely Remote'),
                                                 ],
                                               ),
                                               if (schoolRecceController
                                                   .getRadioFieldError('remote'))
-                                                Padding(
+                                                const Padding(
                                                   padding: EdgeInsets.only(
                                                       left: 16.0),
                                                   child: Align(
@@ -5360,7 +5359,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             'motorable', value);
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -5386,13 +5385,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             'motorable', value);
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError('motorable'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -5426,7 +5425,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     .checkboxValue23 = value!;
                                               });
                                             },
-                                            title: Text('Hindi'),
+                                            title: const Text('Hindi'),
                                             activeColor: Colors.green,
                                           ),
                                           CheckboxListTile(
@@ -5438,7 +5437,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     .checkboxValue24 = value!;
                                               });
                                             },
-                                            title: Text('English'),
+                                            title: const Text('English'),
                                             activeColor: Colors.green,
                                           ),
                                           CheckboxListTile(
@@ -5456,13 +5455,13 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                 }
                                               });
                                             },
-                                            title: Text('Other'),
+                                            title: const Text('Other'),
                                             activeColor: Colors.green,
                                           ),
 
                                           if (schoolRecceController
                                               .checkBoxError4)
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -5534,7 +5533,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             value);
                                                   },
                                                 ),
-                                                Text('Yes'),
+                                                const Text('Yes'),
                                               ],
                                             ),
                                           ),
@@ -5566,14 +5565,14 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                     }
                                                   },
                                                 ),
-                                                Text('No'),
+                                                const Text('No'),
                                               ],
                                             ),
                                           ),
                                           if (schoolRecceController
                                               .getRadioFieldError(
                                                   'supportingNgo'))
-                                            Padding(
+                                            const Padding(
                                               padding:
                                                   EdgeInsets.only(left: 16.0),
                                               child: Align(
@@ -5661,7 +5660,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                           false;
                                                     });
                                                   }),
-                                              Spacer(),
+                                              const Spacer(),
                                               CustomButton(
                                                 title: 'Submit',
                                                 onPressedButton: () async {
@@ -5707,17 +5706,20 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         selectedLanguage = [];
 
                                                     if (schoolRecceController
-                                                        .checkboxValue23)
+                                                        .checkboxValue23) {
                                                       selectedLanguage
                                                           .add('Hindi');
+                                                    }
                                                     if (schoolRecceController
-                                                        .checkboxValue24)
+                                                        .checkboxValue24) {
                                                       selectedLanguage
                                                           .add('English');
+                                                    }
                                                     if (schoolRecceController
-                                                        .checkboxValue25)
+                                                        .checkboxValue25) {
                                                       selectedLanguage
                                                           .add('Other');
+                                                    }
 
                                                     return selectedLanguage.join(
                                                         ','); // Return a comma-separated string
@@ -5997,16 +5999,16 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                             .join(',');
                                                     String generateUniqueId(
                                                         int length) {
-                                                      const _chars =
+                                                      const chars =
                                                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                      Random _rnd = Random();
+                                                      Random rnd = Random();
                                                       return String.fromCharCodes(
                                                           Iterable.generate(
                                                               length,
-                                                              (_) => _chars
-                                                                  .codeUnitAt(_rnd
+                                                              (_) => chars
+                                                                  .codeUnitAt(rnd
                                                                       .nextInt(
-                                                                          _chars
+                                                                          chars
                                                                               .length))));
                                                     }
 
@@ -6281,7 +6283,7 @@ class _SchoolRecceFormState extends State<SchoolRecceForm> {
                                                         context,
                                                         MaterialPageRoute(
                                                             builder: (context) =>
-                                                                HomeScreen()),
+                                                                 const HomeScreen()),
                                                       );
                                                     } else {
                                                       customSnackbar(

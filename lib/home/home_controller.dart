@@ -77,7 +77,8 @@ class HomeController extends GetxController {
 
           _offlineTaskList.clear(); // Clear list to avoid duplication
           final offlineTask = user['offlineTask'] as String? ?? '';
-          _offlineTaskList.addAll(offlineTask.isNotEmpty ? offlineTask.split(',') : []);
+          _offlineTaskList
+              .addAll(offlineTask.isNotEmpty ? offlineTask.split(',') : []);
 
           _onlineTourList = await ApiService().fetchTourIds(_office);
           if (kDebugMode) {

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http; // Import the http package
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -10,7 +11,6 @@ import 'package:app17000ft_new/constants/color_const.dart';
 
 import 'package:app17000ft_new/helper/database_helper.dart';
 
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -21,7 +21,6 @@ import 'package:app17000ft_new/forms/issue_tracker/lib_issue_modal.dart';
 
 import 'package:app17000ft_new/forms/issue_tracker/playground_issue.dart';
 
-import 'package:flutter/cupertino.dart';
 
 import '../../home/home_controller.dart';
 import 'alexa_issue.dart';
@@ -36,10 +35,7 @@ class IssueTrackerController extends GetxController with BaseController {
 
   String? _schoolValue;
   String? get schoolValue => _schoolValue;
-  String? _office;
-
-  String? get office => _office; // Getter for office
-  set office(String? value) => _office = value; // Setter for office
+  String? office; // Setter for office
   bool isLoading = false;
 
   final TextEditingController correctUdiseCodeController =
@@ -224,36 +220,36 @@ class IssueTrackerController extends GetxController with BaseController {
   List<AlexaIssue> _alexaIssueList = [];
   List<AlexaIssue> get alexaIssueList => _alexaIssueList;
 
-  List<String> _staffNames = [];
+  final List<String> _staffNames = [];
   List<String> get staffNames => _staffNames;
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
   final List<XFile> _multipleImage2 = [];
   List<XFile> get multipleImage2 => _multipleImage2;
 
-  List<String> _imagePaths2 = [];
+  final List<String> _imagePaths2 = [];
   List<String> get imagePaths2 => _imagePaths2;
 
   final List<XFile> _multipleImage3 = [];
   List<XFile> get multipleImage3 => _multipleImage3;
 
-  List<String> _imagePaths3 = [];
+  final List<String> _imagePaths3 = [];
   List<String> get imagePaths3 => _imagePaths3;
 
   final List<XFile> _multipleImage4 = [];
   List<XFile> get multipleImage4 => _multipleImage4;
 
-  List<String> _imagePaths4 = [];
+  final List<String> _imagePaths4 = [];
   List<String> get imagePaths4 => _imagePaths4;
 
   final List<XFile> _multipleImage5 = [];
   List<XFile> get multipleImage5 => _multipleImage5;
 
-  List<String> _imagePaths5 = [];
+  final List<String> _imagePaths5 = [];
   List<String> get imagePaths5 => _imagePaths5;
 
   final List<XFile> _multipleImage6 = [];
@@ -265,8 +261,9 @@ class IssueTrackerController extends GetxController with BaseController {
     final img.Image? originalImage =
         img.decodeImage(imageFile.readAsBytesSync());
 
-    if (originalImage == null)
+    if (originalImage == null) {
       return imagePath; // Return original path if decoding fails
+    }
 
     // Resize the image (optional) and compress
     final img.Image resizedImage =
@@ -878,13 +875,17 @@ class IssueTrackerController extends GetxController with BaseController {
       _isLoading1 = false;
       update(); // Notify listeners
     } catch (e) {
-      print('Error loading staff names from SQLite: $e');
+      if (kDebugMode) {
+        print('Error loading staff names from SQLite: $e');
+      }
       _isLoading1 = false;
       update(); // Notify listeners
     }
   }
   Future<void> clearStaffNameOnLogout() async {
-    print('Clearing staff details of issue tracker  on logout...');
+    if (kDebugMode) {
+      print('Clearing staff details of issue tracker  on logout...');
+    }
     try {
       await SqfliteDatabaseHelper().delete('formDataTable');  // Clear from local DB
       _filteredStaffNames.clear();
@@ -892,9 +893,13 @@ class IssueTrackerController extends GetxController with BaseController {
       _filteredStaffNames3.clear();
       _filteredStaffNames4.clear();
       _filteredStaffNames5.clear();
-      print('staff details cleared.');
+      if (kDebugMode) {
+        print('staff details cleared.');
+      }
     } catch (e) {
-      print('Error clearing staff details of issue tracker  on logout: $e');
+      if (kDebugMode) {
+        print('Error clearing staff details of issue tracker  on logout: $e');
+      }
     }
   }
 

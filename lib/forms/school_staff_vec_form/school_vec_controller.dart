@@ -1,17 +1,9 @@
 
-import 'dart:io';
-
-import 'package:app17000ft_new/constants/color_const.dart';
-
-import 'package:app17000ft_new/forms/school_facilities_&_mapping_form/school_facilities_modals.dart';
 import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_modals.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-
 import '../../base_client/baseClient_controller.dart';
-
 
 class SchoolStaffVecController extends GetxController with BaseController {
   var counterText = ''.obs;

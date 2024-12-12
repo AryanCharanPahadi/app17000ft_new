@@ -23,10 +23,7 @@ class _GradeEnrollmentScreenState extends State<GradeEnrollmentScreen> {
   final List<bool> isSelected =
       List.generate(10, (index) => false); // 10 grades
   final List<String> grades = [
-    'Nursery',
-    'L.K.G',
-    'U.K.G',
-    for (int i = 1; i <= 12; i++) '${i}th',
+
   ]; // Dynamically populated selected grades
 
   @override

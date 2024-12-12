@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:app17000ft_new/forms/edit_form/edit%20controller.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart'; // For a safer directory path handling
 import 'package:app17000ft_new/components/custom_appBar.dart';
@@ -19,7 +19,6 @@ import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/helper/responsive_helper.dart';
 import 'package:app17000ft_new/tourDetails/tour_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -112,8 +111,12 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
   @override
   void initState() {
     super.initState();
-    print('Office init ${widget.office}');
-    print('UserId init ${widget.userid}');
+    if (kDebugMode) {
+      print('Office init ${widget.office}');
+    }
+    if (kDebugMode) {
+      print('UserId init ${widget.userid}');
+    }
 
     _initializeController();
     _setupControllers();
@@ -151,7 +154,9 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
     final schoolEnrolmentController = Get.find<SchoolEnrolmentController>();
 
     if (widget.existingRecord == null) {
-      print("No existing record found.");
+      if (kDebugMode) {
+        print("No existing record found.");
+      }
       return;
     }
 
@@ -166,7 +171,9 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
 
   void _parseEnrolmentData(String? enrolmentDataString) {
     if (enrolmentDataString == null || enrolmentDataString.isEmpty) {
-      print("Enrolment data string is null or empty.");
+      if (kDebugMode) {
+        print("Enrolment data string is null or empty.");
+      }
       return;
     }
 
@@ -176,7 +183,9 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
       final parsedData =
           jsonDecode(correctedJsonString) as Map<String, dynamic>;
 
-      print("Corrected Parsed Data: $parsedData");
+      if (kDebugMode) {
+        print("Corrected Parsed Data: $parsedData");
+      }
 
       // Populate controllers with parsed data for each grade
       for (int i = 0; i < grades.length; i++) {
@@ -188,12 +197,16 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
               parsedData[grade]?['girls']?.toString() ?? '0';
           updateTotal(i); // Update total for each grade
         } else {
-          print("Grade '$grade' not found in parsed data.");
+          if (kDebugMode) {
+            print("Grade '$grade' not found in parsed data.");
+          }
         }
       }
       updateGrandTotal(); // Update grand total after loading data
     } catch (e) {
-      print("Error parsing corrected JSON: $e");
+      if (kDebugMode) {
+        print("Error parsing corrected JSON: $e");
+      }
     }
   }
 
@@ -257,113 +270,6 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
     // Call the parent class dispose
     super.dispose();
     debugPrint("Super.dispose() called successfully");
-  }
-
-  TableRow tableRowMethod(String classname, TextEditingController boyController,
-      TextEditingController girlController, ValueNotifier<int> totalNotifier) {
-    return TableRow(
-      children: [
-        // Classname
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              double fontSize = constraints.maxWidth < 600 ? 14 : 18;
-              return Center(
-                child: Text(
-                  classname,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-
-        // Boy Count Input
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return TextFormField(
-                  controller: boyController,
-                  decoration: const InputDecoration(border: InputBorder.none),
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly, // Allow only digits
-                    LengthLimitingTextInputFormatter(3), // Limit to 3 digits
-                  ],
-                  onChanged: (value) {
-                    // Update total and notify listeners
-                    setState(() {
-                      int boysCount = int.tryParse(boyController.text) ?? 0;
-                      int girlsCount = int.tryParse(girlController.text) ?? 0;
-                      totalNotifier.value = boysCount + girlsCount;
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ),
-
-        // Girl Count Input
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                return TextFormField(
-                  controller: girlController,
-                  decoration: const InputDecoration(border: InputBorder.none),
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly, // Allow only digits
-                    LengthLimitingTextInputFormatter(3), // Limit to 3 digits
-                  ],
-                  onChanged: (value) {
-                    // Update total and notify listeners
-                    setState(() {
-                      int boysCount = int.tryParse(boyController.text) ?? 0;
-                      int girlsCount = int.tryParse(girlController.text) ?? 0;
-                      totalNotifier.value = boysCount + girlsCount;
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-        ),
-
-        // Total
-        TableCell(
-          verticalAlignment: TableCellVerticalAlignment.middle,
-          child: ValueListenableBuilder<int>(
-            valueListenable: totalNotifier,
-            builder: (context, total, child) {
-              double fontSize =
-                  MediaQuery.of(context).size.width < 600 ? 14 : 18;
-              return Center(
-                child: Text(
-                  total.toString(),
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -685,386 +591,231 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                     ),
 
                                     // const MyTable(),
-                                    Container(
-                                      child: LayoutBuilder(
-                                        builder: (context, constraints) {
-                                          double fontSize =
-                                              constraints.maxWidth < 600
-                                                  ? 12
-                                                  : 16;
-                                          double tableWidth = constraints
-                                                      .maxWidth <
-                                                  600
-                                              ? constraints.maxWidth *
-                                                  1.2 // Slight horizontal scroll on small screens
-                                              : constraints.maxWidth *
-                                                  0.95; // Wider table with padding on larger screens
-
-                                          double columnSpacing = constraints
-                                                      .maxWidth <
-                                                  600
-                                              ? constraints.maxWidth *
-                                                  0.02 // Smaller spacing on small screens
-                                              : constraints.maxWidth *
-                                                  0.05; // Larger spacing on wider screens
-
-                                          return SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Container(
-                                              width:
-                                                  tableWidth, // Responsive table width
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color: Colors.black,
-                                                  width: 1.5,
-                                                ), // Outer border of the table
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              child: DataTable(
-                                                columnSpacing:
-                                                    columnSpacing, // Responsive column spacing
-                                                headingRowHeight:
-                                                    50, // Fixed height for the header row
-                                                dataRowHeight:
-                                                    40, // Fixed height for data rows
-                                                border: TableBorder.all(
-                                                  color: Colors
-                                                      .black, // Border for each cell
-                                                  width: 0.2,
+                                    Table(
+                                      border: TableBorder.all(
+                                          color: Colors.black, width: 0),
+                                      columnWidths: const {
+                                        0: FlexColumnWidth(2),
+                                        1: FlexColumnWidth(1),
+                                        2: FlexColumnWidth(1),
+                                        3: FlexColumnWidth(1),
+                                      },
+                                      children: [
+                                        // Header Row
+                                        TableRow(
+                                          decoration: BoxDecoration(
+                                              color: Colors.grey.shade300),
+                                          children: const [
+                                            TableCell(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text('Grade',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
                                                 ),
-                                                columns: [
-                                                  DataColumn(
-                                                    label: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left:
-                                                              100.0), // Adjust the left padding
-                                                      child: Text(
-                                                        'Grade',
-                                                        style: TextStyle(
-                                                            fontSize: fontSize),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 100.0),
-                                                      child: Text(
-                                                        'Boys',
-                                                        style: TextStyle(
-                                                            fontSize: fontSize),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 100.0),
-                                                      child: Text(
-                                                        'Girls',
-                                                        style: TextStyle(
-                                                            fontSize: fontSize),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          left: 100.0),
-                                                      child: Text(
-                                                        'Total',
-                                                        style: TextStyle(
-                                                            fontSize: fontSize),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-
-                                                rows: [
-                                                  ...List.generate(
-                                                      grades.length, (index) {
-                                                    return DataRow(
-                                                      cells: [
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .center, // Center the cell content
-                                                            child: Text(
-                                                              grades[index],
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      fontSize),
-                                                              textAlign: TextAlign
-                                                                  .center, // Center text
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .center, // Center the cell content
-                                                            child: TextField(
-                                                              controller:
-                                                                  boysControllers[
-                                                                      index],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              inputFormatters: <TextInputFormatter>[
-                                                                FilteringTextInputFormatter
-                                                                    .digitsOnly, // Allow only digits
-                                                                LengthLimitingTextInputFormatter(
-                                                                    3), // Limit to 3 digits
-                                                              ],
-                                                              decoration:
-                                                                  const InputDecoration(
-                                                                border:
-                                                                    InputBorder
-                                                                        .none,
-                                                              ),
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      fontSize),
-                                                              textAlign: TextAlign
-                                                                  .center, // Center text
-                                                              onChanged:
-                                                                  (value) {
-                                                                int boys =
-                                                                    int.tryParse(
-                                                                            value) ??
-                                                                        0;
-                                                                int girls =
-                                                                    int.tryParse(
-                                                                            girlsControllers[index].text) ??
-                                                                        0;
-                                                                totalNotifiers[
-                                                                            index]
-                                                                        .value =
-                                                                    boys +
-                                                                        girls;
-                                                                grandTotalBoys
-                                                                        .value =
-                                                                    boysControllers
-                                                                        .map((controller) =>
-                                                                            int.tryParse(controller.text) ??
-                                                                            0)
-                                                                        .reduce((a,
-                                                                                b) =>
-                                                                            a +
-                                                                            b);
-                                                                grandTotal
-                                                                    .value = grandTotalBoys
-                                                                        .value +
-                                                                    grandTotalGirls
-                                                                        .value;
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .center, // Center the cell content
-                                                            child: TextField(
-                                                              controller:
-                                                                  girlsControllers[
-                                                                      index],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              inputFormatters: <TextInputFormatter>[
-                                                                FilteringTextInputFormatter
-                                                                    .digitsOnly, // Allow only digits
-                                                                LengthLimitingTextInputFormatter(
-                                                                    3), // Limit to 3 digits
-                                                              ],
-                                                              decoration:
-                                                                  const InputDecoration(
-                                                                border:
-                                                                    InputBorder
-                                                                        .none,
-                                                              ),
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      fontSize),
-                                                              textAlign: TextAlign
-                                                                  .center, // Center text
-                                                              onChanged:
-                                                                  (value) {
-                                                                int girls =
-                                                                    int.tryParse(
-                                                                            value) ??
-                                                                        0;
-                                                                int boys = int.tryParse(
-                                                                        boysControllers[index]
-                                                                            .text) ??
-                                                                    0;
-                                                                totalNotifiers[
-                                                                            index]
-                                                                        .value =
-                                                                    boys +
-                                                                        girls;
-                                                                grandTotalGirls
-                                                                        .value =
-                                                                    girlsControllers
-                                                                        .map((controller) =>
-                                                                            int.tryParse(controller.text) ??
-                                                                            0)
-                                                                        .reduce((a,
-                                                                                b) =>
-                                                                            a +
-                                                                            b);
-                                                                grandTotal
-                                                                    .value = grandTotalBoys
-                                                                        .value +
-                                                                    grandTotalGirls
-                                                                        .value;
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        DataCell(
-                                                          Align(
-                                                            alignment: Alignment
-                                                                .center, // Center the cell content
-                                                            child:
-                                                                ValueListenableBuilder<
-                                                                    int>(
-                                                              valueListenable:
-                                                                  totalNotifiers[
-                                                                      index],
-                                                              builder: (context,
-                                                                  value,
-                                                                  child) {
-                                                                return Text(
-                                                                  value
-                                                                      .toString(),
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          fontSize),
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center, // Center text
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }),
-                                                  DataRow(
-                                                    cells: [
-                                                      DataCell(
-                                                        Align(
-                                                          alignment: Alignment
-                                                              .center, // Center the cell content
-                                                          child: Text(
-                                                            'Grand Total',
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                    fontSize,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                            textAlign: TextAlign
-                                                                .center, // Center text
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Align(
-                                                          alignment: Alignment
-                                                              .center, // Center the cell content
-                                                          child:
-                                                              ValueListenableBuilder<
-                                                                  int>(
-                                                            valueListenable:
-                                                                grandTotalBoys,
-                                                            builder: (context,
-                                                                boysSum,
-                                                                child) {
-                                                              return Text(
-                                                                boysSum
-                                                                    .toString(),
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontSize,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                                textAlign: TextAlign
-                                                                    .center, // Center text
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Align(
-                                                          alignment: Alignment
-                                                              .center, // Center the cell content
-                                                          child:
-                                                              ValueListenableBuilder<
-                                                                  int>(
-                                                            valueListenable:
-                                                                grandTotalGirls,
-                                                            builder: (context,
-                                                                girlsSum,
-                                                                child) {
-                                                              return Text(
-                                                                girlsSum
-                                                                    .toString(),
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontSize,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                                textAlign: TextAlign
-                                                                    .center, // Center text
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Align(
-                                                          alignment: Alignment
-                                                              .center, // Center the cell content
-                                                          child:
-                                                              ValueListenableBuilder<
-                                                                  int>(
-                                                            valueListenable:
-                                                                grandTotal,
-                                                            builder: (context,
-                                                                totalSum,
-                                                                child) {
-                                                              return Text(
-                                                                totalSum
-                                                                    .toString(),
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        fontSize,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                                textAlign: TextAlign
-                                                                    .center, // Center text
-                                                              );
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
                                               ),
                                             ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text('Boys',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text('Girls',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text('Total',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        // Data Rows
+                                        ...List.generate(grades.length,
+                                            (index) {
+                                          return TableRow(
+                                            children: [
+                                              TableCell(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Center(
+                                                      child: Text(grades[index],
+                                                          textAlign: TextAlign
+                                                              .center)),
+                                                ),
+                                              ),
+                                              TableCell(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Center(
+                                                    child: TextField(
+                                                      controller:
+                                                          boysControllers[
+                                                              index],
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      maxLength: 3,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      onChanged: (value) =>
+                                                          updateTotal(index),
+                                                      decoration:
+                                                          const InputDecoration(
+                                                        counterText: '',
+                                                        border:
+                                                            InputBorder.none,
+                                                        isDense: true,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              TableCell(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Center(
+                                                    child: TextField(
+                                                      controller:
+                                                          girlsControllers[
+                                                              index],
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      maxLength: 3,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      onChanged: (value) =>
+                                                          updateTotal(index),
+                                                      decoration:
+                                                          const InputDecoration(
+                                                        counterText: '',
+                                                        border:
+                                                            InputBorder.none,
+                                                        isDense: true,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              TableCell(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Center(
+                                                    child:
+                                                        ValueListenableBuilder<
+                                                            int>(
+                                                      valueListenable:
+                                                          totalNotifiers[index],
+                                                      builder: (context, value,
+                                                              _) =>
+                                                          Text(value.toString(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           );
-                                        },
-                                      ),
+                                        }),
+                                        // Grand Total Row
+                                        TableRow(
+                                          decoration: BoxDecoration(
+                                              color: Colors.grey.shade200),
+                                          children: [
+                                            const TableCell(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: Text('Grand Total',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: ValueListenableBuilder<
+                                                      int>(
+                                                    valueListenable:
+                                                        grandTotalBoys,
+                                                    builder: (context, value,
+                                                            _) =>
+                                                        Text(value.toString(),
+                                                            textAlign: TextAlign
+                                                                .center),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: ValueListenableBuilder<
+                                                      int>(
+                                                    valueListenable:
+                                                        grandTotalGirls,
+                                                    builder: (context, value,
+                                                            _) =>
+                                                        Text(value.toString(),
+                                                            textAlign: TextAlign
+                                                                .center),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Center(
+                                                  child: ValueListenableBuilder<
+                                                      int>(
+                                                    valueListenable: grandTotal,
+                                                    builder: (context, value,
+                                                            _) =>
+                                                        Text(value.toString(),
+                                                            textAlign: TextAlign
+                                                                .center),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
 
                                     CustomSizedBox(side: 'height', value: 20),
@@ -1132,15 +883,15 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                                 imagePath)); // Convert image path to File
                                           }
                                           String generateUniqueId(int length) {
-                                            const _chars =
+                                            const chars =
                                                 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                            Random _rnd = Random();
+                                            Random rnd = Random();
                                             return String.fromCharCodes(
                                                 Iterable.generate(
                                                     length,
-                                                    (_) => _chars.codeUnitAt(
-                                                        _rnd.nextInt(
-                                                            _chars.length))));
+                                                    (_) => chars.codeUnitAt(
+                                                        rnd.nextInt(
+                                                            chars.length))));
                                           }
 
                                           String uniqueId = generateUniqueId(6);
@@ -1248,7 +999,9 @@ class _SchoolEnrollmentFormState extends State<SchoolEnrollmentForm> {
                                                 AppColors.onPrimary,
                                                 Icons.error,
                                               );
-                                              print(e);
+                                              if (kDebugMode) {
+                                                print(e);
+                                              }
                                             }
                                             customSnackbar(
                                               'Submitted Successfully',

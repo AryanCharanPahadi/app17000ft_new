@@ -1,17 +1,13 @@
 
 import 'dart:io';
-import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_model.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../base_client/baseClient_controller.dart';
-import '../../home/home_controller.dart';
 class SchoolEnrolmentController extends GetxController with BaseController{
 
   String? _tourValue;
@@ -36,7 +32,7 @@ class SchoolEnrolmentController extends GetxController with BaseController{
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
 
@@ -92,10 +88,6 @@ class SchoolEnrolmentController extends GetxController with BaseController{
 
 
   Widget bottomSheet(BuildContext context) {
-    String? imagePicked;
-    PickedFile? imageFile;
-    final ImagePicker picker = ImagePicker();
-    XFile? image;
     return Container(
       color: AppColors.primary,
       height: 100,
@@ -120,7 +112,6 @@ class SchoolEnrolmentController extends GetxController with BaseController{
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  imagePicked = await takePhoto(ImageSource.camera);
 
                   // uploadFile(userdata.read('customerID'));
                   Get.back();
@@ -138,9 +129,6 @@ class SchoolEnrolmentController extends GetxController with BaseController{
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () async {
-                  imagePicked = await takePhoto(
-                    ImageSource.gallery,
-                  );
 
                   Get.back();
                   //  update();

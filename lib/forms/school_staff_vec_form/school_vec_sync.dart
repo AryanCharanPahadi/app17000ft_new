@@ -1,18 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:app17000ft_new/forms/school_staff_vec_form/school_vec_controller.dart';
-import 'package:http_parser/http_parser.dart'; // for MediaType
 import 'package:app17000ft_new/components/custom_appBar.dart';
 import 'package:app17000ft_new/components/custom_dialog.dart';
 import 'package:app17000ft_new/components/custom_snackbar.dart';
 import 'package:app17000ft_new/constants/color_const.dart';
-import 'package:app17000ft_new/forms/school_enrolment/school_enrolment_controller.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:app17000ft_new/services/network_manager.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class SchoolStaffVecSync extends StatefulWidget {
   const SchoolStaffVecSync({super.key});
@@ -241,33 +237,34 @@ Future insertSchoolStaffVec(
     int? id,
     Function(double) updateProgress, // Progress callback
     ) async {
-  print('This is enrolment data:');
-  print('tourId: $tourId');
-  print('school: $school');
-  print('udiseValue: $udiseValue');
-  print('correctUdise: $correctUdise');
-  print('headName: $headName');
-  print('headGender: $headGender');
-  print('headMobile: $headMobile');
-  print('headEmail: $headEmail');
-  print('headDesignation: $headDesignation');
-  print('totalTeachingStaff: $totalTeachingStaff');
-  print('totalNonTeachingStaff: $totalNonTeachingStaff');
-  print('totalStaff: $totalStaff');
-  print('SmcVecName: $SmcVecName');
-  print('genderVec: $genderVec');
-  print('vecMobile: $vecMobile');
-  print('vecEmail: $vecEmail');
-  print('vecQualification: $vecQualification');
-  print('vecTotal: $vecTotal');
-  print('meetingDuration: $meetingDuration');
-  print('createdBy: $createdBy');
-  print('createdAt: $createdAt');
-  print('other: $other');
-  print('otherQual: $otherQual');
-  print('Office Sync: $office');
-  print('id: $id');
-
+  if(kDebugMode) {
+    print('This is enrolment data:');
+    print('tourId: $tourId');
+    print('school: $school');
+    print('udiseValue: $udiseValue');
+    print('correctUdise: $correctUdise');
+    print('headName: $headName');
+    print('headGender: $headGender');
+    print('headMobile: $headMobile');
+    print('headEmail: $headEmail');
+    print('headDesignation: $headDesignation');
+    print('totalTeachingStaff: $totalTeachingStaff');
+    print('totalNonTeachingStaff: $totalNonTeachingStaff');
+    print('totalStaff: $totalStaff');
+    print('SmcVecName: $SmcVecName');
+    print('genderVec: $genderVec');
+    print('vecMobile: $vecMobile');
+    print('vecEmail: $vecEmail');
+    print('vecQualification: $vecQualification');
+    print('vecTotal: $vecTotal');
+    print('meetingDuration: $meetingDuration');
+    print('createdBy: $createdBy');
+    print('createdAt: $createdAt');
+    print('other: $other');
+    print('otherQual: $otherQual');
+    print('Office Sync: $office');
+    print('id: $id');
+  }
   var request = http.MultipartRequest(
     'POST',
     Uri.parse(baseurl),
@@ -310,7 +307,9 @@ Future insertSchoolStaffVec(
   var response = await request.send();
   var responseBody = await response.stream.bytesToString();
 
-  print('Server Response Body: $responseBody');
+  if (kDebugMode) {
+    print('Server Response Body: $responseBody');
+  }
 
   if (response.statusCode == 200) {
     try {
@@ -322,7 +321,9 @@ Future insertSchoolStaffVec(
           table: 'schoolStaffVec',
           field: 'id',
         );
-        print("Record with id $id deleted from local database.");
+        if (kDebugMode) {
+          print("Record with id $id deleted from local database.");
+        }
 
         // Refresh data
         await Get.find<SchoolStaffVecController>().fetchData();
@@ -338,7 +339,9 @@ Future insertSchoolStaffVec(
 
         return parsedResponse;
       } else {
-        print('Error: ${parsedResponse['message']}');
+        if (kDebugMode) {
+          print('Error: ${parsedResponse['message']}');
+        }
         customSnackbar(
           "Error",
           "${parsedResponse['message']}",
@@ -349,11 +352,15 @@ Future insertSchoolStaffVec(
         return {"status": 0, "message": parsedResponse['message'] ?? 'Failed to insert data'};
       }
     } catch (e) {
-      print('Error parsing response: $e');
+      if (kDebugMode) {
+        print('Error parsing response: $e');
+      }
       return {"status": 0, "message": "Invalid response format"};
     }
   } else {
-    print('Server error: ${response.statusCode}');
+    if (kDebugMode) {
+      print('Server error: ${response.statusCode}');
+    }
     return {"status": 0, "message": "Server returned error $responseBody"};
   }
 }

@@ -338,11 +338,11 @@ Future<Map<String, dynamic>> insertAlfaObservation(
     'numeracyValue': numeracyValue ?? '',
     'pairValue': pairValue ?? '',
     'alfaActivityValue': alfaActivityValue ?? '',
-    'alfaGradeReport': alfaGradeReportJsonData ?? '',
+    'alfaGradeReport': alfaGradeReportJsonData.isEmpty ? 'N/A' : alfaGradeReportJsonData,
     'refresherTrainingValue': refresherTrainingValue ?? '',
     'noTrainedTeacher': noTrainedTeacher ?? '',
     'readingValue': readingValue ?? '',
-    'libGradeReport': libGradeReportJsonData ?? '',
+    'libGradeReport': libGradeReportJsonData.isEmpty ? 'N/A' : libGradeReportJsonData,
     'tlmKitValue': tlmKitValue ?? '',
     'classObservation': classObservation ?? '',
     'createdAt': createdAt ?? '',
@@ -351,11 +351,13 @@ Future<Map<String, dynamic>> insertAlfaObservation(
     'id': id?.toString() ?? '',
   });
 
-  Future<void> _attachImages(String? imagePaths, String fieldName) async {
+  Future<void> attachImages(String? imagePaths, String fieldName) async {
     if (imagePaths != null && imagePaths.isNotEmpty) {
       List<String> images = imagePaths.split(',');
       for (String path in images) {
-        print('Processing image for field $fieldName: $path'); // Debug log
+        if (kDebugMode) {
+          print('Processing image for field $fieldName: $path');
+        } // Debug log
 
         File imageFile = File(path.trim());
         if (imageFile.existsSync()) {
@@ -366,27 +368,33 @@ Future<Map<String, dynamic>> insertAlfaObservation(
               contentType: MediaType('image', 'jpeg'),
             ),
           );
-          print("Image file $path attached successfully for $fieldName.");
+          if (kDebugMode) {
+            print("Image file $path attached successfully for $fieldName.");
+          }
         } else {
-          print('Image file does not exist at the path: $path for $fieldName');
+          if (kDebugMode) {
+            print('Image file does not exist at the path: $path for $fieldName');
+          }
           throw Exception("Image file not found at $path for $fieldName.");
         }
       }
     } else {
-      print('No image file path provided for $fieldName');
+      if (kDebugMode) {
+        print('No image file path provided for $fieldName');
+      }
     }
   }
 
   // Attach all image files and handle missing ones
   try {
-    await _attachImages(imgNurTimeTable, 'imgNurTimeTable');
-    await _attachImages(imgLKGTimeTable, 'imgLKGTimeTable');
-    await _attachImages(imgUKGTimeTable, 'imgUKGTimeTable');
-    await _attachImages(imgAlfa, 'imgAlfa');
-    await _attachImages(
+    await attachImages(imgNurTimeTable, 'imgNurTimeTable');
+    await attachImages(imgLKGTimeTable, 'imgLKGTimeTable');
+    await attachImages(imgUKGTimeTable, 'imgUKGTimeTable');
+    await attachImages(imgAlfa, 'imgAlfa');
+    await attachImages(
         imgTraining, 'imgTraining'); // Ensure this is attached properly
-    await _attachImages(imgLibrary, 'imgLibrary');
-    await _attachImages(imgTLM, 'imgTLM');
+    await attachImages(imgLibrary, 'imgLibrary');
+    await attachImages(imgTLM, 'imgTLM');
   } catch (e) {
     return {"status": 0, "message": e.toString()};
   }
@@ -395,7 +403,9 @@ Future<Map<String, dynamic>> insertAlfaObservation(
   try {
     var response = await request.send();
     var responseBody = await response.stream.bytesToString();
-    print('Raw response body: $responseBody');
+    if (kDebugMode) {
+      print('Raw response body: $responseBody');
+    }
 
     // Try parsing the response as JSON
     var parsedResponse = json.decode(responseBody);
@@ -407,13 +417,17 @@ Future<Map<String, dynamic>> insertAlfaObservation(
         table: 'alfaObservation',
         field: 'id',
       );
-      print("Record with id $id deleted from local database.");
+      if (kDebugMode) {
+        print("Record with id $id deleted from local database.");
+      }
       await Get.put(AlfaObservationController()).fetchData();
     }
 
     return parsedResponse;
   } catch (responseBody) {
-    print("Error: $responseBody");
+    if (kDebugMode) {
+      print("Error: $responseBody");
+    }
     return {
       "status": 0,
       "message": "Something went wrong, Please contact Admin $responseBody"

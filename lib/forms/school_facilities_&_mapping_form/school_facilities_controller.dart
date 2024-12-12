@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
 import 'package:app17000ft_new/constants/color_const.dart';
 import 'package:app17000ft_new/forms/school_facilities_&_mapping_form/school_facilities_modals.dart';
 import 'package:app17000ft_new/helper/database_helper.dart';
 import 'package:get/get.dart';
-import 'package:path_provider/path_provider.dart';
 import '../../base_client/baseClient_controller.dart';
 
 class SchoolFacilitiesController extends GetxController with BaseController {
@@ -108,12 +105,12 @@ class SchoolFacilitiesController extends GetxController with BaseController {
 
   final List<XFile> _multipleImage = [];
   List<XFile> get multipleImage => _multipleImage;
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   List<String> get imagePaths => _imagePaths;
 
   final List<XFile> _multipleImage2 = [];
   List<XFile> get multipleImage2 => _multipleImage2;
-  List<String> _imagePaths2 = [];
+  final List<String> _imagePaths2 = [];
   List<String> get imagePaths2 => _imagePaths2;
 
   Future<String> takePhoto(ImageSource source, int index) async {

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:app17000ft_new/home/home_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart'; // For a safer directory path handling
@@ -35,7 +34,6 @@ import '../../components/custom_confirmation.dart';
 
 import '../select_tour_id/select_controller.dart';
 import 'fln_observation_controller.dart';
-import 'fln_observation_sync.dart';
 
 class FlnObservationForm extends StatefulWidget {
   String? userid;
@@ -3830,16 +3828,16 @@ class _FlnObservationFormState extends State<FlnObservationForm> {
                                                             '';
                                                     String generateUniqueId(
                                                         int length) {
-                                                      const _chars =
+                                                      const chars =
                                                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                      Random _rnd = Random();
+                                                      Random rnd = Random();
                                                       return String.fromCharCodes(
                                                           Iterable.generate(
                                                               length,
-                                                              (_) => _chars
-                                                                  .codeUnitAt(_rnd
+                                                              (_) => chars
+                                                                  .codeUnitAt(rnd
                                                                       .nextInt(
-                                                                          _chars
+                                                                          chars
                                                                               .length))));
                                                     }
 
